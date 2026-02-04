@@ -1,42 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Oswald:wght@400;700&display=swap');
+
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+  --primary: #6d28d9;
+  /* Purple */
+  --primary-light: #a78bfa;
+  --accent: #fbbf24;
+  /* Gold */
+  --accent-dark: #d97706;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --purple-glow: rgba(109, 40, 217, 0.3);
+}
+
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #050505;
-  color: #ffffff;
+  background-color: var(--background);
+  color: var(--foreground);
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 .font-oswald {
   font-family: 'Oswald', sans-serif;
 }
 
+/* Luxury Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--primary);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--primary-light);
 }
 
+/* Glassmorphism */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
 }
 
+.glass-purple {
+  background: rgba(109, 40, 217, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(109, 40, 217, 0.2);
+}
+
+/* Gold Gradient Text */
+.text-gold {
+  background: linear-gradient(to bottom, #fee08b, #d97706);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Purple Glow */
+.purple-glow {
+  box-shadow: 0 0 40px var(--purple-glow);
+}
+
+/* Cinematic Shimmer */
 .shimmer {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(109, 40, 217, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 4s infinite linear;
 }
 
 @keyframes shimmer {
@@ -49,6 +90,18 @@ body {
   }
 }
 
+/* Scroll Animation Utilities */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -56,4 +109,23 @@ body {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Floating Animation */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
 }

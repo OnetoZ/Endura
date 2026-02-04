@@ -8,6 +8,7 @@ import Shop from './pages/Shop';
 import Auth from './pages/Auth';
 import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
+import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
 import DigitalVault from './pages/DigitalVault';
 import Footer from './components/Footer';
@@ -26,6 +27,7 @@ const App = () => {
               <Route path="/vault" element={<DigitalVault />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/admin/*" element={<AdminDashboard />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

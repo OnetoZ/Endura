@@ -1,78 +1,133 @@
 
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const ProductDetail = () => {
     const { id } = useParams();
-    const { products, addToCart } = useStore();
     const navigate = useNavigate();
+    const { products, addToCart } = useStore();
+    const [product, setProduct] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+    const [activeTab, setActiveTab] = useState('Specs');
 
-    const product = products.find(p => p.id === id);
+    useEffect(() => {
+        const found = products.find(p => p.id === id);
+        if (found) setProduct(found);
+    }, [id, products]);
 
-    if (!product) {
-        return (
-            <div className="h-[70vh] flex flex-col items-center justify-center">
-                <h2 className="text-4xl font-oswald mb-4">ITEM NOT FOUND</h2>
-                <button onClick={() => navigate('/shop')} className="text-blue-500 hover:underline">Return to Shop</button>
-            </div>
-        );
-    }
+    if (!product) return (
+        <div className="h-screen flex items-center justify-center">
+            <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+    );
 
     return (
-        <div className="container mx-auto px-6 py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                <div className="bg-[#111] h-[700px] overflow-hidden">
-                    <img src={product.image} className="w-full h-full object-cover" alt={product.name} />
-                </div>
-                <div className="flex flex-col justify-center">
-                    <div className="mb-8">
-                        <span className="text-blue-500 font-bold uppercase text-xs tracking-widest mb-2 block">{product.category}</span>
-                        <h1 className="text-6xl font-oswald font-bold uppercase mb-4 tracking-tighter">{product.name}</h1>
-                        <p className="text-3xl font-light text-gray-300 mb-8">₹{product.price}</p>
-                        <div className="h-px bg-white/10 w-full mb-8"></div>
-                        <p className="text-gray-400 text-lg leading-relaxed mb-10">
-                            {product.description}
-                        </p>
-                    </div>
+        <div className="min-h-screen bg-black pt-32 pb-20 px-6">
+            <div className="container mx-auto max-w-7xl">
+                <Link to="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Inventory
+                </Link>
 
-                    <div className="space-y-4">
-                        <button
-                            onClick={() => addToCart(product)}
-                            className="w-full py-6 bg-white text-black font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition transform active:scale-95"
-                        >
-                            Add to Gear Bag
-                        </button>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="glass p-4 rounded text-center">
-                                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Earn Credits</p>
-                                <p className="font-bold text-blue-400">+{Math.floor(product.price * 0.1)}</p>
-                            </div>
-                            <div className="glass p-4 rounded text-center">
-                                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Product Type</p>
-                                <p className="font-bold uppercase text-xs">{product.type}</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                    {/* Visual Interface */}
+                    <div className="relative group reveal active">
+                        <div className="absolute inset-0 bg-primary/10 blur-[100px] -z-10 group-hover:bg-primary/20 transition-all"></div>
+                        <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden">
+                            <img
+                                src={product.image}
+                                className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 scale-105 group-hover:scale-100"
+                                alt={product.name}
+                            />
+                        </div>
+                        <div className="absolute bottom-8 right-8">
+                            <div className="glass p-4 border-white/10">
+                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1">Status</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">In Stock</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mt-12 space-y-4">
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none flex justify-between items-center cursor-pointer">
-                                <span className="uppercase text-xs font-bold tracking-widest">Specifications</span>
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
-                            </summary>
-                            <div className="mt-4 text-sm text-gray-500">
-                                {product.type === 'physical' ? (
-                                    <ul className="space-y-1">
-                                        <li>• Machine wash cold</li>
-                                        <li>• 100% Endura Cotton</li>
-                                        <li>• Slim athletic fit</li>
+                    {/* Data Intel */}
+                    <div className="reveal active" style={{ transitionDelay: '200ms' }}>
+                        <p className="text-primary font-bold uppercase tracking-[0.5em] text-xs mb-4">{product.category} // {product.type}</p>
+                        <h1 className="text-6xl md:text-8xl font-oswald font-bold uppercase mb-8 leading-none tracking-tighter">
+                            {product.name}
+                        </h1>
+
+                        <div className="flex items-end gap-6 mb-12">
+                            <p className="text-4xl font-bold text-accent">₹{product.price}</p>
+                            <p className="text-gray-500 text-sm italic">Local Currency Synchronized</p>
+                        </div>
+
+                        <p className="text-gray-400 text-lg leading-relaxed mb-12 border-l-2 border-primary pl-8">
+                            {product.description}
+                        </p>
+
+                        <div className="flex items-center gap-8 mb-12">
+                            <div className="flex border border-white/10">
+                                <button
+                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    className="px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
+                                >-</button>
+                                <div className="px-8 py-4 bg-white/5 font-bold text-sm flex items-center">{quantity}</div>
+                                <button
+                                    onClick={() => setQuantity(quantity + 1)}
+                                    className="px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
+                                >+</button>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    for (let i = 0; i < quantity; i++) addToCart(product);
+                                    navigate('/cart');
+                                }}
+                                className="flex-grow py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
+                            >
+                                Initiate Protocol (Add to Cart)
+                            </button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="border border-white/5 overflow-hidden">
+                            <div className="flex border-b border-white/5 bg-white/5">
+                                {['Specs', 'Digital Mirror', 'Shipping'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-white' : 'text-gray-500 hover:text-white'}`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="p-8 text-gray-400 text-sm leading-relaxed min-h-[150px]">
+                                {activeTab === 'Specs' && (
+                                    <ul className="space-y-4">
+                                        <li className="flex justify-between border-b border-white/5 pb-2">
+                                            <span className="uppercase text-[10px] font-bold tracking-widest">Weight</span>
+                                            <span className="text-white font-mono">350GSM</span>
+                                        </li>
+                                        <li className="flex justify-between border-b border-white/5 pb-2">
+                                            <span className="uppercase text-[10px] font-bold tracking-widest">Composition</span>
+                                            <span className="text-white font-mono">100% Endura-Tech Fiber</span>
+                                        </li>
                                     </ul>
-                                ) : (
-                                    <p>Immediate digital download available after verification.</p>
+                                )}
+                                {activeTab === 'Digital Mirror' && (
+                                    <p>This item includes a 1:1 digital twin skin. Upon purchase, a sync code will be delivered to your operator node (vault). Compatible with major meta-dimension protocols.</p>
+                                )}
+                                {activeTab === 'Shipping' && (
+                                    <p>Global quantum logistics enabled. Real-time tracking through the operator dashboard. Est. delivery: 3-5 standard temporal cycles.</p>
                                 )}
                             </div>
-                        </details>
+                        </div>
                     </div>
                 </div>
             </div>
