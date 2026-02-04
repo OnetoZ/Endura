@@ -16,6 +16,12 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Backend is running' });
 });
 
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/cart', require('./routes/cartRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+
 // Database Connection
 const PORT = process.env.PORT || 5001;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/endura';
