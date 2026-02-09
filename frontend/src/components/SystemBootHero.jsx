@@ -4,15 +4,17 @@ import { Link } from 'react-router-dom';
 /**
  * SystemBootHero Component
  * 
- * Cinematic restricted archive entrance for ENDURA.
+ * Ultra-cinematic restricted archive entrance for ENDURA.
  * Features:
- * - Low-key cinematic lighting
- * - Faction-shadowed background
- * - Restricted system status
- * - Minimalist luxury typography
+ * - Advanced particle system
+ * - Glitch text animations
+ * - Holographic HUD overlays
+ * - Parallax depth effects
+ * - Premium luxury typography
  */
 const SystemBootHero = () => {
     const [bootStage, setBootStage] = useState(0);
+    const [glitchActive, setGlitchActive] = useState(false);
 
     useEffect(() => {
         const stages = [
@@ -28,120 +30,232 @@ const SystemBootHero = () => {
         stages.forEach(({ delay, stage }) => {
             setTimeout(() => setBootStage(stage), delay);
         });
+
+        // Random glitch effect
+        const glitchInterval = setInterval(() => {
+            if (Math.random() > 0.7) {
+                setGlitchActive(true);
+                setTimeout(() => setGlitchActive(false), 150);
+            }
+        }, 3000);
+
+        return () => clearInterval(glitchInterval);
     }, []);
 
     return (
         <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
-            {/* Master Cinematic Hero Image */}
+            {/* Master Cinematic Hero Image with Parallax */}
             <div className="absolute inset-0 z-0">
                 <div
-                    className="w-full h-full bg-cover bg-center transition-transform duration-[12000ms] ease-out"
+                    className="w-full h-full bg-cover bg-center transition-all duration-[12000ms] ease-out"
                     style={{
                         backgroundImage: 'url(/hero.png)',
                         transform: bootStage >= 1 ? 'scale(1.05)' : 'scale(1.15)',
-                        opacity: bootStage >= 1 ? 0.6 : 0
+                        opacity: bootStage >= 1 ? 0.7 : 0
                     }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
-                <div className="absolute inset-0 bg-black/40" />
+                {/* Multi-layer Gradients for Depth */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+                <div className="absolute inset-0 bg-black/30" />
+            </div>
+
+            {/* Animated Particle Grid */}
+            <div className="absolute inset-0 z-5 pointer-events-none opacity-20">
+                <div className="absolute inset-0" style={{
+                    backgroundImage: `radial-gradient(circle, rgba(147,112,219,0.3) 1px, transparent 1px)`,
+                    backgroundSize: '50px 50px',
+                    animation: 'particleFloat 20s linear infinite'
+                }} />
             </div>
 
             {/* Visual Overlays */}
             <div className="absolute inset-0 z-10 pointer-events-none film-grain opacity-20" />
             <div className="absolute inset-0 z-10 pointer-events-none scanlines opacity-5" />
 
-            {/* Top Left: System Status */}
+            {/* Holographic Corner Frames */}
+            <div className="absolute top-0 left-0 w-64 h-64 border-l-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 border-r-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 border-l-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 border-r-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
+
+            {/* Top Left: Enhanced System Status */}
             <div
-                className={`absolute top-12 left-12 space-y-2 transition-all duration-1000 ${bootStage >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
+                className={`absolute top-12 left-12 space-y-3 transition-all duration-1000 z-20 ${bootStage >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
                     }`}
             >
-                <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
-                    <span className="restricted-label">ARCHIVE_00.LOCKED</span>
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-black/40 px-4 py-2 border border-accent/20">
+                    <div className="w-2 h-2 bg-accent rounded-full animate-pulse shadow-[0_0_12px_rgba(212,175,55,0.8)]" />
+                    <span className="restricted-label text-accent">ARCHIVE_00.LOCKED</span>
                 </div>
-                <div className="text-[10px] text-gray-500 font-mono tracking-widest pl-5">
-                    LATENCY: 12ms <br />
-                    LOCATION: [REDACTED]
+                <div className="text-[10px] text-gray-400 font-mono tracking-widest pl-5 space-y-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-primary">◆</span>
+                        <span>LATENCY: <span className="text-accent">12ms</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-primary">◆</span>
+                        <span>LOCATION: <span className="text-white/60">[REDACTED]</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-primary">◆</span>
+                        <span>STATUS: <span className="text-green-400">ACTIVE</span></span>
+                    </div>
                 </div>
             </div>
 
-            {/* Top Right: Restricted Warning */}
+            {/* Top Right: Enhanced Identity Badge */}
             <div
-                className={`absolute top-12 right-12 transition-all duration-1000 ${bootStage >= 3 ? 'opacity-100' : 'opacity-0'
+                className={`absolute top-12 right-12 transition-all duration-1000 z-20 ${bootStage >= 3 ? 'opacity-100' : 'opacity-0'
                     }`}
             >
-                <div className="border border-white/5 bg-white/5 backdrop-blur-md px-4 py-2 flex items-center gap-3">
-                    <span className="text-accent text-xs">◈</span>
-                    <span className="restricted-label text-white/80">IDENTITY_LEVEL: OMEGA</span>
+                <div className="relative border border-primary/40 bg-gradient-to-br from-black/60 via-primary/5 to-black/60 backdrop-blur-md px-6 py-3">
+                    {/* Animated Corner Accents */}
+                    <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-accent" />
+                    <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-accent" />
+
+                    <div className="flex items-center gap-4">
+                        <span className="text-accent text-lg">◈</span>
+                        <div>
+                            <p className="text-[8px] text-gray-500 tracking-[0.3em] uppercase">Clearance</p>
+                            <p className="restricted-label text-white">IDENTITY_LEVEL: OMEGA</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Main Content: Central Identity */}
-            <div className="relative z-20 text-center flex flex-col items-center">
-                {/* Logo Image */}
+            {/* Main Content: Central Identity with Glitch Effect */}
+            <div className="relative z-20 text-center flex flex-col items-center px-6">
+                {/* Small Logo Above */}
                 <div
-                    className={`mb-10 transition-all duration-[3000ms] flex flex-col items-center ${bootStage >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-95 blur-xl'
+                    className={`transition-all duration-1000 mb-8 ${bootStage >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
                         }`}
                 >
-                    <img src="/logo.png" alt="ENDURA" className="h-12 md:h-20 object-contain brightness-150" />
-                    <div className="mt-8 cinematic-text text-xl md:text-2xl text-white/90 tracking-[0.6em]">
-                        The Order
+                    <img
+                        src="/logo.png"
+                        alt="ENDURA"
+                        className="h-16 md:h-20 object-contain brightness-200 drop-shadow-[0_0_30px_rgba(147,112,219,0.5)]"
+                    />
+                </div>
+
+                {/* Main Title with Glitch */}
+                <div
+                    className={`transition-all duration-1000 ${bootStage >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                        }`}
+                >
+                    <h1 className={`text-6xl md:text-8xl lg:text-9xl font-heading tracking-[0.3em] uppercase text-white mb-6 relative ${glitchActive ? 'glitch-text' : ''}`}>
+                        THE ORDER
+                    </h1>
+
+                    {/* Animated Divider */}
+                    <div className="flex items-center justify-center gap-4 mb-8">
+                        <div className="h-px w-16 bg-gradient-to-r from-transparent to-accent" />
+                        <div className="w-2 h-2 bg-accent rotate-45" />
+                        <div className="h-px w-16 bg-gradient-to-l from-transparent to-accent" />
                     </div>
                 </div>
 
                 {/* Subtitle */}
                 <div
-                    className={`space-y-4 transition-all duration-1000 delay-500 ${bootStage >= 5 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                    className={`transition-all duration-1000 delay-200 ${bootStage >= 5 ? 'opacity-100' : 'opacity-0'
                         }`}
                 >
-                    <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-accent to-transparent mx-auto" />
-                    <p className="text-gray-400 font-mono text-[10px] tracking-[0.4em] uppercase">
-                        Physical Body // Digital Soul
+                    <p className="text-sm md:text-base text-gray-400 font-light tracking-[0.5em] uppercase mb-4">
+                        Physical Body <span className="text-primary mx-2">//</span> Digital Soul
                     </p>
+                </div>
 
-                    {/* Access Call to Action */}
+                {/* CTA Button */}
+                <div
+                    className={`transition-all duration-1000 delay-400 ${bootStage >= 5 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                        }`}
+                >
                     <Link
                         to="/auth"
-                        className="mt-12 group relative block px-12 py-4 overflow-hidden border border-white/10 hover:border-accent/40 transition-colors duration-500"
+                        className="group relative inline-block mt-8"
                     >
-                        <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <span className="relative z-10 text-white/70 group-hover:text-accent font-mono text-[10px] tracking-[0.5em] uppercase transition-colors">
-                            Initiate_Entrance
-                        </span>
+                        {/* Animated Background Layers */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite]" />
+                        <div className="absolute inset-0 bg-black/70 group-hover:bg-black/50 transition-all duration-500" />
+
+                        {/* Border Frame */}
+                        <div className="absolute inset-0 border-2 border-primary/60 group-hover:border-accent transition-all duration-500" />
+                        <div className="absolute inset-0 border border-white/10 group-hover:border-white/30 transition-all duration-500" />
+
+                        {/* Corner Accents */}
+                        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-accent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-accent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+
+                        {/* Content */}
+                        <div className="relative z-10 px-12 py-4 flex items-center gap-3">
+                            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">
+                                Initiate_Entrance
+                            </span>
+                            <svg className="w-4 h-4 text-accent group-hover:translate-x-2 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </div>
                     </Link>
                 </div>
             </div>
 
-            {/* Bottom Status: Sequential Data */}
+            {/* Bottom Status Bar */}
             <div
-                className={`absolute bottom-12 left-12 space-y-1 transition-all duration-1000 ${bootStage >= 6 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                className={`absolute bottom-12 left-12 right-12 transition-all duration-1000 z-20 ${bootStage >= 6 ? 'opacity-100' : 'opacity-0'
                     }`}
             >
-                <div className="text-[9px] text-gray-600 font-mono tracking-widest flex items-center gap-2">
-                    <span className="w-1 h-1 bg-primary rounded-full" />
-                    ENCRYPT_SEQ: READY
-                </div>
-                <div className="text-[9px] text-gray-600 font-mono tracking-widest flex items-center gap-2">
-                    <span className="w-1 h-1 bg-primary rounded-full" />
-                    FACTION_PRESENCE: DETECTED (5)
+                <div className="flex items-center justify-between backdrop-blur-sm bg-black/40 border border-white/10 px-6 py-3">
+                    <div className="flex items-center gap-6">
+                        <span className="font-mono text-[9px] text-white/40 tracking-[0.2em]">
+                            SYSTEM_BOOT_v2.0
+                        </span>
+                        <div className="w-px h-4 bg-white/20" />
+                        <span className="font-mono text-[9px] text-accent/60 tracking-[0.2em]">
+                            ENCRYPTION_ACTIVE
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div
+                                    key={i}
+                                    className="w-1 h-3 bg-accent/30"
+                                    style={{
+                                        animation: `pulse ${i * 0.3}s ease-in-out infinite alternate`
+                                    }}
+                                />
+                            ))}
+                        </div>
+                        <span className="font-mono text-[9px] text-white/40 tracking-[0.2em] ml-2">
+                            SIGNAL_STRONG
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            {/* Right Status: Scroll Prompt */}
-            <div
-                className={`absolute bottom-12 right-12 transition-all duration-1000 ${bootStage >= 6 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                    }`}
-            >
-                <div className="flex items-center gap-4 group cursor-pointer">
-                    <span className="text-[9px] text-gray-500 font-mono tracking-widest uppercase group-hover:text-white transition-colors">
-                        Uncover_The_Truth
-                    </span>
-                    <div className="w-px h-8 bg-gradient-to-b from-accent to-transparent" />
-                </div>
-            </div>
+            {/* Custom Animations */}
+            <style jsx>{`
+                @keyframes particleFloat {
+                    0% { transform: translateY(0) translateX(0); }
+                    100% { transform: translateY(-100px) translateX(50px); }
+                }
+                @keyframes shimmer {
+                    0%, 100% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                }
+                .glitch-text {
+                    animation: glitch 0.3s ease-in-out;
+                }
+                @keyframes glitch {
+                    0%, 100% { transform: translate(0); }
+                    20% { transform: translate(-2px, 2px); }
+                    40% { transform: translate(2px, -2px); }
+                    60% { transform: translate(-2px, -2px); }
+                    80% { transform: translate(2px, 2px); }
+                }
+            `}</style>
         </section>
     );
 };
 
 export default SystemBootHero;
-
