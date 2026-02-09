@@ -37,17 +37,17 @@ const Navbar = () => {
 
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}>
-            {/* Holographic Top Border */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            {/* Holographic Top Border - Hidden on mobile */}
+            <div className="hidden md:block absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-            {/* Main Navbar Container */}
-            <div className={`relative backdrop-blur-xl transition-all duration-500 ${scrolled ? 'bg-black/90 border-b border-primary/30' : 'bg-black/40 border-b border-white/5'}`}>
-                {/* Animated Scan Line */}
-                <div className="absolute top-0 left-0 right-0 h-full overflow-hidden pointer-events-none">
+            {/* Main Navbar Container - Minimal on mobile */}
+            <div className={`relative transition-all duration-500 ${scrolled ? 'md:bg-black/90 bg-black/50 border-b border-primary/30 md:backdrop-blur-xl backdrop-blur-sm' : 'bg-transparent md:bg-black/40 border-b border-white/5 md:backdrop-blur-xl backdrop-blur-none'}`}>
+                {/* Animated Scan Line - Desktop only */}
+                <div className="hidden md:block absolute top-0 left-0 right-0 h-full overflow-hidden pointer-events-none">
                     <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent animate-[scan_4s_ease-in-out_infinite]" />
                 </div>
 
-                <div className="max-w-[1920px] mx-auto px-6 h-24 flex items-center justify-between">
+                <div className="max-w-[1920px] mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between">
                     {/* LEFT: Logo + System Diagnostics */}
                     <div className="flex items-center gap-8">
                         <Link to="/" className="group relative">
