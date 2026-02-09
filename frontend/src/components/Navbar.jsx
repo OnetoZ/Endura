@@ -1,17 +1,30 @@
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const Navbar = () => {
     const { currentUser, cart, logout } = useStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [visible, setVisible] = useState(false);
+
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
+    useEffect(() => {
+        if (location.pathname === '/') {
+            // Delay navbar on home page to match boot sequence
+            const timer = setTimeout(() => setVisible(true), 3500);
+            return () => clearTimeout(timer);
+        } else {
+            setVisible(true);
+        }
+    }, [location.pathname]);
+
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-primary/20 h-20 px-6 flex items-center justify-between transition-all duration-500">
-            <Link to="/" className="text-3xl font-oswald tracking-tighter hover:opacity-80 transition-opacity">
-                ENDURA<span className="text-primary italic">.</span>
+        <nav className={`fixed top-0 left-0 right-0 z-50 glass border-b border-primary/20 h-20 px-6 flex items-center justify-between transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}>
+            <Link to="/" className="hover:opacity-80 transition-opacity group">
+                <img src="/logo.png" alt="ENDURA" className="h-8 md:h-10 object-contain brightness-200" />
             </Link>
 
             <div className="hidden md:flex items-center space-x-10 text-[10px] font-black tracking-[0.3em] uppercase">

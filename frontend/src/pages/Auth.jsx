@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const Auth = () => {
-    const [authType, setAuthType] = useState('user'); // 'user' or 'admin'
+    const [authType, setAuthType] = useState('user');
     const [step, setStep] = useState(1);
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
