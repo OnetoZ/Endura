@@ -234,7 +234,7 @@ const SystemBootHero = () => {
             </div>
 
             {/* Custom Animations */}
-            <style jsx>{`
+            <style>{`
                 @keyframes particleFloat {
                     0% { transform: translateY(0) translateX(0); }
                     100% { transform: translateY(-100px) translateX(50px); }
