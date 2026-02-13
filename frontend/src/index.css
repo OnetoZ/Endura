@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ===================================
    PREMIUM CINEMATIC TYPOGRAPHY SYSTEM
    =================================== */
@@ -9,20 +15,17 @@
   - JetBrains Mono: Code, System Text, Technical Data (Precision)
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
-
 :root {
   --background: #000000;
   --foreground: #ffffff;
-  --primary: #4b2c91;
-  /* Deep Purple */
-  --primary-light: #7c3aed;
+  --primary: #d4af37;
+  /* Gold */
+  --primary-light: #fee08b;
   --accent: #d4af37;
-  /* Metallic Gold */
   --accent-dark: #b8860b;
   --glass: rgba(255, 255, 255, 0.02);
   --glass-border: rgba(255, 255, 255, 0.05);
-  --purple-glow: rgba(75, 44, 145, 0.25);
+  --gold-glow: rgba(212, 175, 55, 0.25);
   --cinematic-tracking: 0.5em;
 
   /* Font Families */
@@ -78,12 +81,6 @@ html.lenis body {
   font-family: var(--font-mono);
 }
 
-/* Legacy Support - Map Oswald to Orbitron */
-.font-oswald {
-  font-family: var(--font-heading);
-  font-weight: 700;
-}
-
 /* Typography Styles */
 h1,
 h2,
@@ -122,12 +119,12 @@ h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary);
+  background: var(--accent-dark);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-light);
+  background: var(--accent);
 }
 
 /* Glassmorphism */
@@ -137,10 +134,10 @@ h6 {
   border: 1px solid var(--glass-border);
 }
 
-.glass-purple {
-  background: rgba(109, 40, 217, 0.05);
+.glass-gold {
+  background: rgba(212, 175, 55, 0.05);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(109, 40, 217, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 /* Gold Gradient Text */
@@ -151,16 +148,16 @@ h6 {
   -webkit-text-fill-color: transparent;
 }
 
-/* Purple Glow */
-.purple-glow {
-  box-shadow: 0 0 40px var(--purple-glow);
+/* Gold Glow */
+.gold-glow {
+  box-shadow: 0 0 40px var(--gold-glow);
 }
 
 /* Cinematic Shimmer */
 .shimmer {
   background: linear-gradient(90deg,
       rgba(255, 255, 255, 0) 0%,
-      rgba(109, 40, 217, 0.1) 50%,
+      rgba(212, 175, 55, 0.1) 50%,
       rgba(255, 255, 255, 0) 100%);
   background-size: 200% 100%;
   animation: shimmer 4s infinite linear;
@@ -176,27 +173,6 @@ h6 {
   }
 }
 
-/* Scroll Animation Utilities */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.reveal.active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 /* Floating Animation */
 @keyframes float {
   0% {
@@ -204,7 +180,7 @@ h6 {
   }
 
   50% {
-    transform: translateY(-20px) rotate(1deg);
+    transform: translateY(-15px) rotate(0.5deg);
   }
 
   100% {
@@ -213,7 +189,56 @@ h6 {
 }
 
 .animate-float {
-  animation: float 8s ease-in-out infinite;
+  animation: float 10s ease-in-out infinite;
+}
+
+/* Breathing Glow Animation */
+@keyframes breathing-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+    opacity: 0.6;
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+    opacity: 0.9;
+  }
+}
+
+.animate-breathing-glow {
+  animation: breathing-glow 4s ease-in-out infinite;
+}
+
+
+/* Energy Line Scan Animation */
+@keyframes scan-vertical {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-scan-vertical {
+  animation: scan-vertical 8s linear infinite;
 }
 
 /* ===================================
@@ -451,6 +476,178 @@ h6 {
   }
 }
 
-.status-indicator {
-  animation: status-pulse 2s ease-in-out infinite;
+/* ===================================
+   AAA GAMING UI & INTERACTION SYSTEM
+   =================================== */
+
+/* Mechanical Loot-Shake */
+@keyframes mechanical-unlock {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  10% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  20% {
+    transform: scale(1.05) rotate(1deg);
+  }
+
+  30% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  40% {
+    transform: scale(1.05) rotate(1deg);
+  }
+
+  50% {
+    transform: scale(1.1) rotate(0deg);
+    filter: brightness(1.5) blur(2px);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-mechanical-unlock {
+  animation: mechanical-unlock 1s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+/* Energy Burst */
+@keyframes energy-burst {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+    filter: blur(0px);
+  }
+
+  100% {
+    transform: scale(4);
+    opacity: 0;
+    filter: blur(20px);
+  }
+}
+
+.energy-burst {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Static Noise Overlay */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Horizontal Scanner */
+@keyframes scan-horizontal {
+  0% {
+    transform: translateX(-100%)
+  }
+
+  100% {
+    transform: translateX(100%)
+  }
+}
+
+.scanner-line {
+  height: 100%;
+  width: 50px;
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
+  animation: scan-horizontal 3s linear infinite;
+}
+
+/* Floating Particle Container */
+.particles-container {
+  perspective: 1000px;
+}
+
+/* Rotating Circuit Background */
+@keyframes rotate-circuit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-rotate-circuit {
+  animation: rotate-circuit 120s linear infinite;
+}
+
+/* Neon Interaction Border */
+.neon-border {
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5), inset 0 0 5px rgba(124, 58, 237, 0.2);
+}
+
+.neon-border-gold {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
+/* Sequential Entrance Logic (Tailwind doesn't handle dynamic nth-child delay well without specific config) */
+.entrance-item {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.entrance-ready .entrance-item {
+  animation: entrance-slide-up 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes entrance-slide-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* terminal flickering */
+@keyframes terminal-flicker {
+  0% {
+    opacity: 0.9;
+  }
+
+  5% {
+    opacity: 0.5;
+  }
+
+  10% {
+    opacity: 0.9;
+  }
+
+  15% {
+    opacity: 0.8;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  35% {
+    opacity: 0.4;
+  }
+
+  40% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.terminal-flicker {
+  animation: terminal-flicker 4s infinite linear alternate-reverse;
 }

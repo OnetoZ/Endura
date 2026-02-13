@@ -13,25 +13,36 @@ const INITIAL_PRODUCTS = [
 
 export const AppProvider = ({ children }) => {
     const [products, setProducts] = useState(INITIAL_PRODUCTS);
-    const [currentUser, setCurrentUser] = useState(null);
-    const [cart, setCart] = useState([]);
+    const [currentUser, setCurrentUser] = useState(() => {
+        const saved = localStorage.getItem('endura_user');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [cart, setCart] = useState(() => {
+        const saved = localStorage.getItem('endura_cart');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [orders, setOrders] = useState([]);
-    const [vaultItems, setVaultItems] = useState([
-        { id: 'v1', name: 'Neon Samurai Skin', locked: true, image: 'https://images.unsplash.com/photo-1614728263952-84ea206f2c41?auto=format&fit=crop&q=80&w=800', code: 'ENDURA2026' },
-        { id: 'v2', name: 'Void Walker Cape', locked: true, image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800', code: 'VOID99' },
-    ]);
+    const [vaultItems, setVaultItems] = useState(() => {
+        const saved = localStorage.getItem('endura_vault');
+        return saved ? JSON.parse(saved) : [
+            { id: 'v1', name: 'Neon Samurai Skin', locked: true, image: 'https://images.unsplash.com/photo-1614728263952-84ea206f2c41?auto=format&fit=crop&q=80&w=800', code: 'ENDURA2026' },
+            { id: 'v2', name: 'Void Walker Cape', locked: true, image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800', code: 'VOID99' },
+        ];
+    });
 
-    // Local storage persistence simulation
+    // Subscriptions for updates (Sync state across tabs if needed, though mostly for set state logic)
     useEffect(() => {
-        const savedUser = localStorage.getItem('endura_user');
-        if (savedUser) setCurrentUser(JSON.parse(savedUser));
+        if (currentUser) localStorage.setItem('endura_user', JSON.stringify(currentUser));
+        else localStorage.removeItem('endura_user');
+    }, [currentUser]);
 
-        const savedCart = localStorage.getItem('endura_cart');
-        if (savedCart) setCart(JSON.parse(savedCart));
+    useEffect(() => {
+        localStorage.setItem('endura_cart', JSON.stringify(cart));
+    }, [cart]);
 
-        const savedVault = localStorage.getItem('endura_vault');
-        if (savedVault) setVaultItems(JSON.parse(savedVault));
-    }, []);
+    useEffect(() => {
+        localStorage.setItem('endura_vault', JSON.stringify(vaultItems));
+    }, [vaultItems]);
 
     const login = (email, role, name = null) => {
         const user = {

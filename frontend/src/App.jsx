@@ -11,7 +11,7 @@ import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
-import DigitalVault from './pages/DigitalVault';
+import Vault from './pages/Vault';
 import Footer from './components/Footer';
 import SmoothScroll from './components/SmoothScroll';
 import ScrollToTop from './components/ScrollToTop';
@@ -58,7 +58,7 @@ const App = () => {
   return (
     <AppProvider>
       <SmoothScroll>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ScrollToTop trigger={showIntro} />
           {showIntro ? (
             <IntroCinema onComplete={handleIntroComplete} />
@@ -72,7 +72,7 @@ const App = () => {
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/vault" element={<DigitalVault />} />
+                  <Route path="/vault" element={<Vault />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/dashboard" element={<UserDashboard />} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
 
 /**
  * SystemBootHero Component
@@ -13,6 +14,7 @@ import { Link } from 'react-router-dom';
  * - Premium luxury typography
  */
 const SystemBootHero = () => {
+    const { currentUser } = useStore();
     const [bootStage, setBootStage] = useState(0);
     const [glitchActive, setGlitchActive] = useState(false);
 
