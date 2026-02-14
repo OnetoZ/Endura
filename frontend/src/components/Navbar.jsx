@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
-const Navbar = () => {
+const Navbar = React.forwardRef((props, ref) => {
     const { currentUser, cart, logout } = useStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -36,7 +36,11 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}>
+        <nav
+            ref={ref}
+            style={props.style}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}
+        >
             {/* Holographic Top Border - Hidden on mobile */}
             <div className="hidden md:block absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
@@ -185,7 +189,8 @@ const Navbar = () => {
             </div>
 
             {/* Add custom animations to global CSS */}
-            <style jsx>{`
+            {/* Add custom animations to global CSS */}
+            <style>{`
                 @keyframes scan {
                     0%, 100% { transform: translateX(-100%); }
                     50% { transform: translateX(100%); }
@@ -197,6 +202,6 @@ const Navbar = () => {
             `}</style>
         </nav>
     );
-};
+});
 
 export default Navbar;

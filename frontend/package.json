@@ -24,7 +24,6 @@
     "react-helmet-async": "2.0.5",
     "react-hot-toast": "2.6.0",
     "react-router-dom": "6.28.0",
-    "styled-jsx": "5.1.7",
     "three": "0.170.0"
   },
   "devDependencies": {
