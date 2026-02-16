@@ -25,7 +25,7 @@ const ProductDetail = () => {
     return (
         <div className="min-h-screen bg-black pt-32 pb-20 px-6">
             <div className="container mx-auto max-w-7xl">
-                <Link to="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
+                <Link to="/collections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                     </svg>

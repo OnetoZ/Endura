@@ -1,0 +1,265 @@
+/* =========================================
+   MIND-BLOWING COLLECTIONS ANIMATIONS
+   ========================================= */
+
+/* Holographic Noise Layer */
+.holographic-noise {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Digital Scanning Line */
+.scanning-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, transparent, var(--primary-light), transparent);
+    box-shadow: 0 0 15px var(--primary-light);
+    animation: scan-vertical 3s ease-in-out infinite;
+    z-index: 20;
+    opacity: 0;
+}
+
+.group:hover .scanning-line {
+    opacity: 1;
+}
+
+@keyframes scan-vertical {
+    0% {
+        top: 0%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+}
+
+/* Spectral Glitch Effect */
+.spectral-glitch {
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    mix-blend-mode: color-dodge;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.group:hover .spectral-glitch {
+    animation: spectral-glitch-anim 0.2s steps(2) infinite;
+}
+
+@keyframes spectral-glitch-anim {
+    0% {
+        opacity: 0.3;
+        transform: translate(2px, -2px) scale(1.02);
+        filter: hue-rotate(90deg);
+    }
+
+    50% {
+        opacity: 0.1;
+        transform: translate(-2px, 2px) scale(0.98);
+        filter: hue-rotate(-90deg);
+    }
+
+    100% {
+        opacity: 0.3;
+        transform: translate(0, 0) scale(1.02);
+    }
+}
+
+/* Luxury Border Animation */
+.luxury-border {
+    position: absolute;
+    inset: 0;
+    border: 1px solid transparent;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.group:hover .luxury-border {
+    border-color: var(--accent);
+    inset: -10px;
+    opacity: 0.5;
+}
+
+/* Floating Particle Effect (Simplified) */
+.particle-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.group:hover .particle {
+    animation: particle-rise 2s ease-out forwards;
+}
+
+@keyframes particle-rise {
+    0% {
+        transform: translateY(100%) scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translateY(-100%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Glass Purple Variant Refinement */
+.glass-purple {
+    background: rgba(75, 44, 145, 0.08);
+    backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    box-shadow:
+        0 10px 40px -10px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(124, 58, 237, 0.1);
+}
+
+/* Morphing Background for Grid Containers */
+.grid-chamber {
+    perspective: 2000px;
+}
+
+/* Luxury Scanning Line */
+@keyframes sweep {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(400%);
+        opacity: 0;
+    }
+}
+
+.scanner-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 15vh;
+    background: linear-gradient(to bottom,
+            transparent,
+            rgba(212, 175, 55, 0.2),
+            rgba(212, 175, 55, 0.4),
+            rgba(212, 175, 55, 0.2),
+            transparent);
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.group:hover .scanner-line {
+    animation: sweep 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Corner Brackets */
+.corner-bracket {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-color: rgba(212, 175, 55, 0.5);
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    opacity: 0;
+    z-index: 10;
+}
+
+.group:hover .corner-bracket {
+    opacity: 1;
+    border-color: rgba(212, 175, 55, 1);
+}
+
+.bracket-tl {
+    top: 10px;
+    left: 10px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+}
+
+.bracket-tr {
+    top: 10px;
+    right: 10px;
+    border-top: 1px solid;
+    border-right: 1px solid;
+}
+
+.bracket-bl {
+    bottom: 10px;
+    left: 10px;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+}
+
+.bracket-br {
+    bottom: 10px;
+    right: 10px;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+}
+
+.group:hover .bracket-tl {
+    top: 20px;
+    left: 20px;
+}
+
+.group:hover .bracket-tr {
+    top: 20px;
+    right: 20px;
+}
+
+.group:hover .bracket-bl {
+    bottom: 20px;
+    left: 20px;
+}
+
+.group:hover .bracket-br {
+    bottom: 20px;
+    right: 20px;
+}
+
+/* Refined Typography Motion */
+.meta-reveal {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .meta-reveal {
+    transform: translateY(-8px);
+}
