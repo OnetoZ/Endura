@@ -87,7 +87,7 @@ const Navbar = React.forwardRef((props, ref) => {
                     <div className="hidden md:flex items-center gap-1">
                         {[
                             { to: '/', label: 'Home', accent: false },
-                            { to: '/shop', label: 'Collection', accent: false },
+                            { to: '/collections', label: 'collections', accent: false },
                             { to: '/vault', label: 'The Vault', accent: true }
                         ].map((link, idx) => (
                             <Link

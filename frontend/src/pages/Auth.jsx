@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { toast } from 'react-hot-toast';
 
 const Auth = () => {
     const [authType, setAuthType] = useState('user');
@@ -23,33 +22,11 @@ const Auth = () => {
         setError('');
     };
 
-    const [isLoading, setIsLoading] = useState(false);
-
     const handleUserSubmit = (e) => {
         e.preventDefault();
-        setIsLoading(true);
-        setError('');
-
-        // Temporary Dummy Auth Logic
-        setTimeout(() => {
-            if (formData.email === 'vault@demo.com' && formData.password === 'vault123') {
-                login(formData.email, 'user');
-                toast.success("ACCESS GRANTED", {
-                    style: {
-                        background: '#000',
-                        border: '1px solid #6d28d9',
-                        color: '#a78bfa',
-                        fontFamily: 'Orbitron',
-                        fontSize: '10px',
-                        letterSpacing: '2px'
-                    }
-                });
-                navigate('/vault');
-            } else {
-                setError('ACCESS_DENIED: Invalid Credentials');
-                setIsLoading(false);
-            }
-        }, 1500);
+        // Simulation of user login/signup
+        login(formData.email, 'user');
+        navigate('/');
     };
 
     const handleAdminSubmit = (e) => {
@@ -144,10 +121,9 @@ const Auth = () => {
                                         type="email"
                                         name="email"
                                         required
-                                        className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest`}
+                                        className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
                                         placeholder="SYNC_MAIL@ENDURA.IO"
                                         onChange={handleInputChange}
-                                        disabled={isLoading}
                                     />
                                 </div>
                                 <div>
@@ -156,25 +132,13 @@ const Auth = () => {
                                         type="password"
                                         name="password"
                                         required
-                                        className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest`}
+                                        className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
                                         placeholder="••••••••"
                                         onChange={handleInputChange}
-                                        disabled={isLoading}
                                     />
                                 </div>
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className={`w-full py-5 ${isLoading ? 'bg-primary/50' : 'bg-primary'} text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20 relative overflow-hidden`}
-                                >
-                                    {isLoading ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                                            VALIDATING...
-                                        </span>
-                                    ) : (
-                                        isLogin ? 'Synchronize' : 'Initialize Profile'
-                                    )}
+                                <button type="submit" className="w-full py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20">
+                                    {isLogin ? 'Synchronize' : 'Initialize Profile'}
                                 </button>
                             </form>
 

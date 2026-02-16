@@ -5,14 +5,17 @@ import { AppProvider } from './context/StoreContext';
 import Navbar from './components/Navbar';
 import IntroFrameSequence from './components/IntroFrameSequence';
 import Home from './pages/Home';
-import Shop from './pages/Shop';
+// import Shop from './pages/Shop';
 import Auth from './pages/Auth';
 import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
+// import DigitalVault from './pages/DigitalVault';
+import Shop from './pages/Shop';
 import Vault from './pages/Vault';
 import Footer from './components/Footer';
+import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -89,6 +92,10 @@ const App = () => {
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ScrollToTop trigger={showIntro} />
 
+
+              {/* Main Content (Landing Page and beyond) */}
+              <main className="flex-grow pt-20">
+
           <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
             {/* Navbar is always in the DOM but hidden during intro */}
             <Navbar
@@ -108,9 +115,12 @@ const App = () => {
               style={showIntro ? { opacity: 0, transform: 'translateY(80px)' } : { opacity: 1, transform: 'translateY(0)' }}
             >
               <main className="flex-grow">
+
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
+                  <Route path="/collections" element={<Collections />} />
+                  {/* <Route path="/vault" element={<DigitalVault />} /> */}
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/vault" element={<Vault />} />
                   <Route path="/auth" element={<Auth />} />

@@ -4,45 +4,42 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const StoreContext = createContext(undefined);
 
 const INITIAL_PRODUCTS = [
-    { id: '1', name: 'Alpha Core Tee', price: 2499, category: 'Apparel', type: 'physical', image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800', description: 'Engineered for performance. 100% premium heavy-duty cotton.', stock: 50 },
+    { id: '1', name: 'Ghost Core Tee', price: 2499, category: 'Apparel', type: 'physical', subcategory: 'T-Shirt', image: '/collections img/Ghost_Boxy_Oversized_Tshirt_front.webp', description: 'Engineered for performance. 100% premium heavy-duty cotton.', stock: 50 },
     { id: '2', name: 'Cyberpunk Skin Pack', price: 899, category: 'Digital', type: 'digital', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800', description: 'Exclusive in-game assets for Project Endura universe.' },
-    { id: '3', name: 'Endura Cargo 01', price: 4500, category: 'Apparel', type: 'physical', image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800', description: 'Tactical aesthetics with high durability zippers.', stock: 30 },
-    { id: '4', name: 'Vortex Hoodie', price: 3200, category: 'Apparel', type: 'physical', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=800', description: 'Oversized fit with reflective print.', stock: 20 },
+    { id: '3', name: 'Dracon Cargo 01', price: 4500, category: 'Apparel', type: 'physical', subcategory: 'Pants', image: '/collections img/Dracon_Unisex_Straight_Fit_Baggy_Pants_front.webp', description: 'Tactical aesthetics with high durability zippers.', stock: 30 },
+    { id: '4', name: 'Pierce Black Hoodie', price: 3200, category: 'Apparel', type: 'physical', subcategory: 'Hoodie', image: '/collections img/Pierce_Black_Boxy-Oversized_Hoodie_front.webp', description: 'Oversized fit with reflective print.', stock: 20 },
     { id: '5', name: 'Music Asset Pack Vol 1', price: 1200, category: 'Digital', type: 'digital', image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800', description: 'Professional grade synthwave tracks for creators.' },
+    { id: '6', name: 'Dissect Armor Vest', price: 5500, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Dissect_Black_Boxy_Unisex_Vest_front.webp', description: 'Lightweight tactical vest with modular attachments.', stock: 15 },
+    { id: '7', name: 'Gnarl Tactical Vest', price: 5200, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Gnarl_Red_Boxy_Unisex_Vest_front.webp', description: 'Red accent tactical vest for high visibility operations.', stock: 25 },
+    { id: '8', name: 'Blade Training Shorts', price: 1800, category: 'Apparel', type: 'physical', subcategory: 'Shorts', image: '/collections img/Blade_Black_Unisex_Shorts_front.webp', description: 'Breathable mesh shorts designed for high-intensity training.', stock: 40 },
+    { id: '9', name: 'Zyra Stealth Shorts', price: 1950, category: 'Apparel', type: 'physical', subcategory: 'Shorts', image: '/collections img/Zyra_Black_Unisex_Shorts_front.webp', description: 'Deep black stealth shorts with reinforced stitching.', stock: 60 },
+    { id: '10', name: 'Lean Alpha Hoodie', price: 3800, category: 'Apparel', type: 'physical', subcategory: 'Hoodie', image: '/collections img/Lean_Black_Boxy_Oversized_Hoodie_front.webp', description: 'Minimalist boxy hoodie for a sharp silhouette.', stock: 20 },
+    { id: '11', name: 'Kayla Boxy Vest', price: 4800, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Kayla_Unisex_White_Boxy_Vest_front.webp', description: 'Premium white boxy vest with tactical webbing.', stock: 15 },
+    { id: '12', name: 'Obsess Grey Vest', price: 4900, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Obsess_Grey_Unisex_Boxy_Vest_front.webp', description: 'Tonal grey vest for urban camouflage.', stock: 15 },
+    { id: '13', name: 'Zenith Tech Tee', price: 2600, category: 'Apparel', type: 'physical', subcategory: 'T-Shirt', image: '/collections img/Whisk_6c9b9a0f7c33940bdb14af3dc5b5ca60dr.png', description: 'High-tech synthetic fabric for ultimate comfort.', stock: 35 },
 ];
 
 export const AppProvider = ({ children }) => {
     const [products, setProducts] = useState(INITIAL_PRODUCTS);
-    const [currentUser, setCurrentUser] = useState(() => {
-        const saved = localStorage.getItem('endura_user');
-        return saved ? JSON.parse(saved) : null;
-    });
-    const [cart, setCart] = useState(() => {
-        const saved = localStorage.getItem('endura_cart');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [currentUser, setCurrentUser] = useState(null);
+    const [cart, setCart] = useState([]);
     const [orders, setOrders] = useState([]);
-    const [vaultItems, setVaultItems] = useState(() => {
-        const saved = localStorage.getItem('endura_vault');
-        return saved ? JSON.parse(saved) : [
-            { id: 'v1', name: 'Neon Samurai Skin', locked: true, image: 'https://images.unsplash.com/photo-1614728263952-84ea206f2c41?auto=format&fit=crop&q=80&w=800', code: 'ENDURA2026' },
-            { id: 'v2', name: 'Void Walker Cape', locked: true, image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800', code: 'VOID99' },
-        ];
-    });
+    const [vaultItems, setVaultItems] = useState([
+        { id: 'v1', name: 'Neon Samurai Skin', locked: true, image: 'https://images.unsplash.com/photo-1614728263952-84ea206f2c41?auto=format&fit=crop&q=80&w=800', code: 'ENDURA2026' },
+        { id: 'v2', name: 'Void Walker Cape', locked: true, image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800', code: 'VOID99' },
+    ]);
 
-    // Subscriptions for updates (Sync state across tabs if needed, though mostly for set state logic)
+    // Local storage persistence simulation
     useEffect(() => {
-        if (currentUser) localStorage.setItem('endura_user', JSON.stringify(currentUser));
-        else localStorage.removeItem('endura_user');
-    }, [currentUser]);
+        const savedUser = localStorage.getItem('endura_user');
+        if (savedUser) setCurrentUser(JSON.parse(savedUser));
 
-    useEffect(() => {
-        localStorage.setItem('endura_cart', JSON.stringify(cart));
-    }, [cart]);
+        const savedCart = localStorage.getItem('endura_cart');
+        if (savedCart) setCart(JSON.parse(savedCart));
 
-    useEffect(() => {
-        localStorage.setItem('endura_vault', JSON.stringify(vaultItems));
-    }, [vaultItems]);
+        const savedVault = localStorage.getItem('endura_vault');
+        if (savedVault) setVaultItems(JSON.parse(savedVault));
+    }, []);
 
     const login = (email, role, name = null) => {
         const user = {
