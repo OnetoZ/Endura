@@ -22,11 +22,6 @@ gsap.registerPlugin(ScrollTrigger);
 const Home = () => {
     const mainRef = useRef();
 
-    useGSAP(() => {
-        // Global Scene Management can be added here
-    }, { scope: mainRef });
-
-
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">
             {/* SCENE 1 & 2: System Boot / Hero Identity */}

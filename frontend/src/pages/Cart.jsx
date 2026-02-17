@@ -91,11 +91,11 @@ const Cart = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="0.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                 </div>
-                <h2 className="text-4xl font-heading uppercase mb-4 text-white/40 tracking-tighter">Your Vault is Empty</h2>
-                <p className="text-gray-600 font-mono text-[10px] tracking-widest uppercase mb-12">No identity signatures detected in local cache.</p>
+                <h2 className="text-4xl font-heading uppercase mb-4 text-white/40 tracking-tighter">Your Cart is Empty</h2>
+                <p className="text-gray-600 font-mono text-[10px] tracking-widest uppercase mb-12">No identity signatures detected in your Cart.</p>
                 <Link to="/collections" className="group relative px-12 py-4 glass border-white/10 hover:border-primary transition-all overflow-hidden">
                     <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform" />
-                    <span className="relative z-10 text-[10px] font-heading font-black uppercase tracking-[0.4em] text-white">Access Foundry</span>
+                    <span className="relative z-10 text-[10px] font-heading font-black uppercase tracking-[0.4em] text-white">Back to Collections</span>
                 </Link>
             </div>
         );

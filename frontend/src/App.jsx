@@ -1,9 +1,8 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import gsap from 'gsap';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppProvider } from './context/StoreContext';
+import IntroAnimation from './pages/IntroAnimation';
 import Navbar from './components/Navbar';
-import IntroFrameSequence from './components/IntroFrameSequence';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Cart from './pages/Cart';
@@ -15,109 +14,61 @@ import Vault from './pages/Vault';
 import Footer from './components/Footer';
 import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
-import ScrollToTop from './components/ScrollToTop';
-import IntroCinema from './components/IntroFrameSequence';
+
+// Component to handle conditional navbar
+const ConditionalNavbar = () => {
+  const location = useLocation();
+  const showNavbar = location.pathname === '/home';
+  return showNavbar ? <Navbar /> : null;
+};
+
+// Component to handle conditional footer
+const ConditionalFooter = () => {
+  const location = useLocation();
+  const showFooter = location.pathname === '/home';
+  return showFooter ? <Footer /> : null;
+};
 
 const App = () => {
   const [showIntro, setShowIntro] = useState(true);
-  const navRef = useRef(null);
-  const landingRef = useRef(null);
-  const transitionDone = useRef(false);
+  const [isLoading, setIsLoading] = useState(false);
 
+  console.log('App component initializing...');
+
+  // Check if intro should be shown on app mount
   useEffect(() => {
-    // Check if intro was already seen in this session
-    const hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
-    if (hasSeenIntro) {
-      setShowIntro(false);
+    const animationCompleted = localStorage.getItem('endura_animation_completed');
+    
+    console.log('Animation completed flag:', animationCompleted);
+    
+    // Always show intro for now - remove this logic if you want to always show intro
+    if (animationCompleted) {
+      console.log('Animation completed before, but showing intro anyway');
+    } else {
+      console.log('First time, showing intro animation');
     }
+    
+    setIsLoading(false);
   }, []);
 
-  // Lock background scroll during cinematic intro
-  useEffect(() => {
-    if (showIntro) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [showIntro]);
-
-  const handleReveal = () => {
-    if (transitionDone.current) return;
-    transitionDone.current = true;
-
-    // Release scroll lock
-    document.body.style.overflow = '';
-    document.documentElement.style.overflow = '';
-
-    const tl = gsap.timeline();
-
-    // Fade out frame container
-    tl.to(".intro-frame-section", {
-      opacity: 0,
-      duration: 1.2,
-      ease: "power2.inOut",
-      onComplete: () => {
-        setShowIntro(false);
-        sessionStorage.setItem('hasSeenIntro', 'true');
-        window.scrollTo(0, 0);
-      }
-    });
-
-    // Fade in landing section
-    tl.to(landingRef.current, {
-      opacity: 1,
-      y: 0,
-      duration: 1.5,
-      ease: "power3.out"
-    }, "-=0.6");
-
-    // Fade in navbar
-    tl.to(navRef.current, {
-      opacity: 1,
-      pointerEvents: "auto",
-      duration: 1
-    }, "-=1");
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <AppProvider>
       <SmoothScroll>
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <ScrollToTop trigger={showIntro} />
-
-
-              {/* Main Content (Landing Page and beyond) */}
-              <main className="flex-grow pt-20">
-
           <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
-            {/* Navbar is always in the DOM but hidden during intro */}
-            <Navbar
-              ref={navRef}
-              style={showIntro ? { opacity: 0, pointerEvents: 'none' } : {}}
-            />
-
-            {/* Frame Intro Segment */}
-            {showIntro && (
-              <IntroFrameSequence onComplete={handleReveal} />
-            )}
-
-            {/* Landing Content Segment */}
-            <div
-              ref={landingRef}
-              className="landing-section flex-grow flex flex-col"
-              style={showIntro ? { opacity: 0, transform: 'translateY(80px)' } : { opacity: 1, transform: 'translateY(0)' }}
-            >
-              <main className="flex-grow">
-
+            <ConditionalNavbar />
+            <main className="flex-grow pt-20">
                 <Routes>
-                  <Route path="/intro" element={<IntroFrameSequence onComplete={handleIntroComplete} />} />
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<IntroAnimation />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/collections" element={<Collections />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
@@ -128,9 +79,8 @@ const App = () => {
                   <Route path="/admin/*" element={<AdminDashboard />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
-              </main>
-              <Footer />
-            </div>
+            </main>
+            <ConditionalFooter />
           </div>
         </Router>
       </SmoothScroll>

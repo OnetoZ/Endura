@@ -23,10 +23,78 @@ export const AppProvider = ({ children }) => {
     const [products, setProducts] = useState(INITIAL_PRODUCTS);
     const [currentUser, setCurrentUser] = useState(null);
     const [cart, setCart] = useState([]);
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState([
+        {
+            id: 'ORD-1723467',
+            userId: 'user_001',
+            items: [
+                { name: 'Ghost Core Tee', quantity: 2, price: 2499 },
+                { name: 'Cyberpunk Skin Pack', quantity: 1, price: 899 }
+            ],
+            total: 5897,
+            status: 'paid',
+            trackingStatus: 'In Transit - Dimension Gate Alpha',
+            creditsEarned: 589,
+            creditsUsed: 200,
+            createdAt: '2026-02-15T10:30:00Z'
+        },
+        {
+            id: 'ORD-1723468',
+            userId: 'user_002',
+            items: [
+                { name: 'Dracon Cargo 01', quantity: 1, price: 4500 },
+                { name: 'Pierce Black Hoodie', quantity: 1, price: 3200 }
+            ],
+            total: 7700,
+            status: 'processing',
+            trackingStatus: 'Scanning Dimension...',
+            creditsEarned: 770,
+            creditsUsed: 500,
+            createdAt: '2026-02-16T14:22:00Z'
+        },
+        {
+            id: 'ORD-1723469',
+            userId: 'user_003',
+            items: [
+                { name: 'Music Asset Pack Vol 1', quantity: 2, price: 1200 },
+                { name: 'Dissect Armor Vest', quantity: 1, price: 5500 }
+            ],
+            total: 7900,
+            status: 'paid',
+            trackingStatus: 'Delivered - Quantum Node 7',
+            creditsEarned: 790,
+            creditsUsed: 300,
+            createdAt: '2026-02-14T09:15:00Z'
+        },
+        {
+            id: 'ORD-1723470',
+            userId: 'user_004',
+            items: [
+                { name: 'Gnarl Tactical Vest', quantity: 1, price: 5200 }
+            ],
+            total: 5200,
+            status: 'processing',
+            trackingStatus: 'Packaging - Zero-G Facility',
+            creditsEarned: 520,
+            creditsUsed: 150,
+            createdAt: '2026-02-17T08:45:00Z'
+        }
+    ]);
     const [vaultItems, setVaultItems] = useState([
         { id: 'v1', name: 'Neon Samurai Skin', locked: true, image: 'https://images.unsplash.com/photo-1614728263952-84ea206f2c41?auto=format&fit=crop&q=80&w=800', code: 'ENDURA2026' },
         { id: 'v2', name: 'Void Walker Cape', locked: true, image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800', code: 'VOID99' },
+        { id: 'v3', name: 'Quantum Blade', locked: false, image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=800', code: 'QUANTUM42' },
+        { id: 'v4', name: 'Plasma Shield', locked: false, image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800', code: 'SHIELD77' }
+    ]);
+    const [users, setUsers] = useState([
+        { id: 'user_001', name: 'Alex Chen', email: 'alex.chen@endura.com', role: 'user' },
+        { id: 'user_002', name: 'Sarah Williams', email: 'sarah.w@endura.com', role: 'user' },
+        { id: 'user_003', name: 'Marcus Johnson', email: 'marcus.j@endura.com', role: 'user' },
+        { id: 'user_004', name: 'Elena Rodriguez', email: 'elena.r@endura.com', role: 'user' },
+        { id: 'user_005', name: 'David Kim', email: 'david.kim@endura.com', role: 'user' },
+        { id: 'user_006', name: 'Zara Ahmed', email: 'zara.a@endura.com', role: 'user' },
+        { id: 'user_007', name: 'Tom Wilson', email: 'tom.w@endura.com', role: 'user' },
+        { id: 'user_008', name: 'Lisa Park', email: 'lisa.p@endura.com', role: 'user' }
     ]);
 
     // Local storage persistence simulation
@@ -145,7 +213,7 @@ export const AppProvider = ({ children }) => {
 
     return (
         <StoreContext.Provider value={{
-            products, currentUser, cart, orders, vaultItems,
+            products, currentUser, cart, orders, vaultItems, users,
             login, logout, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             addProduct, removeProduct, unlockVaultItem
         }}>
