@@ -3,21 +3,19 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/StoreContext';
 import Navbar from './components/Navbar';
-import IntroCinema from './components/IntroCinema/IntroCinema';
 import Home from './pages/Home';
-// import Shop from './pages/Shop';
 import Auth from './pages/Auth';
 import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
-// import DigitalVault from './pages/DigitalVault';
 import Shop from './pages/Shop';
 import Vault from './pages/Vault';
 import Footer from './components/Footer';
 import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
 import ScrollToTop from './components/ScrollToTop';
+import IntroCinema from './components/IntroFrameSequence';
 
 const App = () => {
   const [showIntro, setShowIntro] = React.useState(true);
@@ -72,10 +70,10 @@ const App = () => {
               {/* Main Content (Landing Page and beyond) */}
               <main className="flex-grow pt-20">
                 <Routes>
+                  <Route path="/intro" element={<IntroFrameSequence onComplete={handleIntroComplete} />} />
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/collections" element={<Collections />} />
-                  {/* <Route path="/vault" element={<DigitalVault />} /> */}
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/vault" element={<Vault />} />
                   <Route path="/auth" element={<Auth />} />
