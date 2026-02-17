@@ -57,9 +57,9 @@ const SystemBootHero = () => {
                     }}
                 />
                 {/* Multi-layer Gradients for Depth */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
-                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-70" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+                <div className="absolute inset-0 bg-black/15" />
             </div>
 
             {/* Animated Particle Grid */}
@@ -191,7 +191,7 @@ const SystemBootHero = () => {
                         {/* Content */}
                         <div className="relative z-10 px-12 py-4 flex items-center gap-3">
                             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">
-                                Initiate_Entrance
+                                Login_Entrance
                             </span>
                             <svg className="w-4 h-4 text-accent group-hover:translate-x-2 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />

@@ -32,7 +32,7 @@ const Auth = () => {
     const handleAdminSubmit = (e) => {
         e.preventDefault();
         if (step === 1) {
-            if (formData.email === 'admin@endura.com' && formData.password === 'admin123') {
+            if (formData.email === 'admin@gmail.com' && formData.password === '1234') {
                 setStep(2);
             } else {
                 setError('ACCESS_DENIED: Invalid Credentials');

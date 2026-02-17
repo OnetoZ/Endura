@@ -112,26 +112,19 @@ const Navbar = React.forwardRef((props, ref) => {
                             </Link>
                         ))}
 
-                        {/* Admin Terminal (if admin) */}
-                        {currentUser?.role === 'admin' && (
-                            <Link
-                                to="/admin"
-                                className="relative ml-4 px-4 py-2 border border-primary/40 text-primary hover:bg-primary hover:text-black transition-all duration-300 group"
-                            >
-                                <span className="text-[9px] font-black uppercase tracking-[0.25em]">Admin_Terminal</span>
-                                <div className="absolute inset-0 border border-primary/0 group-hover:border-primary animate-pulse" />
-                            </Link>
-                        )}
                     </div>
 
                     {/* RIGHT: Cart + User Actions */}
                     <div className="flex items-center gap-6">
                         {/* Cart Icon */}
                         <Link to="/cart" className="relative group">
-                            <div className="relative p-2.5 border border-white/10 hover:border-primary/50 transition-all duration-300">
+                            <div className="relative p-2.5 border border-white/10 hover:border-primary/50 transition-all duration-300 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-white/70 group-hover:text-primary transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                 </svg>
+                                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white/70 group-hover:text-primary transition-all duration-300">
+                                    CART
+                                </span>
                                 {cartCount > 0 && (
                                     <span className="absolute -top-1 -right-1 bg-accent text-black text-[8px] w-4 h-4 flex items-center justify-center rounded-full font-black">
                                         {cartCount}
@@ -143,23 +136,48 @@ const Navbar = React.forwardRef((props, ref) => {
                         {/* User Section */}
                         {currentUser ? (
                             <div className="flex items-center gap-4 border-l border-white/10 pl-6">
-                                <Link to="/dashboard" className="flex items-center gap-3 group">
-                                    <div className="text-right hidden sm:block">
-                                        <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em]">Operator</p>
-                                        <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{currentUser.name.toUpperCase()}</p>
+                                {currentUser.role === 'admin' ? (
+                                    <div className="relative group">
+                                        <button className="flex items-center gap-3 group">
+                                            <div className="text-right hidden sm:block">
+                                                <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{currentUser.name.toUpperCase()}</p>
+                                            </div>
+                                            <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
+                                                <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
+                                                {/* Animated Corner */}
+                                                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
+                                            </div>
+                                        </button>
+                                        
+                                        {/* Dropdown Menu */}
+                                        <div className="absolute top-full right-0 mt-2 w-48 glass border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                            <Link
+                                                to="/admin"
+                                                className="block px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-primary/20 hover:text-primary transition-all"
+                                            >
+                                                Admin Dashboard
+                                            </Link>
+                                            <button
+                                                onClick={() => { logout(); navigate('/'); }}
+                                                className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
+                                            >
+                                                Logout
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
-                                        <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
-                                        {/* Animated Corner */}
-                                        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
-                                    </div>
-                                </Link>
-                                <button
-                                    onClick={() => { logout(); navigate('/'); }}
-                                    className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-red-400 transition-all px-3 py-1 border border-transparent hover:border-red-400/30"
-                                >
-                                    De-Sync
-                                </button>
+                                ) : (
+                                    <Link to="/dashboard" className="flex items-center gap-3 group">
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em]">Client</p>
+                                            <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{currentUser.name.toUpperCase()}</p>
+                                        </div>
+                                        <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
+                                            <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
+                                            {/* Animated Corner */}
+                                            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
+                                        </div>
+                                    </Link>
+                                )}
                             </div>
                         ) : (
                             <Link to="/auth" className="relative group overflow-hidden">
@@ -173,7 +191,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                 {/* Content */}
                                 <div className="relative z-10 px-8 py-3 flex items-center gap-2">
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
-                                        Initiate
+                                        Login
                                     </span>
                                     <svg className="w-3 h-3 text-accent group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
