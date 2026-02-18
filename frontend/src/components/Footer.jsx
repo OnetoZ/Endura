@@ -31,8 +31,8 @@ const Footer = () => {
                 <div>
                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-primary">Dimensions</h4>
                     <ul className="space-y-4 text-xs font-bold uppercase tracking-widest text-gray-500">
-                        <li><Link to="/Collection" className="hover:text-primary transition-all">All Inventory</Link></li>
-                        <li><Link to="/Collection" className="hover:text-primary transition-all">Digital Skins</Link></li>
+                        <li><Link to="/collections" className="hover:text-primary transition-all">All Inventory</Link></li>
+                        <li><Link to="/collections" className="hover:text-primary transition-all">Digital Skins</Link></li>
                         <li><Link to="/vault" className="hover:text-primary transition-all">The Vault</Link></li>
                         <li><Link to="/auth" className="hover:text-primary transition-all">Operator Node</Link></li>
                     </ul>
