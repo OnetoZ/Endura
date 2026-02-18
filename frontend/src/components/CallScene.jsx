@@ -66,11 +66,6 @@ const CallScene = () => {
                 </div>
             </div>
 
-            {/* Subtle footer credit */}
-            <div className="absolute bottom-12 w-full px-12 flex justify-between items-center text-[8px] font-mono tracking-widest text-white/10 uppercase">
-                <span>©2024_ENDURA_ORDER</span>
-                <span>AUTHENTICATION_REQUIRED</span>
-            </div>
         </section>
     );
 };

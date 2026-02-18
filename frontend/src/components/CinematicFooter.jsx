@@ -124,28 +124,13 @@ const CinematicFooter = () => {
                     <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-all duration-700" />
                 </button>
 
-                {/* Divider */}
-                <div className="my-16 md:my-20 w-full max-w-xs h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                <p className="text-gray-400 text-lg md:text-2xl font-light italic leading-relaxed mt-16">
+                    "We don’t just make clothes; we design digital identities. In a world of fleeting physical trends, Endura provides timeless digital assets tied to every thread."
+                </p>
 
-                {/* Legal Minimal */}
-                <div className="text-white/20 font-mono text-[9px] md:text-[10px] tracking-widest uppercase">
-                    © 2026 ENDURA — All Rights Reserved
-                </div>
             </div>
 
-            {/* System Status (Bottom Right Corner) - Hidden on mobile */}
-            <div className="system-status hidden md:block absolute bottom-8 right-8 text-right font-mono text-[9px] text-white/10 tracking-[0.3em] uppercase leading-relaxed">
-                SESSION TERMINATED<br />
-                ARCHIVE SEALED<br />
-                IDENTITY SYNC COMPLETE
-            </div>
 
-            {/* System Status (Bottom Left Corner) - Hidden on mobile */}
-            <div className="system-status hidden md:block absolute bottom-8 left-8 font-mono text-[9px] text-white/10 tracking-[0.3em] uppercase leading-relaxed">
-                ENDURA_SYSTEM_v2.0<br />
-                CLEARANCE_LEVEL_PUBLIC<br />
-                CONNECTION_SECURE
-            </div>
         </footer>
     );
 };
