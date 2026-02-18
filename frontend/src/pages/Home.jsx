@@ -11,7 +11,6 @@ import VaultScene from '../components/VaultScene';
 import RoadmapScene from '../components/RoadmapScene';
 import DivideScene from '../components/DivideScene';
 import DoppelPieceScene from '../components/DoppelPieceScene';
-// import OrderScene from '../components/OrderScene';
 import CallScene from '../components/CallScene';
 import CultWorlds from '../components/CultWorlds';
 import CinematicFooter from '../components/CinematicFooter';
@@ -47,9 +46,6 @@ const Home = () => {
 
             {/* SCENE 8: THE DOPPEL PIECE (Product Philosophy) */}
             <DoppelPieceScene />
-
-            {/* SCENE 9: THE ORDER (Membership Mentality) */}
-            {/* <OrderScene /> */}
 
             {/* SCENE 10: THE CALL (Final CTA) */}
             <CallScene />

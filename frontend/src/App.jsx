@@ -18,14 +18,14 @@ import SmoothScroll from './components/SmoothScroll';
 // Component to handle conditional navbar
 const ConditionalNavbar = () => {
   const location = useLocation();
-  const showNavbar = location.pathname === '/home';
+  const showNavbar = ['/home', '/collections', '/cart', '/vault', '/shop', '/dashboard'].includes(location.pathname) || location.pathname.startsWith('/product/');
   return showNavbar ? <Navbar /> : null;
 };
 
 // Component to handle conditional footer
 const ConditionalFooter = () => {
   const location = useLocation();
-  const showFooter = location.pathname === '/home';
+  const showFooter = ['/home', '/collections', '/cart', '/vault', '/shop', '/dashboard'].includes(location.pathname) || location.pathname.startsWith('/product/');
   return showFooter ? <Footer /> : null;
 };
 
@@ -38,16 +38,16 @@ const App = () => {
   // Check if intro should be shown on app mount
   useEffect(() => {
     const animationCompleted = localStorage.getItem('endura_animation_completed');
-    
+
     console.log('Animation completed flag:', animationCompleted);
-    
+
     // Always show intro for now - remove this logic if you want to always show intro
     if (animationCompleted) {
       console.log('Animation completed before, but showing intro anyway');
     } else {
       console.log('First time, showing intro animation');
     }
-    
+
     setIsLoading(false);
   }, []);
 
@@ -66,19 +66,19 @@ const App = () => {
           <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
             <ConditionalNavbar />
             <main className="flex-grow pt-20">
-                <Routes>
-                  <Route path="/" element={<IntroAnimation />} />
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/collections" element={<Collections />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/vault" element={<Vault />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/dashboard" element={<UserDashboard />} />
-                  <Route path="/admin/*" element={<AdminDashboard />} />
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
+              <Routes>
+                <Route path="/" element={<IntroAnimation />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/collections" element={<Collections />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/vault" element={<Vault />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/dashboard" element={<UserDashboard />} />
+                <Route path="/admin/*" element={<AdminDashboard />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
             </main>
             <ConditionalFooter />
           </div>
