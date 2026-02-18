@@ -51,8 +51,6 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] font-black tracking-widest text-gray-600 uppercase">
                 <p>© 2026 ENDURA_NETWORK_PROTOCOL // ALL_DATA_SECURED</p>
                 <div className="flex space-x-8 mt-6 md:mt-0 font-bold">
-                    <span className="text-primary/50">LOCATION: ENCRYPTED</span>
-                    <span className="text-primary/50">OPERATOR: {new Date().getFullYear()}</span>
                 </div>
             </div>
         </footer>
