@@ -1,8 +1,6 @@
 import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
 
 import SystemBootHero from '../components/SystemBootHero';
 import PhilosophyScene from '../components/PhilosophyScene';

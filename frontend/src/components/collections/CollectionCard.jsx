@@ -1,6 +1,6 @@
 
-import React, { useRef, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 const CollectionCard = ({ item, type, onRemove, onUpdateQuantity }) => {
     const cardRef = useRef(null);

@@ -9,7 +9,6 @@ const DivideScene = () => {
     const containerRef = useRef();
     const leftSideRef = useRef();
     const rightSideRef = useRef();
-    const centerTextRef = useRef();
     const symbolRef = useRef();
 
     useGSAP(() => {

@@ -10,7 +10,6 @@ const Collections = () => {
         // Check if intro has already been played in this session
         return !sessionStorage.getItem('collections_intro_played');
     });
-    const [scrolled, setScrolled] = useState(false);
 
     const handleIntroComplete = () => {
         setShowIntro(false);
@@ -22,14 +21,6 @@ const Collections = () => {
         p.type === 'physical' &&
         ['T-Shirt', 'Hoodie', 'Vest', 'Pants', 'Shorts'].includes(p.subcategory)
     );
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     // Stagger container variants
     const containerVariants = {
