@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import gsap from 'gsap';
 
 const GoldParticles = () => {
     const canvasRef = useRef(null);

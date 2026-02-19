@@ -41,7 +41,6 @@ const Auth = () => {
             if (formData.phone.length >= 10) {
                 setStep(3);
                 // Simulate sending OTP
-                console.log('OTP Sent to', formData.phone);
             } else {
                 setError('PROTOCOL_ERROR: Invalid Phone Sequence');
             }

@@ -1,8 +1,6 @@
 import React from 'react';
-import { Float } from '@react-three/drei';
-import * as THREE from 'three';
 
-const VaultRoom = ({ simplified = false }) => {
+const VaultRoom = () => {
     return (
         <group>
             {/* Minimal Floor with subtle glow ring */}

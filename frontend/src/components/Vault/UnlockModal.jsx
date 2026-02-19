@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, Unlock, ShieldAlert, Terminal, Cpu, Zap, Activity, Database } from 'lucide-react';
+import { X, Unlock, Terminal, Cpu, Zap, Activity, Database } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const UnlockModal = ({ isOpen, onClose, item, onUnlockConfirm }) => {

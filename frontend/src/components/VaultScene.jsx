@@ -8,7 +8,6 @@ import { useGSAP } from '@gsap/react';
 gsap.registerPlugin(ScrollTrigger);
 
 const VaultScene = () => {
-    const { currentUser } = useStore();
     const sectionRef = useRef();
     const bgRef = useRef();
     const doorLeftRef = useRef();

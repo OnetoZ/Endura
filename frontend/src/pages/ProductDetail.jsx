@@ -1,20 +1,51 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { products, addToCart } = useStore();
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('Specs');
+    const collectedItem = location.state?.item;
 
     useEffect(() => {
         const found = products.find(p => p.id === id);
         if (found) setProduct(found);
     }, [id, products]);
+
+    if (!product && collectedItem) return (
+        <div className="min-h-screen bg-black pt-32 pb-20 px-6 text-white">
+            <div className="container mx-auto max-w-5xl">
+                <Link to="/collected" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Collected
+                </Link>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-accent/10 blur-[120px]" />
+                        <div className="aspect-[4/5] bg-[#0a0a0a] border border-white/10 flex items-center justify-center relative overflow-hidden">
+                            <div className="w-[70%] h-[70%] border border-white/10 bg-gradient-to-br from-black via-[#101010] to-black" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="text-[10px] font-mono tracking-[0.5em] uppercase text-white/30">Product View</div>
+                        <div className="text-5xl md:text-6xl font-heading font-black tracking-widest uppercase">{collectedItem.name}</div>
+                        <div className="text-[11px] font-mono tracking-widest uppercase text-white/40">Tier: {collectedItem.tier}</div>
+                        <div className="text-[11px] font-mono tracking-widest uppercase text-white/40">Unlock Date: {collectedItem.unlockedAt || '---'}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 
     if (!product) return (
         <div className="h-screen flex items-center justify-center">

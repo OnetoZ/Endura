@@ -1,6 +1,6 @@
 
 import * as THREE from 'three'
-import React, { useRef, useState, useMemo, Suspense } from 'react'
+import React, { useRef, useState, Suspense } from 'react'
 import { Canvas, useFrame, extend } from '@react-three/fiber'
 import { Image, Environment, ScrollControls, useScroll, useTexture } from '@react-three/drei'
 import { easing } from 'maath'

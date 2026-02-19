@@ -19,7 +19,6 @@ const getFramePath = (index) => {
 const IntroAnimation = () => {
     const containerRef = useRef(null);
     const frameRef = useRef(null);
-    const navigate = useNavigate();
     const [currentFrame, setCurrentFrame] = useState(0);
     const [imagesLoaded, setImagesLoaded] = useState(false);
     const [loadingProgress, setLoadingProgress] = useState(0);
@@ -83,11 +82,9 @@ const IntroAnimation = () => {
                 );
                 
                 setCurrentFrame(frameIndex);
-                console.log(`Frame: ${frameIndex}, Progress: ${progress.toFixed(3)}`);
                 
                 // Navigate to home when reaching the last frame
                 if (frameIndex === TOTAL_FRAMES - 1 && progress >= 0.99) {
-                    console.log('Last frame reached, showing black screen then navigating to home');
                     localStorage.setItem('endura_animation_completed', 'true');
                     
                     // Show black screen
@@ -100,7 +97,6 @@ const IntroAnimation = () => {
                 }
             },
             onLeave: () => {
-                console.log('Animation completed, navigating to home');
                 localStorage.setItem('endura_animation_completed', 'true');
                 // Force navigation to home
                 window.location.href = '/home';

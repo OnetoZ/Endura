@@ -11,6 +11,7 @@ import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
 import Vault from './pages/Vault';
+import CollectedPage from './pages/CollectedPage';
 import Footer from './components/Footer';
 import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
@@ -22,6 +23,13 @@ const ConditionalNavbar = () => {
   return showNavbar ? <Navbar /> : null;
 };
 
+// Main content wrapper — only adds navbar offset on pages that show the navbar
+const MainContent = ({ children }) => {
+  const location = useLocation();
+  const topPad = location.pathname === '/home' ? 'pt-20' : 'pt-0';
+  return <main className={`flex-grow ${topPad}`}>{children}</main>;
+};
+
 // Component to handle conditional footer
 const ConditionalFooter = () => {
   const location = useLocation();
@@ -30,22 +38,17 @@ const ConditionalFooter = () => {
 };
 
 const App = () => {
-  const [showIntro, setShowIntro] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-
-  console.log('App component initializing...');
 
   // Check if intro should be shown on app mount
   useEffect(() => {
     const animationCompleted = localStorage.getItem('endura_animation_completed');
 
-    console.log('Animation completed flag:', animationCompleted);
-
     // Always show intro for now - remove this logic if you want to always show intro
     if (animationCompleted) {
-      console.log('Animation completed before, but showing intro anyway');
+      // Animation completed before, but showing intro anyway
     } else {
-      console.log('First time, showing intro animation');
+      // First time, showing intro animation
     }
 
     setIsLoading(false);
@@ -65,7 +68,7 @@ const App = () => {
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
             <ConditionalNavbar />
-            <main className="flex-grow pt-20">
+            <MainContent>
               <Routes>
                 <Route path="/" element={<IntroAnimation />} />
                 <Route path="/home" element={<Home />} />
@@ -73,13 +76,14 @@ const App = () => {
                 <Route path="/collections" element={<Collections />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/vault" element={<Vault />} />
+                <Route path="/collected" element={<CollectedPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/dashboard" element={<UserDashboard />} />
                 <Route path="/admin/*" element={<AdminDashboard />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
-            </main>
+            </MainContent>
             <ConditionalFooter />
           </div>
         </Router>

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, TrendingUp, Sparkles } from 'lucide-react';
 import TierBadge from './TierBadge';
