@@ -40,7 +40,7 @@ const OrderHistory = ({ orders }) => {
 
             <div className="space-y-6">
                 {orders.length > 0 ? (
-                    orders.map((order, idx) => (
+                    orders.map((order) => (
                         <div key={order.id} className="order-card-anim">
                             <OrderCard order={order} />
                         </div>

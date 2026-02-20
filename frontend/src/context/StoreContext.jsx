@@ -1,4 +1,5 @@
 
+// StoreContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const StoreContext = createContext(undefined);
@@ -86,7 +87,7 @@ export const AppProvider = ({ children }) => {
         { id: 'v3', name: 'Quantum Blade', locked: false, image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=800', code: 'QUANTUM42' },
         { id: 'v4', name: 'Plasma Shield', locked: false, image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800', code: 'SHIELD77' }
     ]);
-    const [users, setUsers] = useState([
+    const [users] = useState([
         { id: 'user_001', name: 'Alex Chen', email: 'alex.chen@endura.com', role: 'user' },
         { id: 'user_002', name: 'Sarah Williams', email: 'sarah.w@endura.com', role: 'user' },
         { id: 'user_003', name: 'Marcus Johnson', email: 'marcus.j@endura.com', role: 'user' },
@@ -227,3 +228,4 @@ export const useStore = () => {
     if (!context) throw new Error('useStore must be used within AppProvider');
     return context;
 };
+

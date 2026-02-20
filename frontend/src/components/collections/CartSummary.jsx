@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const CountUp = ({ value }) => {
     const [displayValue, setDisplayValue] = useState(0);
@@ -25,6 +25,7 @@ const CountUp = ({ value }) => {
         };
 
         requestAnimationFrame(animate);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     return <span>{displayValue.toLocaleString()}</span>;

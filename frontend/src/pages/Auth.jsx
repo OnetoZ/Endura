@@ -41,7 +41,6 @@ const Auth = () => {
             if (formData.phone.length >= 10) {
                 setStep(3);
                 // Simulate sending OTP
-                console.log('OTP Sent to', formData.phone);
             } else {
                 setError('PROTOCOL_ERROR: Invalid Phone Sequence');
             }
@@ -55,7 +54,7 @@ const Auth = () => {
         }
     };
 
-    const SocialButton = ({ icon, label, provider }) => (
+    const SocialButton = ({ label, provider }) => (
         <button
             type="button"
             className="w-full py-4 border border-white/10 glass flex items-center justify-center gap-4 hover:bg-white/5 transition-all mb-4 group"

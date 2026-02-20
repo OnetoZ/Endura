@@ -80,7 +80,7 @@ const AtmosphericVoid = () => {
     );
 };
 
-const Scene = ({ state }) => {
+const Scene = () => {
     return (
         <div className="w-full h-full bg-black">
             <Canvas

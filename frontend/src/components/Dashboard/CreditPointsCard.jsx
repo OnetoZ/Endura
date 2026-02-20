@@ -1,13 +1,11 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, TrendingUp, Sparkles } from 'lucide-react';
 import TierBadge from './TierBadge';
 import gsap from 'gsap';
 
 const CreditPointsCard = ({ credits = 0, rank = 'Initiate' }) => {
-    const cardRef = useRef(null);
-    const countRef = useRef(null);
     const [displayCredits, setDisplayCredits] = useState(0);
 
     useEffect(() => {

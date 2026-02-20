@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Key, X, CheckCircle2, AlertTriangle, Zap, Fingerprint } from 'lucide-react';
+import { X, CheckCircle2, Zap, Fingerprint } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const UnlockPanel = ({ item, onUnlock, onClose }) => {
     const [code, setCode] = useState('');
@@ -16,6 +17,9 @@ const UnlockPanel = ({ item, onUnlock, onClose }) => {
                 setTimeout(() => onUnlock(item.id), 1200);
             } else {
                 setStatus('error');
+                toast.error('INVALID CODE', {
+                    style: { background: '#000', color: '#f87171', border: '1px solid #ef4444', fontFamily: 'Orbitron' }
+                });
                 setTimeout(() => setStatus('idle'), 2000);
             }
         }, 1500);
@@ -43,11 +47,15 @@ const UnlockPanel = ({ item, onUnlock, onClose }) => {
             <div className="flex flex-col md:flex-row gap-12 items-center">
                 {/* Visual Archive Preview */}
                 <div className="w-56 aspect-[3/4] rounded-2xl overflow-hidden border border-white/5 relative bg-white/5">
-                    <img
-                        src={item.image}
-                        alt={item.name}
-                        className={`w-full h-full object-cover transition-all duration-1000 ${status === 'success' ? 'grayscale-0' : 'grayscale brightness-50'}`}
-                    />
+                    {item.image ? (
+                        <img
+                            src={item.image}
+                            alt={item.name}
+                            className={`w-full h-full object-cover transition-all duration-1000 ${status === 'success' ? 'grayscale-0' : 'grayscale brightness-50'}`}
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-black via-[#0a0a0a] to-black" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
                     {/* Status Glow & Gold Pulse */}

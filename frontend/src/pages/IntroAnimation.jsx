@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -19,7 +18,6 @@ const getFramePath = (index) => {
 const IntroAnimation = () => {
     const containerRef = useRef(null);
     const frameRef = useRef(null);
-    const navigate = useNavigate();
     const [currentFrame, setCurrentFrame] = useState(0);
     const [imagesLoaded, setImagesLoaded] = useState(false);
     const [loadingProgress, setLoadingProgress] = useState(0);
@@ -31,11 +29,11 @@ const IntroAnimation = () => {
     useEffect(() => {
         const preloadImages = async () => {
             const imagePromises = [];
-            
+
             for (let i = 0; i < TOTAL_FRAMES; i++) {
                 const img = new Image();
                 img.src = getFramePath(i);
-                
+
                 const promise = new Promise((resolve) => {
                     img.onload = () => {
                         setLoadingProgress((prev) => Math.min(prev + (100 / TOTAL_FRAMES), 100));
@@ -43,10 +41,10 @@ const IntroAnimation = () => {
                     };
                     img.onerror = () => resolve(); // Continue even if some images fail
                 });
-                
+
                 imagePromises.push(promise);
             }
-            
+
             try {
                 await Promise.all(imagePromises);
                 console.log('All intro frames loaded successfully');
@@ -66,7 +64,7 @@ const IntroAnimation = () => {
 
         // Create a tall scrollable container
         const scrollHeight = window.innerHeight * 3; // 3 screen heights for smooth scrolling
-        
+
         // Set up ScrollTrigger for frame-by-frame animation
         ScrollTrigger.create({
             trigger: containerRef.current,
@@ -81,18 +79,16 @@ const IntroAnimation = () => {
                     Math.floor(progress * TOTAL_FRAMES),
                     TOTAL_FRAMES - 1
                 );
-                
+
                 setCurrentFrame(frameIndex);
-                console.log(`Frame: ${frameIndex}, Progress: ${progress.toFixed(3)}`);
-                
+
                 // Navigate to home when reaching the last frame
                 if (frameIndex === TOTAL_FRAMES - 1 && progress >= 0.99) {
-                    console.log('Last frame reached, showing black screen then navigating to home');
                     localStorage.setItem('endura_animation_completed', 'true');
-                    
+
                     // Show black screen
                     setShowBlackScreen(true);
-                    
+
                     // Navigate to home after 1 second of black screen
                     setTimeout(() => {
                         window.location.href = '/home';
@@ -100,7 +96,6 @@ const IntroAnimation = () => {
                 }
             },
             onLeave: () => {
-                console.log('Animation completed, navigating to home');
                 localStorage.setItem('endura_animation_completed', 'true');
                 // Force navigation to home
                 window.location.href = '/home';
@@ -118,7 +113,7 @@ const IntroAnimation = () => {
                 <div className="text-center">
                     <div className="text-white text-2xl mb-4">Loading Animation...</div>
                     <div className="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
-                        <div 
+                        <div
                             className="h-full bg-white transition-all duration-300"
                             style={{ width: `${loadingProgress}%` }}
                         />
@@ -137,7 +132,7 @@ const IntroAnimation = () => {
                     <div className="text-white text-xl animate-pulse">Loading...</div>
                 </div>
             )}
-            
+
             {/* Fixed frame display */}
             <div className="fixed inset-0 z-10 flex items-center justify-center">
                 <img
@@ -147,7 +142,7 @@ const IntroAnimation = () => {
                     className="w-full h-full object-cover"
                     style={{ maxHeight: '100vh' }}
                 />
-                
+
                 {/* Scroll indicator */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-center">
                     <div className="animate-bounce">

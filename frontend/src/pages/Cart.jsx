@@ -5,8 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 import { gsap } from 'gsap';
 
-// New Components
-import CollectionHero from '../components/collections/CollectionHero';
+// Components
 import CollectionCard from '../components/collections/CollectionCard';
 import CartSummary from '../components/collections/CartSummary';
 import '../components/collections/collections.css';
@@ -40,16 +39,6 @@ const Cart = () => {
             item.isDigital;
         return !isDigital;
     });
-
-    // Carousel Images (for Hero)
-    const heroImages = [
-        '/cart page/cartimg1.png',
-        '/cart page/cartimg2.png',
-        '/cart page/cartimg3.png',
-        '/cart page/cartimg4.png',
-        '/cart page/img1.png',
-        '/cart page/img2.png'
-    ];
 
     const handleCheckout = () => {
         if (!currentUser) {
@@ -145,12 +134,8 @@ const Cart = () => {
                 <div className="absolute inset-0 film-grain opacity-10" />
             </div>
 
-            {/* Cinematic Intro */}
-            <CollectionHero images={heroImages} />
-
-            {/* Main Chamber - High Z-Index ensuring items are always clickable */}
+            {/* Main Chamber - Two Column Layout */}
             <div className="relative z-20 container mx-auto max-w-7xl px-6 pt-32 pb-40">
-
                 {/* Status Bar */}
                 <div className="flex flex-col md:flex-row items-center justify-between mb-12 px-2 gap-6 relative z-10">
                     <div className="flex items-center gap-6">
@@ -176,42 +161,52 @@ const Cart = () => {
                     </button>
                 </div>
 
-                {/* Scrolled Items List */}
-                <div
-                    ref={gridRef}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
-                    style={{ perspective: "2000px" }}
-                >
-                    <AnimatePresence mode='popLayout'>
-                        {filteredItems.map(item => (
-                            <CollectionCard
-                                key={item.id}
-                                item={item}
-                                type="physical"
-                                onRemove={removeFromCart}
-                                onUpdateQuantity={(id, delta) => updateCartQuantity(id, delta)}
-                            />
-                        ))}
-                    </AnimatePresence>
-                </div>
+                {/* Two Column Layout */}
+                <div className="cart-container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                    {/* Left Column - Cart Items */}
+                    <div className="cart-items">
+                        <div
+                            ref={gridRef}
+                            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                            style={{ 
+                                perspective: "2000px",
+                                maxHeight: "calc(100vh - 120px)",
+                                overflowY: "auto"
+                            }}
+                        >
+                            <AnimatePresence mode='popLayout'>
+                                {filteredItems.map(item => (
+                                    <CollectionCard
+                                        key={item.id}
+                                        item={item}
+                                        type="physical"
+                                        onRemove={removeFromCart}
+                                        onUpdateQuantity={(id, delta) => updateCartQuantity(id, delta)}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </div>
+                    </div>
 
-                {/* Static Summary Section - Positioned at end of content */}
-                <div className="mt-32 pt-20 border-t border-white/5 flex justify-center">
-                    <AnimatePresence>
-                        {step === 1 && (
-                            <CartSummary
-                                subtotal={subtotal}
-                                total={finalTotal}
-                                credits={availableCredits}
-                                useCredits={useCredits}
-                                onToggleCredits={() => setUseCredits(!useCredits)}
-                                onCheckout={handleCheckout}
-                                isCheckingOut={isCheckingOut}
-                            />
-                        )}
-                    </AnimatePresence>
+                    {/* Right Column - Summary Grid */}
+                    <div className="cart-summary">
+                        <AnimatePresence>
+                            {step === 1 && (
+                                <div className="sticky top-24">
+                                    <CartSummary
+                                        subtotal={subtotal}
+                                        total={finalTotal}
+                                        credits={availableCredits}
+                                        useCredits={useCredits}
+                                        onToggleCredits={() => setUseCredits(!useCredits)}
+                                        onCheckout={handleCheckout}
+                                        isCheckingOut={isCheckingOut}
+                                    />
+                                </div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
-            </div>
 
             {/* Payment Modal */}
             <AnimatePresence>
@@ -280,6 +275,7 @@ const Cart = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            </div>
         </div>
     );
 };

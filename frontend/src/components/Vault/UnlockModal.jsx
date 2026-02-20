@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, Unlock, ShieldAlert, Terminal, Cpu, Zap, Activity, Database } from 'lucide-react';
+import { X, Unlock, Terminal, Cpu, Zap, Activity, Database } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const UnlockModal = ({ isOpen, onClose, item, onUnlockConfirm }) => {
@@ -8,7 +8,6 @@ const UnlockModal = ({ isOpen, onClose, item, onUnlockConfirm }) => {
     const [error, setError] = useState(false);
     const [isUnlocking, setIsUnlocking] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [bootStage, setBootStage] = useState(0);
     const [terminalLines, setTerminalLines] = useState([]);
 
     // System Boot Sequence Effect
@@ -21,15 +20,13 @@ const UnlockModal = ({ isOpen, onClose, item, onUnlockConfirm }) => {
                 { line: "> CONNECTION ESTABLISHED.", delay: 1000 }
             ];
 
-            stages.forEach((s, i) => {
+            stages.forEach((s) => {
                 setTimeout(() => {
                     setTerminalLines(prev => [...prev, s.line]);
-                    setBootStage(i + 1);
                 }, s.delay);
             });
         } else {
             setTerminalLines([]);
-            setBootStage(0);
             setCode('');
             setError(false);
             setSuccess(false);
