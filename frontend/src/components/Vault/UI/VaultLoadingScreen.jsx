@@ -1,8 +1,5 @@
-import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-
-// Lazy-load the heavy Three.js diamond so it doesn't block the initial render
-const DiamondEntry = lazy(() => import('./DiamondEntry'));
 
 // ─── Floating Particle ──────────────────────────────────────────────────────
 const Particle = ({ style }) => (
@@ -54,12 +51,12 @@ const RingLoader = ({ onComplete }) => {
             0.6
         );
 
-        // After ~5.5s, fade out and call onComplete
+        // After ~7.0s, fade out and call onComplete (Requirement: 5-10s)
         tl.to(screenRef.current, {
             opacity: 0,
             duration: 0.8,
             ease: 'power2.inOut',
-            delay: 5.0,
+            delay: 7.0,
             onComplete: () => onComplete && onComplete(),
         });
 
@@ -105,40 +102,17 @@ const RingLoader = ({ onComplete }) => {
             </div>
 
             <div ref={textRef} className="vault-loading-text" style={{ opacity: 0 }}>
-                <div className="vault-loading-label">ACCESSING VAULT{dots}</div>
+                <div className="vault-loading-label">ENTERING VAULT{dots}</div>
                 <div className="vault-loading-sublabel">SYNCING ARCHIVE</div>
             </div>
         </div>
     );
 };
 
-// ─── Stage 2: Diamond Entry wrapper ─────────────────────────────────────────
-const DiamondStage = ({ onComplete }) => (
-    <div className="vault-diamond-stage">
-        <Suspense fallback={
-            <div className="vault-diamond-fallback">
-                <div className="vault-diamond-fallback-icon">◆</div>
-            </div>
-        }>
-            <DiamondEntry onComplete={onComplete} />
-        </Suspense>
-    </div>
-);
-
-// ─── Orchestrator: Ring → Diamond → Vault ────────────────────────────────────
+// ─── Orchestrator: Transition directly to Vault after loading ────────────────
 const VaultLoadingScreen = ({ onComplete }) => {
-    // stage: 'ring' | 'diamond'
-    const [stage, setStage] = useState('ring');
-
     return (
-        <>
-            {stage === 'ring' && (
-                <RingLoader onComplete={() => setStage('diamond')} />
-            )}
-            {stage === 'diamond' && (
-                <DiamondStage onComplete={onComplete} />
-            )}
-        </>
+        <RingLoader onComplete={onComplete} />
     );
 };
 

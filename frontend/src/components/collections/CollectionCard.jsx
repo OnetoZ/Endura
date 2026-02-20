@@ -1,8 +1,8 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 
-const CollectionCard = ({ item, type, onRemove, onUpdateQuantity }) => {
+const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, ref) => {
     const cardRef = useRef(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isHovered, setIsHovered] = useState(false);
@@ -283,6 +283,8 @@ const CollectionCard = ({ item, type, onRemove, onUpdateQuantity }) => {
             </motion.div>
         </motion.div>
     );
-};
+});
+
+CollectionCard.displayName = 'CollectionCard';
 
 export default CollectionCard;

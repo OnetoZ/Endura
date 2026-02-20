@@ -6,8 +6,6 @@ import TierBadge from './TierBadge';
 import gsap from 'gsap';
 
 const CreditPointsCard = ({ credits = 0, rank = 'Initiate' }) => {
-    const cardRef = useRef(null);
-    const countRef = useRef(null);
     const [displayCredits, setDisplayCredits] = useState(0);
 
     useEffect(() => {

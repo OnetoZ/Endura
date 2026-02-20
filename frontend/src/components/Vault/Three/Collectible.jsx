@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
 import './GlowMaterial';
 
-const Collectible = ({ item, position, onClick, isSelected, minimal = false }) => {
+const Collectible = ({ item, position, onClick, isSelected }) => {
     const meshRef = useRef();
     const materialRef = useRef();
     const [hovered, setHovered] = useState(false);

@@ -1,4 +1,5 @@
 
+// StoreContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const StoreContext = createContext(undefined);
@@ -227,3 +228,4 @@ export const useStore = () => {
     if (!context) throw new Error('useStore must be used within AppProvider');
     return context;
 };
+

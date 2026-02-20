@@ -6,24 +6,54 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import UnlockPanel from '../components/Vault/UI/UnlockPanel';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
+import CollectionHero from '../components/collections/CollectionHero';
 
 // ─── Vault Items: 12 cards, mixed tiers across 3 rows (5-4-3) ───────────────
 const buildItems = () => ([
-    { id: 'b01', name: 'Bronze Skin 01', tier: 'Bronze', locked: true },
-    { id: 'b02', name: 'Bronze Skin 02', tier: 'Bronze', locked: true },
-    { id: 'g01', name: 'Gold Skin 01', tier: 'Gold', locked: true },
-    { id: 'b03', name: 'Bronze Skin 03', tier: 'Bronze', locked: true },
-    { id: 'd01', name: 'Diamond Skin 01', tier: 'Diamond', locked: true },
+    // — Row 1 —
+    { id: 1, name: 'Shadow Cargo', tier: 'Bronze', status: 'locked', unlockCode: 'ENDURA-9021', image: 'https://images.unsplash.com/photo-1517441551224-cca4246835be' },
+    { id: 2, name: 'Aureum Bomber', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772' },
+    { id: 3, name: 'Lunar Walkers', tier: 'Diamond', status: 'locked', unlockCode: 'LUNA-7777', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff' },
+    { id: 4, name: 'Vesper Shirt', tier: 'Bronze', status: 'locked', unlockCode: 'OBS-1108', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab' },
+    { id: 5, name: 'Royal Tunic', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b' },
     // — Row 2 —
-    { id: 'b04', name: 'Bronze Skin 04', tier: 'Bronze', locked: true },
-    { id: 'g02', name: 'Gold Skin 02', tier: 'Gold', locked: true },
-    { id: 'b05', name: 'Bronze Skin 05', tier: 'Bronze', locked: true },
-    { id: 'd02', name: 'Diamond Skin 02', tier: 'Diamond', locked: true },
+    { id: 6, name: 'Starforged Cape', tier: 'Diamond', status: 'locked', unlockCode: 'ENDURA-9021', image: 'https://images.unsplash.com/photo-1605733513597-a8f8d410fe3c' },
+    { id: 7, name: 'Obsidian Jacket', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5' },
+    { id: 8, name: 'Phantom Hoodie', tier: 'Bronze', status: 'locked', unlockCode: 'LUNA-7777', image: 'https://images.unsplash.com/photo-1556314844-31952086e108' },
+    { id: 9, name: 'Diamond Flux Coat', tier: 'Diamond', status: 'locked', unlockCode: 'OBS-1108', image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea' },
     // — Row 3 —
-    { id: 'b06', name: 'Bronze Skin 06', tier: 'Bronze', locked: true },
-    { id: 'g03', name: 'Gold Skin 03', tier: 'Gold', locked: true },
-    { id: 'd03', name: 'Diamond Skin 03', tier: 'Diamond', locked: true },
+    { id: 10, name: 'Noir Tactical Vest', tier: 'Bronze', status: 'locked', unlockCode: 'DIAMOND-9999', image: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17' },
+    { id: 11, name: 'Solar Edge Jacket', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3' },
+    { id: 12, name: 'Apex Crystal Coat', tier: 'Diamond', status: 'locked', unlockCode: 'DIAMOND-9999', image: 'https://images.unsplash.com/photo-1520975954732-35dd22299614' },
 ]);
+
+// ─── LocalStorage Functions ─────────────────────────────────────────────────────
+const getUnlockedItems = () => {
+    const stored = localStorage.getItem('enduraUnlocked');
+    return stored ? JSON.parse(stored) : [];
+};
+
+const saveUnlockedItem = (itemId) => {
+    const unlocked = getUnlockedItems();
+    if (!unlocked.includes(itemId)) {
+        unlocked.push(itemId);
+        localStorage.setItem('enduraUnlocked', JSON.stringify(unlocked));
+    }
+};
+
+const isAuthenticated = () => {
+    return localStorage.getItem('enduraUser') === 'authenticated';
+};
+
+// ─── Hero Images for Collection Animation ───────────────────────────────────
+const vaultHeroImages = [
+    '/cart page/cartimg1.png',
+    '/cart page/cartimg2.png',
+    '/cart page/cartimg3.png',
+    '/cart page/cartimg4.png',
+    '/cart page/img1.png',
+    '/cart page/img2.png'
+];
 
 // ─── Grid Builder: exactly 3 rows — 5 | 4 | 3 ──────────────────────────────
 const buildPyramidRows = (items) => {
@@ -84,14 +114,12 @@ const GridCard = ({
     onUnlockClick,
     entranceDelay,
     vaultReady,
-    justUnlocked,
 }) => {
     const cardRef = useRef(null);
-    const flipRef = useRef(null);
     const glowRef = useRef(null);
-    const shakeRef = useRef(null);
     const floatTl = useRef(null);
     const accent = tierAccent(item.tier);
+    const isLocked = item.status === 'locked';
 
     // ── Entrance animation (staggered) ──────────────────────────────────────
     useEffect(() => {
@@ -125,7 +153,7 @@ const GridCard = ({
 
         // Glow pulse loop
         gsap.to(glowRef.current, {
-            opacity: item.locked ? 0.08 : 0.2,
+            opacity: isLocked ? 0.08 : 0.2,
             duration: dur * 0.9,
             delay,
             ease: 'sine.inOut',
@@ -134,36 +162,7 @@ const GridCard = ({
         });
 
         return () => floatTl.current?.kill();
-    }, [vaultReady, entranceDelay, item.locked]);
-
-    // ── Unlock flip animation ────────────────────────────────────────────────
-    useEffect(() => {
-        if (!item.locked && flipRef.current) {
-            // Kill float during flip
-            floatTl.current?.kill();
-            gsap.to(cardRef.current, { y: 0, scale: 1, duration: 0.2 });
-
-            // Gold glow burst
-            gsap.fromTo(
-                glowRef.current,
-                { opacity: 0, scale: 1 },
-                {
-                    opacity: 0.9, scale: 1.15, duration: 0.35, ease: 'power2.out',
-                    onComplete: () => {
-                        gsap.to(glowRef.current, { opacity: 0.25, scale: 1, duration: 0.5, ease: 'power2.in' });
-                    }
-                }
-            );
-
-            // 3D flip
-            gsap.to(flipRef.current, {
-                rotateY: 180,
-                duration: 0.75,
-                delay: 0.25,
-                ease: 'power3.inOut',
-            });
-        }
-    }, [item.locked]);
+    }, [vaultReady, entranceDelay, isLocked]);
 
     // ── Hover: focus zoom ────────────────────────────────────────────────────
     const handleEnter = useCallback(() => {
@@ -177,8 +176,8 @@ const GridCard = ({
         onLeave();
         floatTl.current?.resume();
         gsap.to(cardRef.current, { y: 0, scale: 1, duration: 0.35, ease: 'power2.out' });
-        gsap.to(glowRef.current, { opacity: item.locked ? 0.04 : 0.15, duration: 0.35, ease: 'power2.out' });
-    }, [item.locked, onLeave]);
+        gsap.to(glowRef.current, { opacity: isLocked ? 0.04 : 0.15, duration: 0.35, ease: 'power2.out' });
+    }, [isLocked, onLeave]);
 
     // ── Error shake ──────────────────────────────────────────────────────────
     const triggerShake = useCallback(() => {
@@ -195,14 +194,9 @@ const GridCard = ({
         });
     }, []);
 
-    // Expose shake via ref so parent can call it
-    useEffect(() => {
-        if (shakeRef) shakeRef.current = triggerShake;
-    }, [triggerShake]);
-
     return (
         <div
-            className={`relative w-full aspect-[4/5] bg-black border border-white/10 transition-opacity duration-300 ${dimmed ? 'opacity-40' : 'opacity-100'}`}
+            className={`relative w-[280px] h-[380px] bg-black border border-white/10 transition-all duration-300 overflow-hidden ${dimmed ? 'opacity-40' : 'opacity-100'} ${hovered ? 'border-accent/60 shadow-[0_0_30px_rgba(212,175,55,0.3)]' : ''}`}
             style={{ perspective: '1200px' }}
         >
             <div
@@ -212,71 +206,63 @@ const GridCard = ({
                 className="absolute inset-0"
                 style={{ opacity: 0 }}
             >
-                {/* Tier glow */}
+                {/* Tier glow - contained within card */}
                 <div
                     ref={glowRef}
                     className="absolute inset-0 opacity-0 pointer-events-none"
-                    style={{ background: accent, filter: 'blur(32px)', borderRadius: '2px' }}
+                    style={{ background: accent, filter: 'blur(32px)' }}
                 />
 
-                {/* Flip container */}
-                <div
-                    ref={flipRef}
-                    className="absolute inset-0 transform-gpu"
-                    style={{ transformStyle: 'preserve-3d' }}
-                >
-                    {/* ── Front face ── */}
-                    <div
-                        className="absolute inset-0 bg-[#0a0a0a] border border-white/10"
-                        style={{ backfaceVisibility: 'hidden' }}
-                    >
-                        <div className="h-[38%] bg-gradient-to-br from-[#1a1a1a] via-black to-[#0a0a0a] border-b border-white/5" />
-                        <div className="h-[42%] flex items-center justify-center">
-                            <div className="w-[70%] h-[70%] border border-white/10 bg-gradient-to-br from-black via-[#101010] to-black" />
+                {/* Card content */}
+                <div className="absolute inset-0 bg-black">
+                    {/* Product Image */}
+                    <div className="absolute inset-0 z-0 overflow-hidden">
+                        <img
+                            src={item.image + '?auto=format&fit=crop&q=80&w=800'}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                            style={{
+                                filter: isLocked ? 'blur(8px)' : 'none',
+                                opacity: isLocked ? 0.6 : 1,
+                                transform: isLocked ? 'scale(1.05)' : 'scale(1)'
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    </div>
+
+                    {/* Content Overlay */}
+                    <div className="relative z-10 h-full flex flex-col">
+                        {/* Top area - empty for image visibility */}
+                        <div className="h-[40%]" />
+                        
+                        {/* Center - Lock icon/button or Unlocked badge */}
+                        <div className="h-[30%] flex flex-col items-center justify-center gap-4">
+                            {isLocked ? (
+                                <>
+                                    <Lock className="w-8 h-8 text-white/40" />
+                                    <button
+                                        onClick={() => onUnlockClick(item)}
+                                        className="px-6 py-2 border border-white/20 text-[10px] font-mono tracking-widest uppercase text-white/60 hover:text-white hover:border-white/50 transition-colors"
+                                    >
+                                        TAP TO UNLOCK
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="text-center">
+                                    <div className="text-lg font-heading font-black tracking-widest text-white mb-2">UNLOCKED</div>
+                                    <div className="text-[9px] font-mono text-white/60 tracking-widest uppercase">{item.tier} TIER</div>
+                                </div>
+                            )}
                         </div>
-                        <div className="h-[20%] px-4 py-3 flex items-center justify-between border-t border-white/5">
+                        
+                        {/* Bottom - Item name and tier */}
+                        <div className="h-[30%] px-4 py-3 flex items-center justify-between border-t border-white/10">
                             <div className={`text-[11px] font-heading font-black tracking-widest uppercase transition-colors duration-200 ${hovered ? 'text-white' : 'text-white/40'}`}>
                                 {item.name}
                             </div>
                             <span className="text-[9px] font-mono tracking-widest uppercase" style={{ color: accent }}>
                                 {item.tier}
                             </span>
-                        </div>
-
-                        {/* Lock overlay */}
-                        {item.locked && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                                <Lock className="w-6 h-6 text-white/30" />
-                                <button
-                                    onClick={() => onUnlockClick(item)}
-                                    className="px-6 py-2 border border-white/20 text-[10px] font-mono tracking-widest uppercase text-white/60 hover:text-white hover:border-white/50 transition-colors"
-                                >
-                                    Tap to Unlock
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* ── Back face (unlocked) ── */}
-                    <div
-                        className="absolute inset-0 bg-black border flex items-center justify-center"
-                        style={{
-                            backfaceVisibility: 'hidden',
-                            transform: 'rotateY(180deg)',
-                            borderColor: `${accent}60`,
-                            boxShadow: `0 0 40px ${accent}30`,
-                        }}
-                    >
-                        <div className="text-center space-y-3 px-4">
-                            <div className="text-[10px] font-mono tracking-[0.5em] uppercase" style={{ color: accent }}>
-                                Unlocked
-                            </div>
-                            <div className="text-lg font-heading font-black tracking-widest text-white">
-                                {item.name}
-                            </div>
-                            <div className="text-[8px] font-mono text-white/30 tracking-widest uppercase">
-                                {item.tier} Tier
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -299,42 +285,105 @@ const Vault = () => {
     const [loadingDone, setLoadingDone] = useState(false);
     const [vaultReady, setVaultReady] = useState(false);
     const [exiting, setExiting] = useState(false);
+    const [unlockCode, setUnlockCode] = useState('');
+    const [showUnlockModal, setShowUnlockModal] = useState(false);
 
-    // ── After loading screen fades out → reveal vault ────────────────────────
+    // ── Load unlocked items from localStorage ───────────────────────────────────
+    useEffect(() => {
+        const unlockedIds = getUnlockedItems();
+        setItems(prevItems => 
+            prevItems.map(item => ({
+                ...item,
+                status: unlockedIds.includes(item.id) ? 'unlocked' : 'locked'
+            }))
+        );
+    }, []);
+
+    // ── Handle unlock click ─────────────────────────────────────────────────────
+    const handleUnlockClick = useCallback((item) => {
+        if (item.status === 'locked') {
+            setSelectedItem(item);
+            setShowUnlockModal(true);
+            setUnlockCode('');
+        }
+    }, []);
+
+    // ── Verify unlock code ─────────────────────────────────────────────────────
+    const handleVerifyCode = useCallback(() => {
+        if (!selectedItem || !unlockCode.trim()) return;
+
+        if (unlockCode.trim() === selectedItem.unlockCode) {
+            // Unlock successful
+            saveUnlockedItem(selectedItem.id);
+            setItems(prevItems => 
+                prevItems.map(item => 
+                    item.id === selectedItem.id 
+                        ? { ...item, status: 'unlocked' }
+                        : item
+                )
+            );
+            setShowUnlockModal(false);
+            setSelectedItem(null);
+            setUnlockCode('');
+            toast.success('ITEM UNLOCKED');
+        } else {
+            // Invalid code
+            toast.error('INVALID ACCESS CODE');
+            // Shake the modal
+            const modal = document.getElementById('unlock-modal');
+            if (modal) {
+                gsap.to(modal, {
+                    keyframes: [
+                        { x: -10, duration: 0.06 },
+                        { x: 10, duration: 0.06 },
+                        { x: -8, duration: 0.06 },
+                        { x: 8, duration: 0.06 },
+                        { x: -4, duration: 0.06 },
+                        { x: 0, duration: 0.06 },
+                    ],
+                    ease: 'none',
+                });
+            }
+        }
+    }, [selectedItem, unlockCode]);
+
+    // ── Close modal ─────────────────────────────────────────────────────────────
+    const closeModal = useCallback(() => {
+        setShowUnlockModal(false);
+        setSelectedItem(null);
+        setUnlockCode('');
+    }, []);
+
+    // ── Handle loading complete ─────────────────────────────────────────────────
     const handleLoadingComplete = useCallback(() => {
         setLoadingDone(true);
 
-        // Fade in the page
-        gsap.fromTo(
-            pageRef.current,
+        // Fade in the page and heading concurrently
+        const tl = gsap.timeline();
+
+        tl.fromTo(pageRef.current,
             { opacity: 0 },
+            { opacity: 1, duration: 0.5, ease: 'power2.out' }
+        );
+
+        tl.fromTo(headingRef.current,
+            { opacity: 0, y: -10 },
             {
-                opacity: 1, duration: 0.7, ease: 'power2.out',
+                opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
                 onComplete: () => {
-                    // Heading shimmer
-                    if (headingRef.current) {
+                    // Gold shimmer sweep
+                    if (shineRef.current) {
                         gsap.fromTo(
-                            headingRef.current,
-                            { opacity: 0, y: -12 },
-                            {
-                                opacity: 1, y: 0, duration: 0.6, ease: 'power2.out',
-                                onComplete: () => {
-                                    // Gold shimmer sweep
-                                    if (shineRef.current) {
-                                        gsap.fromTo(
-                                            shineRef.current,
-                                            { xPercent: -130, opacity: 0 },
-                                            { xPercent: 130, opacity: 0.7, duration: 1.1, ease: 'power2.out' }
-                                        );
-                                    }
-                                    // Trigger card stagger
-                                    setVaultReady(true);
-                                }
-                            }
+                            shineRef.current,
+                            { xPercent: -130, opacity: 0 },
+                            { xPercent: 130, opacity: 0.7, duration: 0.8, ease: 'power2.out' }
                         );
                     }
+                    // Trigger card stagger
+                    setVaultReady(true);
                 }
-            }
+            },
+            "-=0.3" // overlap with page fade
         );
     }, []);
 
@@ -387,6 +436,11 @@ const Vault = () => {
                     <VaultLoadingScreen onComplete={handleLoadingComplete} />
                 )}
             </AnimatePresence>
+
+            {/* ── Collection Animation Section ── */}
+            {loadingDone && (
+                <CollectionHero images={vaultHeroImages} />
+            )}
 
             {/* ── Vault Page ── */}
             <div
@@ -448,46 +502,127 @@ const Vault = () => {
 
                 {/* Vault Grid */}
                 <div className="relative z-10 max-w-[1400px] mx-auto px-6 pb-24">
-                    <div className="flex flex-col gap-8 md:gap-10">
-                        {vaultRows.map((row, rowIndex) => (
-                            <div
-                                key={`row-${rowIndex}`}
-                                className="flex items-center justify-center gap-6 md:gap-8"
-                            >
-                                {row.map((item) => (
-                                    <div key={item.id} className="w-40 sm:w-44 md:w-48 lg:w-52 xl:w-56">
-                                        <GridCard
-                                            item={item}
-                                            hovered={hoveredId === item.id}
-                                            dimmed={hoveredId && hoveredId !== item.id}
-                                            onHover={setHoveredId}
-                                            onLeave={() => setHoveredId(null)}
-                                            onUnlockClick={(target) => target.locked && setSelectedItem(target)}
-                                            entranceDelay={flatIndex[item.id] * 0.09}
-                                            vaultReady={vaultReady}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
+                    <div className="flex flex-col gap-8">
+                        {/* Row 1 - 5 columns */}
+                        <div className="grid" style={{ gridTemplateColumns: 'repeat(5, 280px)', gap: '2rem', justifyContent: 'center' }}>
+                            {vaultRows[0]?.map((item) => (
+                                <GridCard
+                                    key={item.id}
+                                    item={item}
+                                    hovered={hoveredId === item.id}
+                                    dimmed={hoveredId && hoveredId !== item.id}
+                                    onHover={setHoveredId}
+                                    onLeave={() => setHoveredId(null)}
+                                    onUnlockClick={handleUnlockClick}
+                                    entranceDelay={flatIndex[item.id] * 0.06}
+                                    vaultReady={vaultReady}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Row 2 - 4 columns */}
+                        <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 280px)', gap: '2rem', justifyContent: 'center' }}>
+                            {vaultRows[1]?.map((item) => (
+                                <GridCard
+                                    key={item.id}
+                                    item={item}
+                                    hovered={hoveredId === item.id}
+                                    dimmed={hoveredId && hoveredId !== item.id}
+                                    onHover={setHoveredId}
+                                    onLeave={() => setHoveredId(null)}
+                                    onUnlockClick={handleUnlockClick}
+                                    entranceDelay={flatIndex[item.id] * 0.06}
+                                    vaultReady={vaultReady}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Row 3 - 3 columns */}
+                        <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 280px)', gap: '2rem', justifyContent: 'center' }}>
+                            {vaultRows[2]?.map((item) => (
+                                <GridCard
+                                    key={item.id}
+                                    item={item}
+                                    hovered={hoveredId === item.id}
+                                    dimmed={hoveredId && hoveredId !== item.id}
+                                    onHover={setHoveredId}
+                                    onLeave={() => setHoveredId(null)}
+                                    onUnlockClick={handleUnlockClick}
+                                    entranceDelay={flatIndex[item.id] * 0.06}
+                                    vaultReady={vaultReady}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Unlock Modal */}
                 <AnimatePresence>
-                    {selectedItem && (
+                    {showUnlockModal && selectedItem && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-2xl flex items-center justify-center p-8"
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                            onClick={closeModal}
                         >
-                            <UnlockPanel
-                                item={selectedItem}
-                                onUnlock={handleUnlock}
-                                onClose={() => setSelectedItem(null)}
-                            />
+                            <motion.div
+                                id="unlock-modal"
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                transition={{ type: 'spring', damping: 20 }}
+                                className="relative w-full max-w-md mx-4 glass border border-white/20 p-8"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Close button */}
+                                <button
+                                    onClick={closeModal}
+                                    className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                {/* Modal content */}
+                                <div className="text-center space-y-6">
+                                    <h2 className="text-xl font-heading font-black tracking-widest text-white uppercase">
+                                        ENTER ACCESS CODE
+                                    </h2>
+                                    
+                                    <div className="space-y-4">
+                                        <div className="text-sm text-white/60 font-mono">
+                                            Item: {selectedItem.name}
+                                        </div>
+                                        
+                                        <input
+                                            type="text"
+                                            value={unlockCode}
+                                            onChange={(e) => setUnlockCode(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
+                                            placeholder="Enter access code"
+                                            className="w-full px-4 py-3 bg-black/60 border border-white/20 text-white placeholder-white/40 font-mono text-sm focus:outline-none focus:border-accent/50 transition-colors"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={handleVerifyCode}
+                                            className="flex-1 px-6 py-3 bg-accent text-black font-mono text-sm font-black tracking-widest uppercase hover:bg-accent/90 transition-colors"
+                                        >
+                                            Verify
+                                        </button>
+                                        <button
+                                            onClick={closeModal}
+                                            className="flex-1 px-6 py-3 border border-white/20 text-white font-mono text-sm tracking-widest uppercase hover:border-white/50 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>

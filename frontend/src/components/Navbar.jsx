@@ -166,17 +166,35 @@ const Navbar = React.forwardRef((props, ref) => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <Link to="/dashboard" className="flex items-center gap-3 group">
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em]">Client</p>
-                                            <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{currentUser.name.toUpperCase()}</p>
+                                    <div className="relative group">
+                                        <button className="flex items-center gap-3 group">
+                                            <div className="text-right hidden sm:block">
+                                                <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em]">Agent</p>
+                                                <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">ENDURA</p>
+                                            </div>
+                                            <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
+                                                <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
+                                                {/* Animated Corner */}
+                                                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
+                                            </div>
+                                        </button>
+                                        
+                                        {/* Dropdown Menu */}
+                                        <div className="absolute top-full right-0 mt-2 w-48 glass border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                            <Link
+                                                to="/dashboard"
+                                                className="block px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-primary/20 hover:text-primary transition-all"
+                                            >
+                                                User Dashboard
+                                            </Link>
+                                            <button
+                                                onClick={() => { logout(); navigate('/'); }}
+                                                className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
+                                            >
+                                                Logout
+                                            </button>
                                         </div>
-                                        <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
-                                            <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
-                                            {/* Animated Corner */}
-                                            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
-                                        </div>
-                                    </Link>
+                                    </div>
                                 )}
                             </div>
                         ) : (

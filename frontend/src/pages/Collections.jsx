@@ -1,20 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
-import CollectionsIntro from '../components/collections/CollectionsIntro';
 import PhysicalProductCard from '../components/collections/PhysicalProductCard';
 
 const Collections = () => {
     const { products } = useStore();
-    const [showIntro, setShowIntro] = useState(() => {
-        // Check if intro has already been played in this session
-        return !sessionStorage.getItem('collections_intro_played');
-    });
-
-    const handleIntroComplete = () => {
-        setShowIntro(false);
-        sessionStorage.setItem('collections_intro_played', 'true');
-    };
 
     // Filter only physical apparel products
     const physicalProducts = products.filter(p =>
@@ -36,20 +26,13 @@ const Collections = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
-            <AnimatePresence>
-                {showIntro && (
-                    <CollectionsIntro onComplete={handleIntroComplete} />
-                )}
-            </AnimatePresence>
-
             {/* Main Content */}
-            {!showIntro && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="relative pt-32 pb-24 px-6 md:px-12 lg:px-24"
-                >
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+                className="relative pt-32 pb-24 px-6 md:px-12 lg:px-24"
+            >
                     {/* Header Section */}
                     <div className="max-w-7xl mx-auto mb-20 text-center">
                         <motion.div
@@ -91,8 +74,7 @@ const Collections = () => {
                     >
                         <p className="text-gray-600 text-[9px] uppercase tracking-[1em]">All items are limited production runs</p>
                     </motion.div>
-                </motion.div>
-            )}
+            </motion.div>
 
             {/* Background Texture/Elements */}
             <div className="fixed inset-0 pointer-events-none z-0">
