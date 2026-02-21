@@ -1,42 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ArrowLeft, Sparkles, ExternalLink, Calendar, Tag, Shield } from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// ─── Vault Items (same as Vault page) ────────────────────────────────────────
-const buildItems = () => ([
-    // — Row 1 —
-    { id: 1, name: 'Shadow Cargo', tier: 'Bronze', status: 'locked', unlockCode: 'ENDURA-9021', image: 'https://images.unsplash.com/photo-1517441551224-cca4246835be' },
-    { id: 2, name: 'Aureum Bomber', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772' },
-    { id: 3, name: 'Lunar Walkers', tier: 'Diamond', status: 'locked', unlockCode: 'LUNA-7777', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff' },
-    { id: 4, name: 'Vesper Shirt', tier: 'Bronze', status: 'locked', unlockCode: 'OBS-1108', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab' },
-    { id: 5, name: 'Royal Tunic', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b' },
-    // — Row 2 —
-    { id: 6, name: 'Starforged Cape', tier: 'Diamond', status: 'locked', unlockCode: 'ENDURA-9021', image: 'https://images.unsplash.com/photo-1605733513597-a8f8d410fe3c' },
-    { id: 7, name: 'Obsidian Jacket', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5' },
-    { id: 8, name: 'Phantom Hoodie', tier: 'Bronze', status: 'locked', unlockCode: 'LUNA-7777', image: 'https://images.unsplash.com/photo-1556314844-31952086e108' },
-    { id: 9, name: 'Diamond Flux Coat', tier: 'Diamond', status: 'locked', unlockCode: 'OBS-1108', image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea' },
-    // — Row 3 —
-    { id: 10, name: 'Noir Tactical Vest', tier: 'Bronze', status: 'locked', unlockCode: 'DIAMOND-9999', image: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17' },
-    { id: 11, name: 'Solar Edge Jacket', tier: 'Gold', status: 'locked', unlockCode: '4500', image: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3' },
-    { id: 12, name: 'Apex Crystal Coat', tier: 'Diamond', status: 'locked', unlockCode: 'DIAMOND-9999', image: 'https://images.unsplash.com/photo-1520975954732-35dd22299614' },
-]);
-
-// ─── LocalStorage Functions ─────────────────────────────────────────────────────
-const getUnlockedItems = () => {
-    const stored = localStorage.getItem('enduraUnlocked');
-    return stored ? JSON.parse(stored) : [];
-};
-
-const isAuthenticated = () => {
-    return localStorage.getItem('enduraUser') === 'authenticated';
-};
+gsap.registerPlugin(ScrollTrigger);
+import { useStore } from '../context/StoreContext';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
     if (tier === 'Bronze') return '#8a6e45';
+    if (tier === 'Silver') return '#c0c0c0';
     if (tier === 'Gold') return '#d4af37';
     if (tier === 'Diamond') return '#b0e0e6';
     return '#d4af37';
@@ -44,54 +20,99 @@ const tierAccent = (tier) => {
 
 // ─── Grid Card ──────────────────────────────────────────────────────────────
 const CollectedCard = ({ item, onClick, index }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const accent = tierAccent(item.tier);
-    const cardRef = useRef(null);
 
     return (
         <motion.div
-            ref={cardRef}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
             whileHover={{ y: -10 }}
             onClick={() => onClick(item)}
-            className="group relative w-full aspect-[4/5] bg-[#0a0a0a] border border-white/10 cursor-pointer overflow-hidden"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="collected-card-reveal group relative w-full h-[380px] flex flex-col items-center justify-center cursor-pointer transition-all duration-700"
         >
-            {/* Item Image */}
-            <div className="absolute inset-0 z-0">
-                <img
-                    src={item.image + '?auto=format&fit=crop&q=80&w=800'}
-                    alt={item.name}
-                    className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-            </div>
-
-            {/* Accent Glow */}
+            {/* AMBIENT LIGHTING (No Box) */}
             <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none"
-                style={{ background: `radial-gradient(circle at center, ${accent}, transparent 70%)`, filter: 'blur(30px)' }}
+                className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-1000 pointer-events-none"
+                style={{
+                    background: `radial-gradient(circle at center, ${accent}33 0%, transparent 70%)`,
+                    filter: 'blur(60px)'
+                }}
             />
 
-            {/* Content */}
-            <div className="relative z-10 h-full flex flex-col justify-end p-6 space-y-3">
-                <div className="space-y-1">
-                    <span className="text-[9px] font-mono tracking-widest uppercase" style={{ color: accent }}>
-                        {item.tier}
-                    </span>
-                    <h3 className="text-xl font-heading font-black tracking-widest text-white uppercase truncate">
-                        {item.name}
-                    </h3>
-                </div>
-                <p className="text-[10px] font-body text-white/40 tracking-wider truncate">
-                    {item.tier} Tier Asset
-                </p>
-                <div className="w-10 h-[1px] bg-white/10 group-hover:w-full transition-all duration-500" />
+            {/* IMMERSIVE HUD SYSTEM */}
+            <div className="absolute inset-0 pointer-events-none z-20">
+                {/* Large Corner Brackets */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 opacity-10 group-hover:opacity-100 transition-all duration-1000" style={{ borderColor: accent }} />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 opacity-10 group-hover:opacity-100 transition-all duration-1000" style={{ borderColor: accent }} />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 opacity-10 group-hover:opacity-100 transition-all duration-1000" style={{ borderColor: accent }} />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 opacity-10 group-hover:opacity-100 transition-all duration-1000" style={{ borderColor: accent }} />
+
+                {/* Scan Energy Line */}
+                <motion.div
+                    animate={{ top: ['10%', '90%'] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-x-12 h-[1px] opacity-0 group-hover:opacity-40"
+                    style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+                />
             </div>
 
-            {/* Corner Accent */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ExternalLink className="w-4 h-4 text-white/40" />
+            {/* FLOATING ARTIFACT */}
+            <motion.div
+                className="relative z-10"
+                animate={{
+                    y: [-15, 15, -15],
+                    rotateY: isHovered ? [0, 15, -15, 0] : 0,
+                    scale: isHovered ? 1.1 : 1
+                }}
+                transition={{
+                    y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: index * 0.3 },
+                    rotateY: { duration: 8, repeat: Infinity, ease: "easeInOut" },
+                    scale: { duration: 1, ease: "easeOut" }
+                }}
+            >
+                <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-56 object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.15)] transition-all duration-1000"
+                />
+
+                {/* Reflection effect */}
+                <div className="absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-32 h-8 bg-white/5 blur-xl rounded-[50%] opacity-20 group-hover:opacity-40 transition-opacity" />
+            </motion.div>
+
+            {/* COLLECTION STATUS INTERFACE */}
+            <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-3 z-30 pointer-events-none">
+                <div className="h-[1px] w-0 group-hover:w-32 bg-white/10 transition-all duration-1000" />
+
+                <div className="text-center">
+                    <h3
+                        className="text-lg font-heading font-black tracking-[0.4em] text-white uppercase transition-colors duration-500"
+                        style={{ color: isHovered ? accent : 'white' }}
+                    >
+                        {item.name}
+                    </h3>
+                    <div className="flex items-center justify-center gap-3 mt-1">
+                        <span className="text-[9px] font-mono tracking-[0.3em] text-white/30 uppercase">{item.tier} ARCHIVE</span>
+                        <div className="w-1 h-1 rounded-full bg-accent group-hover:animate-ping" />
+                        <span
+                            className="text-[9px] font-mono tracking-[0.5em] uppercase font-bold"
+                            style={{ color: accent }}
+                        >
+                            COLLECTION ARCHIVED
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex gap-4 opacity-0 group-hover:opacity-40 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
+                    <span className="text-[7px] font-mono text-white/50 tracking-tighter">ID: {item.id.slice(0, 8)}</span>
+                    <span className="text-[7px] font-mono text-white/50 tracking-tighter">SECURE_LINK: VERIFIED</span>
+                </div>
+            </div>
+
+            {/* Corner Marker */}
+            <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-40 transition-all duration-500 scale-50 group-hover:scale-100">
+                <ExternalLink className="w-4 h-4 text-white" />
             </div>
         </motion.div>
     );
@@ -106,79 +127,128 @@ const ItemDetailModal = ({ item, onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center p-6 md:p-12"
         >
-            <div className="relative w-full max-w-5xl bg-[#050505] border border-white/10 overflow-hidden flex flex-col lg:flex-row">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 z-50 p-2 text-white/40 hover:text-white transition-colors"
-                >
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.1, opacity: 0 }}
+                className="relative w-full max-w-3xl h-[500px] flex flex-col lg:flex-row pointer-events-auto"
+            >
+                {/* Embroidery Designed HUD Corners */}
+                <div className="absolute top-0 left-0 w-24 h-24 z-30 pointer-events-none">
+                    <div className="absolute top-0 left-0 w-16 h-16 border-t border-l" style={{ borderColor: `${accent}66` }} />
+                    <div className="absolute top-2 left-2 w-12 h-12 border-t border-l" style={{ borderColor: `${accent}33` }} />
+                    <div className="absolute top-[7px] left-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
+                </div>
+                <div className="absolute top-0 right-0 w-24 h-24 z-30 pointer-events-none">
+                    <div className="absolute top-0 right-0 w-16 h-16 border-t border-r" style={{ borderColor: `${accent}66` }} />
+                    <div className="absolute top-2 right-2 w-12 h-12 border-t border-r" style={{ borderColor: `${accent}33` }} />
+                    <div className="absolute top-[7px] right-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
+                </div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 z-30 pointer-events-none">
+                    <div className="absolute bottom-0 left-0 w-16 h-16 border-b border-l" style={{ borderColor: `${accent}66` }} />
+                    <div className="absolute bottom-2 left-2 w-12 h-12 border-b border-l" style={{ borderColor: `${accent}33` }} />
+                    <div className="absolute bottom-[7px] left-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
+                </div>
+                <div className="absolute bottom-0 right-0 w-24 h-24 z-30 pointer-events-none">
+                    <div className="absolute bottom-0 right-0 w-16 h-16 border-b border-r" style={{ borderColor: `${accent}66` }} />
+                    <div className="absolute bottom-2 right-2 w-12 h-12 border-b border-r" style={{ borderColor: `${accent}33` }} />
+                    <div className="absolute bottom-[7px] right-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
+                </div>
 
-                {/* Left: Image Section */}
-                <div className="w-full lg:w-3/5 relative aspect-video lg:aspect-auto">
-                    <img
-                        src={item.image + '?auto=format&fit=crop&q=90&w=1200'}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
+                {/* Left: Holographic Asset Display */}
+                <div className="w-full lg:w-1/2 relative flex items-center justify-center p-12 overflow-hidden">
+                    {/* Ambient Glow */}
+                    <div
+                        className="absolute inset-0 opacity-10"
+                        style={{ background: `radial-gradient(circle at center, ${accent}88, transparent 70%)`, filter: 'blur(80px)' }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
 
-                    {/* Floating Tier Badge */}
-                    <div className="absolute bottom-8 left-8 flex items-center gap-4 bg-black/60 backdrop-blur-md border border-white/10 px-6 py-3">
-                        <Shield className="w-5 h-5" style={{ color: accent }} />
-                        <span className="text-xs font-heading font-black tracking-[0.3em] text-white uppercase">{item.tier} Tier</span>
+                    {/* Asset ID Marker */}
+                    <div className="absolute top-10 left-10 flex flex-col gap-1 opacity-20">
+                        <span className="text-[6px] font-mono tracking-widest text-white uppercase">ID_ENTRY</span>
+                        <span className="text-[8px] font-mono tracking-[0.2em] text-white uppercase font-black">{item.id.slice(0, 10)}</span>
+                    </div>
+
+                    <motion.div
+                        animate={{ y: [-15, 15, -15] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        className="relative z-10"
+                    >
+                        <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-64 object-contain drop-shadow-[0_0_60px_rgba(255,255,255,0.15)]"
+                        />
+                    </motion.div>
+
+                    {/* HUD Status Marker */}
+                    <div className="absolute bottom-10 left-10 flex items-center gap-3 opacity-30">
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        <span className="text-[8px] font-mono tracking-[0.4em] text-white uppercase">ARCHIVE_LOADED</span>
                     </div>
                 </div>
 
-                {/* Right: Info Section */}
-                <div className="w-full lg:w-2/5 p-8 md:p-12 flex flex-col justify-center space-y-10">
+                {/* Right: Technical Readout */}
+                <div className="w-full lg:w-1/2 p-10 md:p-14 flex flex-col justify-center space-y-8 relative">
                     <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-white/30 uppercase">
-                            <Sparkles className="w-4 h-4" />
-                            <span>Digital Archive Record</span>
+                        <div className="flex items-center gap-4 text-[9px] font-mono tracking-[0.5em] text-accent uppercase">
+                            <div className="w-4 h-[1px] bg-accent" />
+                            <span>Verified archive entry</span>
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-heading font-black tracking-tight text-white uppercase leading-none">
+                        <h2 className="text-4xl font-heading font-black tracking-tighter text-white uppercase leading-[0.9]">
                             {item.name}
                         </h2>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <span className="text-[10px] font-mono text-white/20 tracking-widest uppercase flex items-center gap-2">
-                                <Tag className="w-3 h-3" /> Asset Type
-                            </span>
-                            <p className="text-sm font-body text-white/60 leading-relaxed tracking-wide">
-                                {item.tier} Tier Digital Asset
-                            </p>
+                    <div className="space-y-6 pt-4 border-t border-white/5">
+                        <div className="grid grid-cols-2 gap-8">
+                            <div className="space-y-2">
+                                <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Tier.Classification</p>
+                                <p className="text-xs font-heading font-black tracking-widest text-white uppercase flex items-center gap-2">
+                                    <Shield className="w-3 h-3" style={{ color: accent }} /> {item.tier}
+                                </p>
+                            </div>
+                            <div className="space-y-2 text-right">
+                                <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Auth.Status</p>
+                                <p className="text-xs font-heading font-black tracking-widest text-accent uppercase">AUTHENTICATED</p>
+                            </div>
                         </div>
 
-                        <div className="h-[1px] w-full bg-white/5" />
-
-                        <div className="flex justify-between items-center">
-                            <div className="space-y-2">
-                                <span className="text-[10px] font-mono text-white/20 tracking-widest uppercase flex items-center gap-2">
-                                    <Calendar className="w-3 h-3" /> Unlock Date
-                                </span>
-                                <p className="text-xs font-heading text-white tracking-[0.1em]">UNLOCKED</p>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-end border-b border-white/5 pb-2">
+                                <span className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Secure_Node</span>
+                                <span className="text-[9px] font-mono text-white/60 tracking-widest uppercase">NODE_ARCHIVE_55</span>
                             </div>
-                            <div className="text-right">
-                                <p className="text-[8px] font-mono text-white/10 tracking-[0.4em] uppercase mb-1">Status</p>
-                                <div className="px-3 py-1 border border-accent/20 text-[9px] font-mono text-accent tracking-widest uppercase">Verified</div>
+                            <div className="flex justify-between items-end border-b border-white/5 pb-2">
+                                <span className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Hash_Verification</span>
+                                <span className="text-[9px] font-mono text-white/60 tracking-widest uppercase truncate ml-8">SHA256::D4AF37</span>
                             </div>
                         </div>
                     </div>
 
-                    <button
-                        onClick={onClose}
-                        className="w-full py-5 border border-white/10 bg-white/5 text-[11px] font-heading font-black tracking-[0.5em] text-white/60 hover:text-white hover:border-white/40 transition-all uppercase"
-                    >
-                        Return to Archive
-                    </button>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={onClose}
+                            className="w-full py-4 bg-transparent border border-white/10 text-[10px] font-heading font-black tracking-[0.4em] text-white/60 hover:text-white hover:border-accent group transition-all uppercase flex items-center justify-center gap-4"
+                        >
+                            <span>BACK_TO_ARCHIVE</span>
+                            <motion.div
+                                animate={{ x: [0, -4, 0] }}
+                                transition={{ repeat: Infinity, duration: 1.5 }}
+                            >
+                                <ArrowLeft className="w-3 h-3 group-hover:text-accent" />
+                            </motion.div>
+                        </button>
+                    </div>
+
+                    {/* Bottom Utility Text */}
+                    <div className="absolute bottom-8 left-10 text-[7px] font-mono text-white/10 tracking-[0.5em] uppercase">
+                        Endura://Asset_Management - Sect_5
+                    </div>
                 </div>
-            </div>
+            </motion.div>
         </motion.div>
     );
 };
@@ -186,21 +256,57 @@ const ItemDetailModal = ({ item, onClose }) => {
 // ─── Main Collected Page ─────────────────────────────────────────────────────
 const CollectedPage = () => {
     const navigate = useNavigate();
+    const { products } = useStore();
     const [selectedItem, setSelectedItem] = useState(null);
-    const [items, setItems] = useState([]);
     const containerRef = useRef(null);
 
     // ── Load items and filter for unlocked ones ───────────────────────────
-    useEffect(() => {
-        const allItems = buildItems();
-        const unlockedIds = getUnlockedItems();
-        const unlockedItems = allItems.filter(item => unlockedIds.includes(item.id));
-        setItems(unlockedItems);
-    }, []);
+    const items = useMemo(() => {
+        const savedData = localStorage.getItem('endura_vault_persistence');
+        if (!savedData) return [];
 
-    // Fade in animation
+        const { unlockedItems: unlockedIds } = JSON.parse(savedData);
+        if (!unlockedIds || unlockedIds.length === 0) return [];
+
+        const vaultItems = products.filter(p =>
+            p.type === 'physical' &&
+            ['T-Shirt', 'Hoodie', 'Vest', 'Pants', 'Shorts', 'Jacket', 'Coat'].includes(p.subcategory)
+        ).map((p, idx) => {
+            let tier = 'Bronze';
+            if (idx % 8 === 0) tier = 'Diamond';
+            else if (idx % 5 === 0) tier = 'Silver';
+            else if (idx % 3 === 0) tier = 'Gold';
+            return { ...p, tier };
+        });
+
+        // Add special support for cards if needed, but usually cards translate to products
+        return vaultItems.filter(item => unlockedIds.includes(item.id));
+    }, [products]);
+
+    // Scroll Reveal animation
     useEffect(() => {
-        gsap.fromTo(containerRef.current, { opacity: 0 }, { opacity: 1, duration: 1, ease: 'power2.out' });
+        const ctx = gsap.context(() => {
+            // Container fade in
+            gsap.fromTo(containerRef.current, { opacity: 0 }, { opacity: 1, duration: 1, ease: 'power2.out' });
+
+            // Card scroll reveal
+            const cards = gsap.utils.toArray('.collected-card-reveal');
+            cards.forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%",
+                        toggleActions: "play none none reverse"
+                    },
+                    y: 60,
+                    opacity: 0,
+                    scale: 0.95,
+                    duration: 3.5,
+                    ease: "power4.out"
+                });
+            });
+        }, containerRef);
+        return () => ctx.revert();
     }, []);
 
     return (
@@ -214,7 +320,7 @@ const CollectedPage = () => {
             />
 
             {/* Header */}
-            <header className="relative z-50 pt-32 pb-16">
+            <header className="relative z-50 pt-16 pb-24">
                 <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-12">
                     {/* Left: Back Link */}
                     <div className="flex-1 w-full order-2 md:order-1">
@@ -253,15 +359,16 @@ const CollectedPage = () => {
             </header>
 
             {/* Grid Content */}
-            <main className="relative z-10 max-w-[1400px] mx-auto px-6 pb-32">
+            <main className="relative z-10 max-w-[1200px] mx-auto px-6 pb-32">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                     {items.map((item, index) => (
-                        <CollectedCard
-                            key={item.id}
-                            item={item}
-                            index={index}
-                            onClick={setSelectedItem}
-                        />
+                        <div key={item.id} className="collected-card-reveal">
+                            <CollectedCard
+                                item={item}
+                                index={index}
+                                onClick={setSelectedItem}
+                            />
+                        </div>
                     ))}
                 </div>
             </main>

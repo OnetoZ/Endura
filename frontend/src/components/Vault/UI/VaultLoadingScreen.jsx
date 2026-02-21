@@ -51,14 +51,13 @@ const RingLoader = ({ onComplete }) => {
             0.6
         );
 
-        // After ~7.0s, fade out and call onComplete (Requirement: 5-10s)
+        // Fade out at precisely 2.5s to finish at 3.0s
         tl.to(screenRef.current, {
             opacity: 0,
-            duration: 0.8,
+            duration: 0.5,
             ease: 'power2.inOut',
-            delay: 7.0,
             onComplete: () => onComplete && onComplete(),
-        });
+        }, 2.5);
 
         return () => tl.kill();
     }, [onComplete]);
