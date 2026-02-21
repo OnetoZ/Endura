@@ -910,3 +910,21 @@ h6 {
 .vault-gold-pulse {
   animation: vault-gold-pulse 0.6s ease-out;
 }
+
+.vault-word-reveal {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+  /* Outlined text border */
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  display: inline-block;
+}
+
+.vault-word-reveal:hover,
+.vault-word-reveal.active {
+  color: #D4AF37 !important;
+  -webkit-text-stroke: 1px rgba(212, 175, 55, 0.2);
+  text-shadow:
+    0 0 20px rgba(212, 175, 55, 0.6),
+    0 0 40px rgba(212, 175, 55, 0.3);
+}

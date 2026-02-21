@@ -113,7 +113,7 @@ const PhysicalProductCard = ({ product }) => {
                             to={`/product/${product.id}`}
                             className="w-full py-4 bg-[#d4af37] text-black text-[10px] font-black uppercase tracking-[0.3em] text-center hover:bg-white transition-all duration-500 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
                         >
-                            Access Intel
+                            View Product
                         </Link>
                         <button
                             onClick={() => addToCart(product)}

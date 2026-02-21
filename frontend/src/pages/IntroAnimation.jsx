@@ -89,10 +89,10 @@ const IntroAnimation = () => {
                     // Show black screen
                     setShowBlackScreen(true);
 
-                    // Navigate to home after 1 second of black screen
+                    // Navigate to home immediately after black screen shows
                     setTimeout(() => {
                         window.location.href = '/home';
-                    }, 1000);
+                    }, 100);
                 }
             },
             onLeave: () => {

@@ -53,22 +53,6 @@ function AppLayout() {
 }
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl uppercase tracking-widest animate-pulse">
-          Synchronizing...
-        </div>
-      </div>
-    );
-  }
-
   return (
     <AppProvider>
       <SmoothScroll>

@@ -14,9 +14,9 @@ const CollectionHero = ({ images }) => {
         const ctx = gsap.context(() => {
             // Fade and slide animation on load
             gsap.from(contentRef.current, {
-                y: 100,
+                y: 50,
                 opacity: 0,
-                duration: 1.5,
+                duration: 0.8,
                 ease: "power4.out"
             });
 
