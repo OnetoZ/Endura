@@ -10,7 +10,7 @@ const Footer = () => {
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
                 <div className="col-span-2">
-                    <Link to="/" className="text-4xl font-oswald tracking-tighter mb-8 inline-block">
+                    <Link to="/home" className="text-4xl font-oswald tracking-tighter mb-8 inline-block">
                         ENDURA<span className="text-primary italic">.</span>
                     </Link>
                     <p className="text-gray-500 max-w-sm text-sm leading-relaxed mb-8">

@@ -477,24 +477,56 @@ const AdminDashboard = () => {
                                     <table className="w-full text-left">
                                         <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 bg-white/5 border-b border-white/10">
                                             <tr>
-                                                <th className="py-4 pl-8">User Name</th>
-                                                <th className="py-4 pr-8 text-right">Overview</th>
+                                                <th className="py-4 pl-8">User</th>
+                                                <th className="py-4">Email</th>
+                                                <th className="py-4">Mobile</th>
+                                                <th className="py-4">Role</th>
+                                                <th className="py-4 pr-8 text-right">Created</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
-                                            {(users || []).map(user => (
-                                                <tr key={user.id} className="hover:bg-white/5 transition-all">
-                                                    <td className="py-6 pl-8">
-                                                        <span className="font-bold uppercase text-sm text-white tracking-widest">{user.name}</span>
-                                                    </td>
-                                                    <td className="py-6 pr-8 text-right">
-                                                        <span className="text-[10px] font-mono text-gray-500 uppercase">Standard User</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {(users || []).map((u) => {
+                                                const name = u.username || u.name || 'Operator';
+                                                const created = u.createdAt ? new Date(u.createdAt) : null;
+                                                return (
+                                                    <tr key={u._id || u.id} className="hover:bg-white/5 transition-all">
+                                                        <td className="py-6 pl-8">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-10 h-10 border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center">
+                                                                    {u.avatar ? (
+                                                                        <img src={u.avatar} alt="" className="w-full h-full object-cover grayscale" />
+                                                                    ) : (
+                                                                        <span className="text-[10px] font-black text-primary">{name.charAt(0).toUpperCase()}</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold uppercase text-sm text-white tracking-widest">{name}</span>
+                                                                    <span className="text-[9px] font-mono text-gray-600">ID: {(u._id || '').slice(-8).toUpperCase()}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-6">
+                                                            <span className="text-[11px] font-mono text-white/70">{u.email}</span>
+                                                        </td>
+                                                        <td className="py-6">
+                                                            <span className="text-[11px] font-mono text-white/70">{u.phone || '-'}</span>
+                                                        </td>
+                                                        <td className="py-6">
+                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 border ${u.role === 'admin' ? 'border-accent/40 text-accent' : 'border-primary/30 text-white/70'}`}>
+                                                                {u.role || 'user'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-6 pr-8 text-right">
+                                                            <span className="text-[10px] font-mono text-gray-500 uppercase">
+                                                                {created ? created.toLocaleDateString() : '-'}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                             {(!users || users.length === 0) && (
                                                 <tr>
-                                                    <td colSpan={2} className="py-20 text-center text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">No operatives found</td>
+                                                    <td colSpan={5} className="py-20 text-center text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">No operatives found</td>
                                                 </tr>
                                             )}
                                         </tbody>

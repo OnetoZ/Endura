@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Shield, User, Clock, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
+import { useStore } from '../../../context/StoreContext';
 
 const AnimatedCounter = ({ value }) => {
     const [displayValue, setDisplayValue] = useState(value);
@@ -36,6 +37,9 @@ const AnimatedCounter = ({ value }) => {
 };
 
 const VaultHUD = ({ credits, itemsUnlocked }) => {
+    const { currentUser } = useStore();
+    const operatorName = currentUser?.username || currentUser?.name || 'Operator';
+
     return (
         <div className="fixed top-0 inset-x-0 pointer-events-none z-40 p-12">
             <motion.div
@@ -46,13 +50,19 @@ const VaultHUD = ({ credits, itemsUnlocked }) => {
                 {/* Left Side: Status */}
                 <div className="space-y-6">
                     <div className="bg-black/40 backdrop-blur-xl border border-white/5 p-5 rounded-2xl flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20">
-                            <User className="w-6 h-6 text-accent" />
+                        <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20 overflow-hidden">
+                            {currentUser?.avatar ? (
+                                <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale" />
+                            ) : (
+                                <User className="w-6 h-6 text-accent" />
+                            )}
                         </div>
                         <div>
                             <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em]">Vault_Operator</p>
                             <div className="flex items-center gap-2">
-                                <p className="text-sm font-heading font-bold text-white tracking-widest uppercase">Agent_Endura</p>
+                                <p className="text-sm font-heading font-bold text-white tracking-widest uppercase">
+                                    {operatorName.replace(/\s+/g, '_')}
+                                </p>
                                 <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                             </div>
                         </div>

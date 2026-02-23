@@ -5,6 +5,7 @@ import IntroAnimation from './pages/IntroAnimation';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
+import AuthSuccess from './pages/AuthSuccess';
 import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
@@ -15,6 +16,7 @@ import CollectedPage from './pages/CollectedPage';
 import Footer from './components/Footer';
 import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // These must be inside BrowserRouter to use useLocation,
 // so they are defined here but rendered inside the Router tree.
@@ -38,13 +40,18 @@ function AppLayout() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/vault" element={<Vault />} />
+          <Route path="/vault" element={
+            <ProtectedRoute>
+              <Vault />
+            </ProtectedRoute>
+          } />
           <Route path="/collected" element={<CollectedPage />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="*" element={<Navigate to="/home" />} />
         </Routes>
       </main>
       {showFooter && <Footer />}

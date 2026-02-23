@@ -27,11 +27,29 @@ export const authService = {
         }
         return response.data;
     },
-    register: async (username, email, password) => {
-        const response = await api.post('/auth/register', { username, email, password });
+    register: async (username, email, password, phone) => {
+        const response = await api.post('/auth/register', { username, email, password, phone });
         if (response.data) {
             localStorage.setItem('userInfo', JSON.stringify(response.data));
         }
+        return response.data;
+    },
+    getProfile: async () => {
+        const response = await api.get('/auth/profile');
+        return response.data;
+    },
+    updateProfile: async (profileData) => {
+        const response = await api.put('/auth/profile', profileData);
+        if (response.data) {
+            // Update local storage with new info to keep token
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            const updatedInfo = { ...userInfo, ...response.data };
+            localStorage.setItem('userInfo', JSON.stringify(updatedInfo));
+        }
+        return response.data;
+    },
+    getUserOrders: async () => {
+        const response = await api.get('/orders/myorders');
         return response.data;
     },
     logout: () => {
@@ -65,6 +83,17 @@ export const cartService = {
     },
     updateCart: async (productId, quantity) => {
         const response = await api.put('/cart/update', { productId, quantity });
+        return response.data;
+    },
+};
+
+export const userService = {
+    getUsers: async () => {
+        const response = await api.get('/users');
+        return response.data;
+    },
+    getDashboardStats: async () => {
+        const response = await api.get('/users/dashboard/stats');
         return response.data;
     },
 };

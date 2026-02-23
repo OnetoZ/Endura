@@ -8,13 +8,15 @@ const Auth = () => {
     const [step, setStep] = useState(1);
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
+        username: '',
         email: '',
         password: '',
         phone: '',
         otp: ''
     });
     const [error, setError] = useState('');
-    const { login } = useStore();
+    const [isLoading, setIsLoading] = useState(false);
+    const { login, register } = useStore();
     const navigate = useNavigate();
 
     const handleInputChange = (e) => {
@@ -22,11 +24,24 @@ const Auth = () => {
         setError('');
     };
 
-    const handleUserSubmit = (e) => {
+    const handleUserSubmit = async (e) => {
         e.preventDefault();
-        // Simulation of user login/signup
-        login(formData.email, 'user');
-        navigate('/');
+        setIsLoading(true);
+        setError('');
+
+        try {
+            if (isLogin) {
+                await login(formData.email, formData.password);
+            } else {
+                if (!formData.username) throw new Error('Username is required for initialization');
+                await register(formData.username, formData.email, formData.password, formData.phone);
+            }
+            navigate('/home');
+        } catch (err) {
+            setError(err.toString().toUpperCase());
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleAdminSubmit = (e) => {
@@ -46,25 +61,26 @@ const Auth = () => {
             }
         } else if (step === 3) {
             if (formData.otp === '1234') {
-                login(formData.email, 'admin');
-                navigate('/admin');
+                // For admin we might still need a custom login or just use the standard one
+                login(formData.email, formData.password)
+                    .then(() => navigate('/admin'))
+                    .catch(e => setError(e.toString().toUpperCase()));
             } else {
                 setError('SYNC_FAILED: Invalid OTP');
             }
         }
     };
 
-    const SocialButton = ({ label, provider }) => (
+    const SocialButton = ({ label, provider, color }) => (
         <button
             type="button"
             className="w-full py-4 border border-white/10 glass flex items-center justify-center gap-4 hover:bg-white/5 transition-all mb-4 group"
             onClick={() => {
-                login(`${provider}_demo@endura.com`, 'user', `${label} User`);
-                navigate('/');
+                window.location.href = `http://localhost:5001/api/auth/google`;
             }}
         >
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">
-                Link with {label}
+                Initialize with {label}
             </span>
         </button>
     );
@@ -81,7 +97,7 @@ const Auth = () => {
                         onClick={() => { setAuthType('user'); setStep(1); }}
                         className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all ${authType === 'user' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
                     >
-                        Operator_Login
+                        Endura_User_Login
                     </button>
                     <button
                         onClick={() => { setAuthType('admin'); setStep(1); }}
@@ -114,8 +130,33 @@ const Auth = () => {
                     {authType === 'user' ? (
                         <div>
                             <form onSubmit={handleUserSubmit} className="space-y-6">
+                                {!isLogin && (
+                                    <div>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">User Name</label>
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            required
+                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
+                                            placeholder="GHOST_UNIT_01"
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+                                )}
+                                {!isLogin && (
+                                    <div>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Mobile Number</label>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
+                                            placeholder="+91 XXXXXXXXXX"
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+                                )}
                                 <div>
-                                    <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Operator ID (Email)</label>
+                                    <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">User ID (Email)</label>
                                     <input
                                         type="email"
                                         name="email"
@@ -136,27 +177,30 @@ const Auth = () => {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-                                <button type="submit" className="w-full py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20">
-                                    {isLogin ? 'Synchronize' : 'Initialize Profile'}
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isLoading ? 'Processing...' : (isLogin ? 'Synchronize' : 'Initialize Profile')}
                                 </button>
                             </form>
 
                             <div className="mt-8 flex items-center justify-between">
                                 <span className="h-px bg-white/10 flex-grow"></span>
-                                <span className="px-6 text-[8px] text-gray-600 font-bold uppercase tracking-widest">or link node</span>
+                                <span className="px-6 text-[8px] text-gray-600 font-bold uppercase tracking-widest">or </span>
                                 <span className="h-px bg-white/10 flex-grow"></span>
                             </div>
 
-                            <div className="mt-8 grid grid-cols-2 gap-4">
+                            <div className="mt-8">
                                 <SocialButton label="Google" provider="google" />
-                                <SocialButton label="Apple" provider="apple" />
                             </div>
 
                             <button
                                 onClick={() => setIsLogin(!isLogin)}
                                 className="w-full mt-6 text-[10px] text-gray-500 hover:text-primary transition-colors font-bold uppercase tracking-widest"
                             >
-                                {isLogin ? 'Wait, I need a new node' : 'Back to synchronization'}
+                                {isLogin ? 'Create New Account' : 'Back to Login'}
                             </button>
                         </div>
                     ) : (
