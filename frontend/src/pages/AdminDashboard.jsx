@@ -1,24 +1,97 @@
-
-import React, { useState } from 'react';
-import { useStore } from '../context/StoreContext';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { productService, userService, uploadService } from '../services/api';
+import { toast } from 'react-hot-toast';
+
+const CATEGORY_STYLES = {
+    Common: { border: '#a3a3a3', glow: '#a3a3a355', label: 'COMMON' },
+    Rare: { border: '#3b82f6', glow: '#3b82f655', label: 'RARE' },
+    Epic: { border: '#a855f7', glow: '#a855f755', label: 'EPIC' },
+    Legendary: { border: '#eab308', glow: '#eab30855', label: 'LEGENDARY' },
+};
+
+const INITIAL_PRODUCT_STATE = {
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800',
+    backImage: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800',
+    additionalImages: [],
+    digitalTwinImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
+    type: 'Worn',
+    shortAtmosphericLine: ''
+};
 
 const AdminDashboard = () => {
-    const { products, orders, addProduct, removeProduct, currentUser, vaultItems, users } = useStore();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isAdding, setIsAdding] = useState(false);
-    const [newProduct, setNewProduct] = useState({
-        name: '',
-        description: '',
-        price: '',
-        stock: '',
-        image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800',
-        backImage: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800',
-        digitalTwinImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
-        faction: 'Core',
-        shortAtmosphericLine: ''
+    const [isSavingProduct, setIsSavingProduct] = useState(false);
+    const [products, setProducts] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const [vaultItems, setVaultItems] = useState([]);
+
+    // ── Vault Cards ────────────────────────────────────────────────────────
+    const [vaultCards, setVaultCards] = useState([]);
+    const [isAddingCard, setIsAddingCard] = useState(false);
+    const [cardSaving, setCardSaving] = useState(false);
+    const [newCard, setNewCard] = useState({
+        name: '', description: '', frontImage: '', backImage: '', category: 'Common'
     });
+
+    // ── Filters & Search ───────────────────────────────────────────────────
+    const [userSearch, setUserSearch] = useState('');
+    const [productSearch, setProductSearch] = useState('');
+    const [orderFilter, setOrderFilter] = useState('All');
+
+    // Fetch real data from backend
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productsData, ordersData, usersData, userData, cardsData] = await Promise.all([
+                    productService.getProducts(),
+                    userService.getUserOrders(),
+                    userService.getUsers(),
+                    userService.getCurrentUser(),
+                    productService.getVaultCards(),
+                ]);
+                setProducts(productsData.products || []);
+                setOrders(ordersData || []);
+                setUsers(usersData || []);
+                setCurrentUser(userData || null);
+                setVaultCards(cardsData || []);
+                const vaultData = await productService.getVaultItems();
+                setVaultItems(vaultData || []);
+            } catch (error) {
+                console.error('Failed to fetch admin data:', error);
+                toast.error('Failed to load admin data');
+            } finally {
+                setIsAuthLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // ── Products ──────────────────────────────────────────────────────────
+    const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
+    const [editingProductId, setEditingProductId] = useState(null);
+
+    // Show spinner while profile is being fetched
+    if (isAuthLoading) {
+        return (
+            <div className="h-screen bg-black flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Verifying Clearance...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!currentUser || currentUser.role !== 'admin') {
         return (
@@ -40,39 +113,142 @@ const AdminDashboard = () => {
         );
     }
 
-    const handleAddProduct = (e) => {
+    const handleImageUpload = async (e, fieldName) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const uploadPromise = uploadService.uploadImage(file);
+        toast.promise(uploadPromise, {
+            loading: 'Uploading image...',
+            success: 'Image uploaded!',
+            error: 'Failed to upload image'
+        });
+
+        try {
+            const url = await uploadPromise;
+            setNewProduct(prev => ({ ...prev, [fieldName]: url }));
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
+    };
+
+    const handleAdditionalImageUpload = async (e, index) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const uploadPromise = uploadService.uploadImage(file);
+        toast.promise(uploadPromise, {
+            loading: 'Uploading additional image...',
+            success: 'Image uploaded!',
+            error: 'Failed to upload image'
+        });
+
+        try {
+            const url = await uploadPromise;
+            setNewProduct(prev => {
+                const updated = [...prev.additionalImages];
+                updated[index] = url;
+                return { ...prev, additionalImages: updated };
+            });
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
+    };
+
+    const handleCardImageUpload = async (e, fieldName) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const uploadPromise = uploadService.uploadImage(file);
+        toast.promise(uploadPromise, {
+            loading: 'Uploading card image...',
+            success: 'Image uploaded!',
+            error: 'Failed to upload image'
+        });
+
+        try {
+            const url = await uploadPromise;
+            setNewCard(prev => ({ ...prev, [fieldName]: url }));
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
+    };
+
+    const handleAddProduct = async (e) => {
         e.preventDefault();
         // Validation: Cannot publish without digital twin
         if (!newProduct.digitalTwinImage) {
-            alert('Error: Digital Twin Image is mandatory.');
+            toast.error('Error: Digital Twin Image is mandatory.');
             return;
         }
 
-        const p = {
-            ...newProduct,
-            id: `ART-${Date.now()}`,
-            price: Number(newProduct.price),
-            stock: Number(newProduct.stock)
-        };
-        addProduct(p);
-        setIsAdding(false);
+        setIsSavingProduct(true);
+        try {
+            const productData = {
+                ...newProduct,
+                images: [newProduct.image, newProduct.backImage, newProduct.digitalTwinImage, ...newProduct.additionalImages],
+                price: Number(newProduct.price),
+                stock: Number(newProduct.stock)
+            };
+
+            if (editingProductId) {
+                const updated = await productService.updateProduct(editingProductId, productData);
+                setProducts(prev => prev.map(p => {
+                    const idToMatch = p._id || p.id;
+                    const resultId = updated._id || updated.id || updated.product?._id || updated.product?.id;
+                    return idToMatch === editingProductId ? (updated.product || updated) : p;
+                }));
+                toast.success('Product updated successfully!');
+            } else {
+                const created = await productService.createProduct(productData);
+                setProducts(prev => [created.product || created, ...prev]);
+                toast.success('Product added successfully!');
+            }
+
+            setIsAdding(false);
+            setEditingProductId(null);
+            setNewProduct(INITIAL_PRODUCT_STATE);
+        } catch (error) {
+            console.error('Failed to save product:', error);
+            toast.error(error?.response?.data?.message || 'Failed to save product');
+        } finally {
+            setIsSavingProduct(false);
+        }
+    };
+
+    const handleEditClick = (product) => {
+        setEditingProductId(product._id || product.id);
         setNewProduct({
-            name: '',
-            description: '',
-            price: '',
-            stock: '',
-            image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800',
-            backImage: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800',
-            digitalTwinImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
-            faction: 'Core',
-            shortAtmosphericLine: ''
+            name: product.name || '',
+            description: product.description || '',
+            price: product.price || '',
+            stock: product.stock || '',
+            image: product.images?.[0] || product.image || '',
+            backImage: product.images?.[1] || product.backImage || '',
+            digitalTwinImage: product.images?.[2] || product.digitalTwinImage || '',
+            additionalImages: product.images?.slice(3) || product.additionalImages || [],
+            type: product.type || 'Worn',
+            shortAtmosphericLine: product.shortAtmosphericLine || ''
         });
+        setIsAdding(true);
+    };
+
+    const handleDeleteProduct = async (id) => {
+        if (!window.confirm('Are you certain you wish to purge this product?')) return;
+        try {
+            await productService.deleteProduct(id);
+            setProducts(prev => prev.filter(p => (p._id || p.id) !== id));
+            toast.success('Product purged from database.');
+        } catch (error) {
+            console.error('Failed to delete product:', error);
+            toast.error(error?.response?.data?.message || 'Failed to delete product');
+        }
     };
 
     const StatusWidget = ({ label, value, color = 'primary' }) => (
         <div className="glass border-white/5 p-6 flex flex-col justify-between h-32 relative group overflow-hidden">
             <div className={`absolute top-0 right-0 w-16 h-16 bg-${color}/10 blur-2xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-${color}/20 transition-all`}></div>
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">{label}</span>
+            <span className="text-[10px] font-black uppercase tracking-0.3em text-gray-500">{label}</span>
             <span className={`text-4xl font-oswald font-bold text-${color} tracking-tighter`}>{value}</span>
             <div className={`absolute bottom-0 left-0 h-0.5 bg-${color}/40 w-0 group-hover:w-full transition-all duration-500`}></div>
         </div>
@@ -98,7 +274,7 @@ const AdminDashboard = () => {
                             { id: 'products', label: 'Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
                             { id: 'orders', label: 'Orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
                             { id: 'vault', label: 'Vault', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-                            { id: 'users', label: 'Users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' }
+                            { id: 'users', label: 'Users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -160,7 +336,11 @@ const AdminDashboard = () => {
                                     <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage your store products</p>
                                 </div>
                                 <button
-                                    onClick={() => setIsAdding(!isAdding)}
+                                    onClick={() => {
+                                        setIsAdding(!isAdding);
+                                        setEditingProductId(null);
+                                        setNewProduct(INITIAL_PRODUCT_STATE);
+                                    }}
                                     className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAdding ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white hover:text-black'}`}
                                 >
                                     {isAdding ? 'Cancel' : '+ Add New Product'}
@@ -226,20 +406,60 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image (URL)</label>
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image</label>
                                                     <input
-                                                        className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all"
-                                                        value={newProduct.image}
-                                                        onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                        onChange={e => handleImageUpload(e, 'image')}
                                                     />
+                                                    {newProduct.image && !newProduct.image.includes('unsplash') && (
+                                                        <p className="mt-1 text-[8px] text-accent truncate">Uploaded: {newProduct.image}</p>
+                                                    )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image (URL)</label>
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image</label>
                                                     <input
-                                                        className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all"
-                                                        value={newProduct.backImage}
-                                                        onChange={e => setNewProduct({ ...newProduct, backImage: e.target.value })}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                        onChange={e => handleImageUpload(e, 'backImage')}
                                                     />
+                                                    {newProduct.backImage && !newProduct.backImage.includes('unsplash') && (
+                                                        <p className="mt-1 text-[8px] text-accent truncate">Uploaded: {newProduct.backImage}</p>
+                                                    )}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Additional Images (URLs)</label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setNewProduct({ ...newProduct, additionalImages: [...newProduct.additionalImages, ''] })}
+                                                            className="text-[9px] font-black text-primary hover:text-accent uppercase transition-colors"
+                                                        >
+                                                            + Add Image
+                                                        </button>
+                                                    </div>
+                                                    {newProduct.additionalImages.map((imgUrl, index) => (
+                                                        <div key={index} className="flex gap-2 mt-2">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                                onChange={e => handleAdditionalImageUpload(e, index)}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const updatedImages = newProduct.additionalImages.filter((_, i) => i !== index);
+                                                                    setNewProduct({ ...newProduct, additionalImages: updatedImages });
+                                                                }}
+                                                                className="px-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xl font-black"
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
@@ -251,13 +471,17 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="lg:col-span-2 space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Digital Image (URL) *Required</label>
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Digital Image *Required</label>
                                                     <input
-                                                        className="w-full bg-white/5 border border-accent/20 p-4 text-[10px] text-gray-500 outline-none focus:border-accent transition-all"
-                                                        value={newProduct.digitalTwinImage}
-                                                        onChange={e => setNewProduct({ ...newProduct, digitalTwinImage: e.target.value })}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="w-full bg-white/5 border border-accent/20 p-4 text-[10px] text-gray-500 outline-none focus:border-accent transition-all file:border-0 file:bg-accent file:text-black file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                        onChange={e => handleImageUpload(e, 'digitalTwinImage')}
                                                         required
                                                     />
+                                                    {newProduct.digitalTwinImage && !newProduct.digitalTwinImage.includes('unsplash') && (
+                                                        <p className="mt-1 text-[8px] text-accent truncate">Uploaded: {newProduct.digitalTwinImage}</p>
+                                                    )}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Short Tagline</label>
@@ -271,27 +495,38 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Faction Assignment</label>
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Type</label>
                                                     <select
                                                         className="w-full bg-black border border-white/10 p-4 text-xs font-bold uppercase tracking-widest text-primary outline-none focus:border-primary"
-                                                        value={newProduct.faction}
-                                                        onChange={e => setNewProduct({ ...newProduct, faction: e.target.value })}
+                                                        value={newProduct.type}
+                                                        onChange={e => setNewProduct({ ...newProduct, type: e.target.value })}
                                                     >
-                                                        <option value="Core">Core</option>
-                                                        <option value="Expanse">Expanse</option>
-                                                        <option value="Sentinel">Sentinel</option>
-                                                        <option value="Void">Void</option>
+                                                        <option value="Worn">Worn</option>
+                                                        <option value="Refined">Refined</option>
+                                                        <option value="Exalted">Exalted</option>
+                                                        <option value="Mythic">Mythic</option>
                                                     </select>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <button type="submit" className="w-full py-6 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all shadow-2xl">
-                                            Add Product
+                                        <button disabled={isSavingProduct} type="submit" className="w-full py-6 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed">
+                                            {isSavingProduct ? (editingProductId ? 'Saving...' : 'Publishing...') : (editingProductId ? 'Save Changes' : 'Add Product')}
                                         </button>
                                     </form>
                                 </div>
                             )}
+
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-[12px] font-black uppercase text-white/50 tracking-widest">Inventory List</h4>
+                                <input
+                                    type="text"
+                                    placeholder="SEARCH PRODUCTS..."
+                                    className="bg-black/50 border border-white/10 px-4 py-2 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest w-64"
+                                    value={productSearch}
+                                    onChange={(e) => setProductSearch(e.target.value)}
+                                />
+                            </div>
 
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
@@ -306,13 +541,13 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
-                                        {products.map(p => (
-                                            <tr key={p.id} className="group hover:bg-white/5 transition-all">
-                                                <td className="py-6 font-mono text-xs text-gray-600">#{p.id.slice(-6)}</td>
+                                        {products.filter(p => !productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase())).map(p => (
+                                            <tr key={p._id || p.id} className="group hover:bg-white/5 transition-all">
+                                                <td className="py-6 font-mono text-xs text-gray-600">#{(p._id || p.id || '').slice(-6)}</td>
                                                 <td className="py-6">
                                                     <div className="flex gap-2">
-                                                        <img src={p.image} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="" />
-                                                        <img src={p.digitalTwinImage} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="" />
+                                                        <img src={p.images?.[0] || p.image} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="" />
+                                                        <img src={p.images?.[2] || p.digitalTwinImage} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="" />
                                                     </div>
                                                 </td>
                                                 <td className="py-6">
@@ -320,14 +555,14 @@ const AdminDashboard = () => {
                                                     <p className="text-accent font-mono text-[10px]">₹{p.price}</p>
                                                 </td>
                                                 <td className="py-6">
-                                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.faction === 'Void' ? 'purple-500' : 'primary'}/30 text-white/70`}>
-                                                        {p.faction}
+                                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.type === 'Mythic' ? 'purple-500' : 'primary'}/30 text-white/70`}>
+                                                        {p.type || p.faction}
                                                     </span>
                                                 </td>
                                                 <td className="py-6 font-mono text-xs">{p.stock || '∞'}</td>
                                                 <td className="py-6 text-right space-x-4">
-                                                    <button className="text-gray-500 hover:text-white text-[9px] font-black uppercase">Edit</button>
-                                                    <button onClick={() => removeProduct(p.id)} className="text-red-500 hover:text-white text-[9px] font-black uppercase">Delete</button>
+                                                    <button onClick={() => handleEditClick(p)} className="text-gray-500 hover:text-white text-[9px] font-black uppercase">Edit</button>
+                                                    <button onClick={() => handleDeleteProduct(p._id || p.id)} className="text-red-500 hover:text-white text-[9px] font-black uppercase">Delete</button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -349,6 +584,16 @@ const AdminDashboard = () => {
                                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
                                         <span className="text-[9px] font-bold uppercase text-gray-400">Shopify Linked</span>
                                     </div>
+                                    <select
+                                        className="bg-black border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50 appearance-none cursor-pointer"
+                                        value={orderFilter}
+                                        onChange={(e) => setOrderFilter(e.target.value)}
+                                    >
+                                        <option value="All">All Statuses</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Delivered">Delivered</option>
+                                    </select>
                                     <button className="px-6 py-2 border border-white/10 text-[9px] font-black uppercase tracking-widest hover:border-primary transition-all">Sync Now</button>
                                 </div>
                             </div>
@@ -366,12 +611,12 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
-                                        {orders.length === 0 ? (
+                                        {orders.filter(o => orderFilter === 'All' || o.status === orderFilter).length === 0 ? (
                                             <tr>
                                                 <td colSpan={6} className="py-20 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em]">No orders found</td>
                                             </tr>
                                         ) : (
-                                            orders.map(o => (
+                                            orders.filter(o => orderFilter === 'All' || o.status === orderFilter).map(o => (
                                                 <tr key={o.id} className="group hover:bg-white/5 transition-all">
                                                     <td className="py-6 font-mono text-xs text-gray-500">{o.id}</td>
                                                     <td className="py-6 uppercase font-bold text-xs">{o.userId}</td>
@@ -405,63 +650,192 @@ const AdminDashboard = () => {
 
                     {activeTab === 'vault' && (
                         <div className="animate-in fade-in duration-500">
-                            <div className="mb-10 lg:flex items-center justify-between">
+
+                            {/* Header */}
+                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-4">
                                 <div>
-                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Digital Vault</h3>
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">View user digital items</p>
+                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Vault Cards</h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage collectible vault cards shown to users</p>
                                 </div>
-                                <div className="flex gap-4 mt-6 lg:mt-0">
-                                    <input placeholder="Filter by User" className="glass bg-transparent border-white/10 px-4 py-2 text-[10px] uppercase font-bold text-white outline-none focus:border-primary" />
-                                    <select className="glass bg-black border-white/10 px-4 py-2 text-[10px] uppercase font-bold text-gray-400 outline-none">
-                                        <option>All Categories</option>
-                                        <option>Core</option>
-                                        <option>Void</option>
-                                    </select>
-                                </div>
+                                <button
+                                    onClick={() => setIsAddingCard(!isAddingCard)}
+                                    className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white'
+                                        }`}
+                                >
+                                    {isAddingCard ? '✕ Cancel' : '+ Add Card'}
+                                </button>
                             </div>
 
-                            <div className="glass border-white/5 overflow-hidden">
-                                <div className="bg-white/5 px-8 py-4 border-b border-white/10 flex items-center justify-between">
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-primary">Status: Active</span>
-                                    <span className="text-[9px] font-mono text-gray-600 tracking-tighter">Total Redeemed: {vaultItems?.filter(v => !v.locked).length || 0}</span>
+                            {/* Add Card Form */}
+                            {isAddingCard && (
+                                <div className="glass border-primary/20 p-8 mb-10 animate-in slide-in-from-top-4 duration-500 relative">
+                                    <div className="absolute top-0 left-0 w-16 h-px bg-accent" />
+                                    <div className="absolute top-0 left-0 w-px h-16 bg-accent" />
+                                    <h4 className="text-accent font-black uppercase tracking-[0.4em] text-xs mb-8">New Vault Card</h4>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                                        {/* Left: Text fields */}
+                                        <div className="space-y-5">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Card Name *</label>
+                                                <input
+                                                    className="w-full bg-white/5 border border-white/10 p-4 text-sm font-bold uppercase tracking-widest text-white outline-none focus:border-accent transition-all"
+                                                    placeholder="e.g. PHANTOM STRIKER"
+                                                    value={newCard.name}
+                                                    onChange={e => setNewCard({ ...newCard, name: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Description</label>
+                                                <textarea
+                                                    rows={3}
+                                                    className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white/80 outline-none focus:border-accent transition-all resize-none"
+                                                    placeholder="Card lore or description..."
+                                                    value={newCard.description}
+                                                    onChange={e => setNewCard({ ...newCard, description: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Category</label>
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    {['Silver', 'Gold', 'Diamond', 'Legendary'].map(cat => (
+                                                        <button
+                                                            key={cat}
+                                                            type="button"
+                                                            onClick={() => setNewCard({ ...newCard, category: cat })}
+                                                            className={`py-3 text-[9px] font-black uppercase tracking-widest transition-all border ${newCard.category === cat
+                                                                ? 'text-black'
+                                                                : 'border-white/10 text-gray-500 hover:border-white/30'
+                                                                }`}
+                                                            style={newCard.category === cat ? {
+                                                                background: CATEGORY_STYLES[cat]?.border,
+                                                                borderColor: CATEGORY_STYLES[cat]?.border,
+                                                                color: '#000'
+                                                            } : {}}
+                                                        >
+                                                            {cat}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Image URLs + previews */}
+                                        <div className="space-y-5">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image *</label>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="w-full bg-white/5 border border-white/10 p-4 text-[11px] text-gray-400 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                    onChange={e => handleCardImageUpload(e, 'frontImage')}
+                                                />
+                                                {newCard.frontImage && (
+                                                    <img src={newCard.frontImage} alt="front" className="w-full h-32 object-cover border border-white/10 mt-2" onError={e => e.target.style.display = 'none'} />
+                                                )}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image *</label>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="w-full bg-white/5 border border-white/10 p-4 text-[11px] text-gray-400 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                    onChange={e => handleCardImageUpload(e, 'backImage')}
+                                                />
+                                                {newCard.backImage && (
+                                                    <img src={newCard.backImage} alt="back" className="w-full h-32 object-cover border border-white/10 mt-2" onError={e => e.target.style.display = 'none'} />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        disabled={cardSaving || !newCard.name || !newCard.frontImage || !newCard.backImage}
+                                        onClick={async () => {
+                                            setCardSaving(true);
+                                            try {
+                                                const created = await productService.createVaultCard(newCard);
+                                                setVaultCards(prev => [created, ...prev]);
+                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'Common' });
+                                                setIsAddingCard(false);
+                                                toast.success('Card added to vault!');
+                                            } catch (err) {
+                                                toast.error(err?.response?.data?.message || 'Failed to save card');
+                                            } finally {
+                                                setCardSaving(false);
+                                            }
+                                        }}
+                                        className="w-full py-5 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                        {cardSaving ? 'Saving...' : 'Save Card to Vault'}
+                                    </button>
                                 </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <thead className="text-[9px] font-black uppercase tracking-widest text-gray-500 px-8">
-                                            <tr className="border-b border-white/5">
-                                                <th className="py-4 pl-8">Item ID</th>
-                                                <th className="py-4">Item Name</th>
-                                                <th className="py-4">Category</th>
-                                                <th className="py-4">Redemption Code</th>
-                                                <th className="py-4 pr-8">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-white/5">
-                                            {(vaultItems || []).map(v => (
-                                                <tr key={v.id} className="hover:bg-white/5 transition-all cursor-default">
-                                                    <td className="py-6 pl-8 font-mono text-[10px] text-gray-500">#{v.id}</td>
-                                                    <td className="py-6 flex items-center gap-4">
-                                                        <img src={v.image} className="w-10 h-10 border border-white/20" alt="" />
-                                                        <span className="font-bold uppercase text-xs tracking-tight">{v.name}</span>
-                                                    </td>
-                                                    <td className="py-6 text-[10px] text-gray-400 font-black uppercase">Standard Item</td>
-                                                    <td className="py-6 font-mono text-[10px] text-accent font-bold tracking-[0.2em]">{v.locked ? '********' : v.code}</td>
-                                                    <td className="py-6 pr-8">
-                                                        <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-sm ${v.locked ? 'bg-gray-800 text-gray-500' : 'bg-green-500/20 text-green-400 border border-green-500/30'}`}>
-                                                            {v.locked ? 'LOCKED' : 'REDEEMED'}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {(!vaultItems || vaultItems.length === 0) && (
-                                                <tr>
-                                                    <td colSpan={5} className="py-20 text-center text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">Vault is empty</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                            )}
+
+                            {/* Cards Grid */}
+                            {vaultCards.length === 0 ? (
+                                <div className="glass border-white/5 py-20 text-center">
+                                    <p className="text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">No cards yet — click + Add Card to create one</p>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {vaultCards.map(card => {
+                                        const style = CATEGORY_STYLES[card.category] || CATEGORY_STYLES.Common;
+                                        return (
+                                            <div
+                                                key={card._id}
+                                                className="relative group glass overflow-hidden rounded-lg"
+                                                style={{ borderColor: style.border, boxShadow: `0 0 20px ${style.glow}` }}
+                                            >
+                                                {/* Front image */}
+                                                <div className="relative aspect-[3/4] overflow-hidden">
+                                                    <img
+                                                        src={card.frontImage}
+                                                        alt={card.name}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                    />
+                                                    {/* Category badge */}
+                                                    <span
+                                                        className="absolute top-3 left-3 text-[8px] font-black uppercase tracking-widest px-2 py-1"
+                                                        style={{ background: style.border, color: '#000' }}
+                                                    >
+                                                        {style.label}
+                                                    </span>
+                                                    {/* Hover: show back image */}
+                                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                                        <img src={card.backImage} alt="back" className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                            <span className="text-[9px] font-mono text-white/60 tracking-widest uppercase">Back View</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* Info */}
+                                                <div className="p-4">
+                                                    <h4 className="font-black uppercase tracking-widest text-sm text-white mb-1 truncate">{card.name}</h4>
+                                                    {card.description && (
+                                                        <p className="text-[10px] text-gray-500 line-clamp-2">{card.description}</p>
+                                                    )}
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!window.confirm(`Delete "${card.name}"?`)) return;
+                                                            try {
+                                                                await productService.deleteVaultCard(card._id);
+                                                                setVaultCards(prev => prev.filter(c => c._id !== card._id));
+                                                                toast.success('Card deleted');
+                                                            } catch {
+                                                                toast.error('Failed to delete');
+                                                            }
+                                                        }}
+                                                        className="mt-3 text-[8px] font-black uppercase tracking-widest text-red-500 hover:text-white transition-colors"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -470,6 +844,17 @@ const AdminDashboard = () => {
                             <div className="mb-10">
                                 <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Active Operatives</h3>
                                 <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Total Registered Users: {users?.length || 0}</p>
+                            </div>
+
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-[12px] font-black uppercase text-white/50 tracking-widest">Operator List</h4>
+                                <input
+                                    type="text"
+                                    placeholder="SEARCH BY NAME OR EMAIL..."
+                                    className="bg-black/50 border border-white/10 px-4 py-2 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest w-64"
+                                    value={userSearch}
+                                    onChange={(e) => setUserSearch(e.target.value)}
+                                />
                             </div>
 
                             <div className="glass border-white/5 overflow-hidden">
@@ -485,7 +870,12 @@ const AdminDashboard = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
-                                            {(users || []).map((u) => {
+                                            {(users || []).filter(u => {
+                                                const searchStr = userSearch.toLowerCase();
+                                                const name = (u.username || u.name || 'Operator').toLowerCase();
+                                                const email = (u.email || '').toLowerCase();
+                                                return !searchStr || name.includes(searchStr) || email.includes(searchStr);
+                                            }).map((u) => {
                                                 const name = u.username || u.name || 'Operator';
                                                 const created = u.createdAt ? new Date(u.createdAt) : null;
                                                 return (
@@ -538,8 +928,9 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
+
             {/* Global Admin Styles */}
-            <style>{`
+            < style > {`
                 .glass {
                     background: rgba(255, 255, 255, 0.03);
                     backdrop-filter: blur(10px);
@@ -557,8 +948,8 @@ const AdminDashboard = () => {
                 .reveal {
                     animation: slideInUp 0.8s ease-out forwards;
                 }
-            `}</style>
-        </div>
+            `}</style >
+        </div >
     );
 };
 

@@ -14,10 +14,25 @@ api.interceptors.request.use((config) => {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
         const { token } = JSON.parse(userInfo);
-        config.headers.Authorization = `Bearer ${token}`;
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
     }
     return config;
 });
+
+// Handle token expiration and errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem('userInfo');
+            window.location.href = '/auth';
+        }
+        return Promise.reject(error);
+    }
+);
 
 export const authService = {
     login: async (email, password) => {
@@ -52,8 +67,16 @@ export const authService = {
         const response = await api.get('/orders/myorders');
         return response.data;
     },
-    logout: () => {
-        localStorage.removeItem('userInfo');
+    logout: async () => {
+        try {
+            // Call backend logout endpoint
+            await api.post('/auth/logout');
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            // Always remove local storage even if backend call fails
+            localStorage.removeItem('userInfo');
+        }
     },
 };
 
@@ -68,6 +91,39 @@ export const productService = {
     },
     createProduct: async (productData) => {
         const response = await api.post('/products', productData);
+        return response.data;
+    },
+    updateProduct: async (id, productData) => {
+        const response = await api.put(`/products/${id}`, productData);
+        return response.data;
+    },
+    deleteProduct: async (id) => {
+        const response = await api.delete(`/products/${id}`);
+        return response.data;
+    },
+    getDigitalCars: async () => {
+        const response = await api.get('/products?type=digital&category=Digital Car');
+        return response.data;
+    },
+    getPhysicalProducts: async () => {
+        const response = await api.get('/products?type=physical');
+        return response.data;
+    },
+    getVaultItems: async () => {
+        const response = await api.get('/vault/all');
+        return response.data;
+    },
+
+    getVaultCards: async () => {
+        const response = await api.get('/vault/cards');
+        return response.data;
+    },
+    createVaultCard: async (cardData) => {
+        const response = await api.post('/vault/cards', cardData);
+        return response.data;
+    },
+    deleteVaultCard: async (id) => {
+        const response = await api.delete(`/vault/cards/${id}`);
         return response.data;
     },
 };
@@ -92,10 +148,31 @@ export const userService = {
         const response = await api.get('/users');
         return response.data;
     },
+    getCurrentUser: async () => {
+        const response = await api.get('/auth/profile');
+        return response.data;
+    },
     getDashboardStats: async () => {
         const response = await api.get('/users/dashboard/stats');
         return response.data;
     },
+    getUserOrders: async () => {
+        const response = await api.get('/orders/myorders');
+        return response.data;
+    },
+};
+
+export const uploadService = {
+    uploadImage: async (file) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await api.post('/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data.url;
+    }
 };
 
 export default api;

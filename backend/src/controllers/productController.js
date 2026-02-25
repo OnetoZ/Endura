@@ -9,11 +9,11 @@ const asyncHandler = require('../utils/asyncHandler');
  * Query params: ?faction=Core&search=alpha&page=1&limit=12&category=gear
  */
 const getProducts = asyncHandler(async (req, res) => {
-    const { faction, search, category, page = 1, limit = 12 } = req.query;
+    const { type, search, category, page = 1, limit = 12 } = req.query;
 
     const filter = { isActive: true };
 
-    if (faction) filter.faction = faction;
+    if (type) filter.type = type;
     if (category) filter.category = { $regex: category, $options: 'i' };
     if (search) filter.name = { $regex: search, $options: 'i' };
 
@@ -55,13 +55,13 @@ const getProductById = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const createProduct = asyncHandler(async (req, res) => {
-    const { name, price, description, faction, images, category, stock, shortAtmosphericLine, digitalTwinMetadata } = req.body;
+    const { name, price, description, type, images, category, stock, shortAtmosphericLine, digitalTwinMetadata } = req.body;
 
     const product = await Product.create({
         name,
         price,
         description,
-        faction,
+        type,
         images: images || [],
         category,
         stock,
@@ -85,7 +85,7 @@ const updateProduct = asyncHandler(async (req, res) => {
         throw new Error('Product not found');
     }
 
-    const fields = ['name', 'price', 'description', 'faction', 'images', 'category', 'stock', 'isActive', 'shortAtmosphericLine', 'digitalTwinMetadata'];
+    const fields = ['name', 'price', 'description', 'type', 'images', 'category', 'stock', 'isActive', 'shortAtmosphericLine', 'digitalTwinMetadata'];
     fields.forEach(f => {
         if (req.body[f] !== undefined) product[f] = req.body[f];
     });

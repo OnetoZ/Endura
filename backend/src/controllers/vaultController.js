@@ -7,7 +7,7 @@ const asyncHandler = require('../utils/asyncHandler');
  */
 const getUserVault = asyncHandler(async (req, res) => {
     const items = await VaultItem.find({ user: req.user._id })
-        .populate('product', 'name images faction')
+        .populate('product', 'name images type')
         .sort({ createdAt: -1 });
 
     res.json(items);

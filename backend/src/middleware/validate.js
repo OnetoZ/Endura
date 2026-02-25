@@ -30,12 +30,17 @@ const loginValidation = [
     validate
 ];
 
+const adminCheckValidation = [
+    body('email').isEmail().withMessage('Valid email is required'),
+    validate
+];
+
 // Product Validations
 const productValidation = [
     body('name').notEmpty().withMessage('Product name is required'),
     body('price').isNumeric().withMessage('Price must be a number'),
     body('description').notEmpty().withMessage('Description is required'),
-    body('faction').isIn(['Core', 'Expanse', 'Sentinel', 'Void']).withMessage('Invalid faction'),
+    body('type').isIn(['Worn', 'Refined', 'Exalted', 'Mythic']).withMessage('Invalid type'),
     validate
 ];
 
@@ -50,6 +55,7 @@ const orderValidation = [
 module.exports = {
     registerValidation,
     loginValidation,
+    adminCheckValidation,
     productValidation,
     orderValidation
 };

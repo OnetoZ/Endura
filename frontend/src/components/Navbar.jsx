@@ -140,6 +140,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                     <div className="relative group">
                                         <button className="flex items-center gap-3 group">
                                             <div className="text-right hidden sm:block">
+                                                <p className="text-[8px] text-accent uppercase font-black tracking-[0.2em]">Admin</p>
                                                 <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{(currentUser.username || currentUser.name || 'Admin').toUpperCase()}</p>
                                             </div>
                                             <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">

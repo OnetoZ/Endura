@@ -22,6 +22,9 @@ export default {
                 inter: ['Inter', 'sans-serif'],
                 oswald: ['Oswald', 'sans-serif'],
             },
+            letterSpacing: {
+                '0.3em': '0.3em',
+            },
         },
     },
     plugins: [],

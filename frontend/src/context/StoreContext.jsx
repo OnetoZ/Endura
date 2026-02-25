@@ -5,18 +5,8 @@ import { authService, cartService, userService } from '../services/api';
 
 const StoreContext = createContext(undefined);
 
-const INITIAL_PRODUCTS = [
-    { id: '1', name: 'Ghost Core Tee', price: 2499, category: 'Apparel', type: 'physical', subcategory: 'T-Shirt', image: '/collections img/Ghost_Boxy_Oversized_Tshirt_front.webp', description: 'Engineered for performance. 100% premium heavy-duty cotton.', stock: 50 },
-    { id: '2', name: 'Cyberpunk Skin Pack', price: 899, category: 'Digital', type: 'digital', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800', description: 'Exclusive in-game assets for Project Endura universe.' },
-    { id: '3', name: 'Dracon Cargo 01', price: 4500, category: 'Apparel', type: 'physical', subcategory: 'Pants', image: '/collections img/Dracon_Unisex_Straight_Fit_Baggy_Pants_front.webp', description: 'Tactical aesthetics with high durability zippers.', stock: 30 },
-    { id: '4', name: 'Pierce Black Hoodie', price: 3200, category: 'Apparel', type: 'physical', subcategory: 'Hoodie', image: '/collections img/Pierce_Black_Boxy-Oversized_Hoodie_front.webp', description: 'Oversized fit with reflective print.', stock: 20 },
-    { id: '5', name: 'Music Asset Pack Vol 1', price: 1200, category: 'Digital', type: 'digital', image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800', description: 'Professional grade synthwave tracks for creators.' },
-    { id: '6', name: 'Dissect Armor Vest', price: 5500, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Dissect_Black_Boxy_Unisex_Vest_front.webp', description: 'Lightweight tactical boxy vest.', stock: 15 },
-    { id: '7', name: 'Gnarl Tactical Vest', price: 5200, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Gnarl_Red_Boxy_Unisex_Vest_front.webp', description: 'Red accent tactical vest.', stock: 25 },
-];
-
 export const AppProvider = ({ children }) => {
-    const [products, setProducts] = useState(INITIAL_PRODUCTS);
+    const [products, setProducts] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [cart, setCart] = useState([]);
     const [orders, setOrders] = useState([]);
@@ -27,6 +17,17 @@ export const AppProvider = ({ children }) => {
     // Initial sync
     useEffect(() => {
         const init = async () => {
+            try {
+                // Fetch real products from backend
+                const { productService } = await import('../services/api');
+                const productsData = await productService.getProducts();
+                if (productsData && productsData.products) {
+                    setProducts(productsData.products);
+                }
+            } catch (err) {
+                console.error('Failed to load products from backend:', err);
+            }
+
             const userInfoRaw = localStorage.getItem('userInfo');
             if (userInfoRaw) {
                 const parsed = JSON.parse(userInfoRaw);

@@ -30,10 +30,10 @@ const productSchema = new mongoose.Schema({
         required: [true, 'Product price is required'],
         min: [0, 'Price cannot be negative'],
     },
-    faction: {
+    type: {
         type: String,
-        enum: ['Core', 'Expanse', 'Sentinel', 'Void'],
-        default: 'Core',
+        enum: ['Worn', 'Refined', 'Exalted', 'Mythic'],
+        default: 'Worn',
     },
     category: {
         type: String,

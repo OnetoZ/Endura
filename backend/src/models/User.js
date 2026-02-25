@@ -26,7 +26,9 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
+        required: function () {
+            return this.role !== 'admin'; // Password not required for admin users
+        },
         minlength: [6, 'Password must be at least 6 characters'],
     },
     role: {
@@ -47,6 +49,28 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         default: null,
+    },
+    // 2-Factor Authentication
+    twoFactorEnabled: {
+        type: Boolean,
+        default: false,
+    },
+    twoFactorMethod: {
+        type: String,
+        enum: ['email', 'sms'],
+        default: 'email',
+    },
+    twoFactorSecret: {
+        type: String,
+        select: false, // Never return in queries
+    },
+    twoFactorCode: {
+        type: String,
+        select: false, // Never return in queries
+    },
+    twoFactorCodeExpires: {
+        type: Date,
+        select: false, // Never return in queries
     },
     isVerified: {
         type: Boolean,
@@ -129,26 +153,28 @@ const userSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-// Hash password before saving (skip if it's a Google OAuth placeholder)
+// Hash password before saving (skip if it's a Google OAuth placeholder or admin without password)
 userSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
+    if (!this.isModified('password') || !this.password) return;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
+    if (!this.password) return false; // Admin users without passwords
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Calculate user tier based on credits
-userSchema.methods.getTier = function() {
-    if (this.credits >= 1000) return { name: 'Gold', level: 3 };
-    if (this.credits >= 500) return { name: 'Silver', level: 2 };
-    return { name: 'Bronze', level: 1 };
+userSchema.methods.getTier = function () {
+    if (this.credits >= 2000) return { name: 'Legendary', level: 4 };
+    if (this.credits >= 1000) return { name: 'Epic', level: 3 };
+    if (this.credits >= 500) return { name: 'Rare', level: 2 };
+    return { name: 'Common', level: 1 };
 };
 
 // Calculate profile completion percentage
-userSchema.methods.calculateProfileCompletion = function() {
+userSchema.methods.calculateProfileCompletion = function () {
     let completion = 0;
     const fields = [
         { field: this.username, weight: 20 },
@@ -157,34 +183,14 @@ userSchema.methods.calculateProfileCompletion = function() {
         { field: this.avatar, weight: 15 },
         { field: this.addresses && this.addresses.length > 0, weight: 30 },
     ];
-    
+
     fields.forEach(({ field, weight }) => {
         if (field && (typeof field !== 'string' || field.trim() !== '')) {
             completion += weight;
         }
     });
-    
+
     return Math.min(completion, 100);
 };
-
-// Update profile completion
-userSchema.pre('save', function(next) {
-    if (this.isModified('username') || this.isModified('email') || 
-        this.isModified('phone') || this.isModified('avatar') || 
-        this.isModified('addresses')) {
-        this.profileCompletion = this.calculateProfileCompletion();
-    }
-    next();
-});
-
-// Generate referral code
-userSchema.pre('save', function(next) {
-    if (!this.referralCode && this.isNew) {
-        const code = this.username.substring(0, 3).toUpperCase() + 
-                     Math.random().toString(36).substring(2, 8).toUpperCase();
-        this.referralCode = code;
-    }
-    next();
-});
 
 module.exports = mongoose.model('User', userSchema);

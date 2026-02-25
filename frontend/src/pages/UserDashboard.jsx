@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Package, MapPin, Phone, User, Mail, Save } from 'lucide-react';
+import { Lock, Package, MapPin, Phone, User, Mail, Save, Image as ImageIcon } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
-import { authService } from '../services/api';
+import { authService, productService } from '../services/api';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const { currentUser, loginWithToken } = useStore();
+    const { currentUser, loginWithToken, products } = useStore();
 
     const [editMode, setEditMode] = useState(false);
     const [nameMode, setNameMode] = useState(false);
@@ -30,42 +30,7 @@ const UserDashboard = () => {
                 setOrders(response.data || []);
             } catch (error) {
                 console.error('Failed to fetch orders:', error);
-                // Use mock data as fallback
-                setOrders([
-                    {
-                        _id: "1024",
-                        status: "Shipped",
-                        trackingId: "TRK1024",
-                        items: [
-                            { name: "Obsidian Jacket", quantity: 1, price: 299 },
-                            { name: "Phantom Hoodie", quantity: 1, price: 199 }
-                        ],
-                        totalAmount: 498,
-                        createdAt: "2026-02-15T10:30:00Z",
-                        estimatedDelivery: "Feb 22, 2026"
-                    },
-                    {
-                        _id: "1023",
-                        status: "Delivered",
-                        items: [
-                            { name: "Diamond Flux Coat", quantity: 1, price: 599 }
-                        ],
-                        totalAmount: 599,
-                        createdAt: "2026-02-10T14:20:00Z",
-                        deliveredAt: "Feb 14, 2026"
-                    },
-                    {
-                        _id: "1022",
-                        status: "Processing",
-                        items: [
-                            { name: "Noir Tactical Vest", quantity: 1, price: 449 },
-                            { name: "Solar Edge Jacket", quantity: 1, price: 399 }
-                        ],
-                        totalAmount: 848,
-                        createdAt: "2026-02-18T09:15:00Z",
-                        estimatedDelivery: "Feb 20, 2026"
-                    }
-                ]);
+                setOrders([]);
             } finally {
                 setLoadingOrders(false);
             }
@@ -77,8 +42,8 @@ const UserDashboard = () => {
     }, [currentUser]);
 
     const shippingData = {
-        address: currentUser?.addresses?.[0] ? 
-            `${currentUser.addresses[0].fullName}\n${currentUser.addresses[0].address}\n${currentUser.addresses[0].city}, ${currentUser.addresses[0].postalCode}\n${currentUser.addresses[0].country}` : 
+        address: currentUser?.addresses?.[0] ?
+            `${currentUser.addresses[0].fullName}\n${currentUser.addresses[0].address}\n${currentUser.addresses[0].city}, ${currentUser.addresses[0].postalCode}\n${currentUser.addresses[0].country}` :
             "No address set",
         phone: currentUser?.phone || "Not set",
     };
@@ -117,13 +82,72 @@ const UserDashboard = () => {
 
     if (!currentUser) return null;
 
+    // Digital Twins from Orders
+    const digitalTwins = React.useMemo(() => {
+        const items = [];
+        const addedIds = new Set();
+        orders.forEach(order => {
+            order.items?.forEach(orderItem => {
+                const product = products?.find(p => p._id === orderItem.product || p.id === orderItem.product || p.name === orderItem.name);
+                if (product && (product.images?.[2] || product.digitalTwinImage) && !addedIds.has(product._id || product.id)) {
+                    addedIds.add(product._id || product.id);
+                    items.push(product);
+                }
+            });
+        });
+        return items;
+    }, [orders, products]);
+
+    // Vault Assets from LocalStorage + API
+    const [vaultAssets, setVaultAssets] = useState([]);
+    useEffect(() => {
+        const loadVaultAssets = async () => {
+            try {
+                const savedData = localStorage.getItem('endura_vault_persistence');
+                if (!savedData) return;
+
+                const { unlockedItems } = JSON.parse(savedData);
+                if (!unlockedItems || !unlockedItems.length) return;
+
+                const dbCards = await productService.getVaultCards().catch(() => []);
+                const mappedDbCards = dbCards.map(c => ({
+                    id: c._id,
+                    _id: c._id,
+                    name: c.name,
+                    image: c.frontImage || c.image,
+                    tier: c.category
+                }));
+
+                const allVaultItems = [...mappedDbCards];
+                const uniqueUnlocked = [];
+                const seen = new Set();
+
+                unlockedItems.forEach(id => {
+                    const item = allVaultItems.find(x => x.id === id || x._id === id);
+                    if (item && !seen.has(item.id || item._id)) {
+                        seen.add(item.id || item._id);
+                        uniqueUnlocked.push(item);
+                    }
+                });
+
+                setVaultAssets(uniqueUnlocked);
+            } catch (e) {
+                console.error("Failed to load vault assets:", e);
+            }
+        };
+
+        if (products && products.length > 0) {
+            loadVaultAssets();
+        }
+    }, [products]);
+
     // Derived data mapping
     const userData = {
         name: currentUser?.username || currentUser?.name || "Endura Operator",
         userId: currentUser?._id ? currentUser._id.slice(-8).toUpperCase() : "UNKNOWN",
         credits: currentUser?.credits || 0,
-        tier: currentUser?.credits >= 1000 ? "Gold" : currentUser?.credits >= 500 ? "Silver" : "Bronze",
-        level: currentUser?.credits >= 1000 ? 3 : currentUser?.credits >= 500 ? 2 : 1,
+        tier: currentUser?.credits >= 2000 ? "Legendary" : currentUser?.credits >= 1000 ? "Epic" : currentUser?.credits >= 500 ? "Rare" : "Common",
+        level: currentUser?.credits >= 2000 ? 4 : currentUser?.credits >= 1000 ? 3 : currentUser?.credits >= 500 ? 2 : 1,
         email: currentUser?.email,
         phone: currentUser?.phone || "Not set",
         avatar: currentUser?.avatar,
@@ -173,9 +197,10 @@ const UserDashboard = () => {
 
     const getTierColor = (tier) => {
         switch (tier) {
-            case "Gold": return "text-yellow-500";
-            case "Silver": return "text-gray-400";
-            case "Bronze": return "text-orange-600";
+            case "Legendary": return "text-purple-500";
+            case "Epic": return "text-pink-500";
+            case "Rare": return "text-blue-400";
+            case "Common": return "text-gray-400";
             default: return "text-gray-500";
         }
     };
@@ -459,7 +484,7 @@ const UserDashboard = () => {
                                                 <div className="text-[10px] font-mono text-gray-600 uppercase tracking-widest">
                                                     {order.status === "Delivered" ? `DELIVERED: ${new Date(order.deliveredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : `ETA: ${order.estimatedDelivery || 'TBD'}`}
                                                 </div>
-                                                <button 
+                                                <button
                                                     onClick={() => toggleOrderDetails(order._id)}
                                                     className="px-4 py-2 border border-white/15 text-[9px] font-heading uppercase tracking-[0.25em] hover:border-primary hover:text-primary transition-all"
                                                 >
@@ -511,7 +536,7 @@ const UserDashboard = () => {
                                                                 {order.status === "Delivered" ? "Delivery Date" : "Estimated Delivery"}
                                                             </p>
                                                             <p className="text-sm text-gray-300">
-                                                                {order.status === "Delivered" 
+                                                                {order.status === "Delivered"
                                                                     ? new Date(order.deliveredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                                                                     : order.estimatedDelivery || 'TBD'}
                                                             </p>
@@ -536,7 +561,7 @@ const UserDashboard = () => {
                                 <MapPin className="w-5 h-5" />
                                 ADDRESS BOOK
                             </h2>
-                            
+
                             {/* Notification for missing address/phone */}
                             {showAddressNotification && (
                                 <motion.div
@@ -555,8 +580,8 @@ const UserDashboard = () => {
                                             </p>
                                             <p className="text-xs text-gray-400">
                                                 {!shippingData.address || shippingData.address.trim() === '' ? '• Add address ' : ''}
-                                                {(!shippingData.address || shippingData.address.trim() === '') && 
-                                                 (!shippingData.phone || shippingData.phone === 'Not set' || shippingData.phone.trim() === '') ? '& ' : ''}
+                                                {(!shippingData.address || shippingData.address.trim() === '') &&
+                                                    (!shippingData.phone || shippingData.phone === 'Not set' || shippingData.phone.trim() === '') ? '& ' : ''}
                                                 {!shippingData.phone || shippingData.phone === 'Not set' || shippingData.phone.trim() === '' ? '• Add phone number' : ''}
                                                 to complete your profile
                                             </p>
@@ -564,7 +589,7 @@ const UserDashboard = () => {
                                     </div>
                                 </motion.div>
                             )}
-                            
+
                             <div className="space-y-6">
                                 <div>
                                     <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">
@@ -590,6 +615,94 @@ const UserDashboard = () => {
                                         Add Address
                                     </button>
                                 </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Collection: Digital Twins & Vault Assets */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8, delay: 1.2 }}
+                            className="space-y-8"
+                        >
+                            {/* DIGITAL TWINS */}
+                            <div className="glass p-8 border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                                <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-[#d4af37] flex items-center gap-3">
+                                    <ImageIcon className="w-5 h-5" />
+                                    DIGITAL TWINS
+                                </h2>
+
+                                {digitalTwins.length === 0 ? (
+                                    <div className="text-center py-10 border border-white/10 bg-white/[0.02]">
+                                        <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-loose">
+                                            No digital twins collected yet.
+                                            <span className="text-gray-600 block mt-2">Purchase physical assets to unlock their digital counterparts.</span>
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                        {digitalTwins.map((item, idx) => (
+                                            <div key={idx} className="relative group overflow-hidden border border-white/20 bg-black hover:border-[#d4af37] transition-colors">
+                                                <div className="absolute inset-0 bg-[#d4af37]/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                <div className="aspect-square relative p-4 flex items-center justify-center">
+                                                    <img
+                                                        src={item.images?.[2] || item.digitalTwinImage}
+                                                        alt={`${item.name} Digital Twin`}
+                                                        className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-700 relative z-10"
+                                                    />
+                                                </div>
+                                                <div className="p-4 border-t border-white/10 bg-white/5">
+                                                    <h3 className="text-[10px] font-black uppercase text-white truncate mb-1" title={item.name}>
+                                                        {item.name}
+                                                    </h3>
+                                                    <p className="text-[#d4af37] text-[9px] uppercase tracking-widest font-bold">
+                                                        Twin Asset
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* VAULT ASSETS */}
+                            <div className="glass p-8 border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                                <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-accent flex items-center gap-3">
+                                    <Lock className="w-5 h-5" />
+                                    VAULT ASSETS
+                                </h2>
+
+                                {vaultAssets.length === 0 ? (
+                                    <div className="text-center py-10 border border-white/10 bg-white/[0.02]">
+                                        <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-loose">
+                                            No vault assets unlocked yet.
+                                            <span className="text-gray-600 block mt-2">Visit the Vault to decrypt and collect rare assets.</span>
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                        {vaultAssets.map((item, idx) => (
+                                            <div key={idx} className="relative group overflow-hidden border border-white/20 bg-black hover:border-accent transition-colors">
+                                                <div className="absolute inset-0 bg-accent/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                <div className="aspect-square relative p-4 flex items-center justify-center bg-white/[0.02]">
+                                                    <img
+                                                        src={item.image || item.images?.[0]}
+                                                        alt={`${item.name} Vault Asset`}
+                                                        className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 relative z-10 p-2"
+                                                    />
+                                                </div>
+                                                <div className="p-4 border-t border-white/10 bg-white/5">
+                                                    <h3 className="text-[10px] font-black uppercase text-white truncate mb-1" title={item.name}>
+                                                        {item.name}
+                                                    </h3>
+                                                    <p className="text-accent text-[9px] uppercase tracking-widest font-bold">
+                                                        {item.tier || 'Archived'} Tier
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     </div>
