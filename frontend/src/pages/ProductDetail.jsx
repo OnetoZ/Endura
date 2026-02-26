@@ -11,10 +11,11 @@ const ProductDetail = () => {
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('Specs');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const collectedItem = location.state?.item;
 
     useEffect(() => {
-        const found = products.find(p => p.id === id);
+        const found = products.find(p => p._id === id || p.id === id);
         if (found) setProduct(found);
     }, [id, products]);
 
@@ -53,6 +54,15 @@ const ProductDetail = () => {
         </div>
     );
 
+    // Images 0 = Front, 1 = Back, 2 = Digital Twin. We omit index 2 from the main slider.
+    const allImages = product?.images?.length
+        ? product.images.filter((_, idx) => idx !== 2)
+        : [product?.image, product?.backImage, ...(product?.additionalImages || [])].filter(Boolean);
+    const hasMultipleImages = allImages.length > 1;
+
+    const nextImage = () => setCurrentImageIndex(prev => (prev + 1) % allImages.length);
+    const prevImage = () => setCurrentImageIndex(prev => (prev - 1 + allImages.length) % allImages.length);
+
     return (
         <div className="min-h-screen bg-black pt-32 pb-20 px-6">
             <div className="container mx-auto max-w-7xl">
@@ -65,21 +75,42 @@ const ProductDetail = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
                     {/* Visual Interface */}
-                    <div className="relative group reveal active">
+                    <div className="relative group reveal active flex flex-col justify-center">
                         <div className="absolute inset-0 bg-primary/10 blur-[100px] -z-10 group-hover:bg-primary/20 transition-all"></div>
-                        <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden">
+                        <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden relative">
                             <img
-                                src={product.image}
+                                src={allImages[currentImageIndex]}
                                 className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 scale-105 group-hover:scale-100"
-                                alt={product.name}
+                                alt={`${product.name} - view ${currentImageIndex + 1}`}
                             />
+
+                            {hasMultipleImages && (
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 bg-black/80 backdrop-blur-md px-6 py-3 border border-white/10 z-20">
+                                    <button onClick={prevImage} className="text-white/50 hover:text-white transition-colors">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                                    </button>
+                                    <span className="text-[10px] font-mono font-bold text-white tracking-widest">{currentImageIndex + 1} / {allImages.length}</span>
+                                    <button onClick={nextImage} className="text-white/50 hover:text-white transition-colors">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="absolute bottom-8 right-8">
+                        <div className="absolute bottom-8 right-8 z-30 pointer-events-none">
                             <div className="glass p-4 border-white/10">
                                 <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1">Status</p>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">In Stock</span>
+                                    {product.stock > 0 ? (
+                                        <>
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">In Stock ({product.stock})</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Out of Stock</span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -161,6 +192,56 @@ const ProductDetail = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Digital Twin Showcase */}
+                {(product.images?.[2] || product.digitalTwinImage) && (
+                    <div className="mt-32 border-t border-white/5 pt-20">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            {/* Left Side: Image */}
+                            <div className="relative group block w-full max-w-md mx-auto lg:mx-0">
+                                <div className="absolute inset-0 bg-[#d4af37]/10 blur-[50px] -z-10 group-hover:bg-[#d4af37]/20 transition-all duration-700"></div>
+                                <div className="absolute inset-0 border border-[#d4af37]/30 scale-[1.02] -z-10 bg-black/50"></div>
+
+                                <div className="absolute top-4 left-4 w-12 h-12 border-t border-l border-[#d4af37] z-20"></div>
+                                <div className="absolute bottom-4 right-4 w-12 h-12 border-b border-r border-[#d4af37] z-20"></div>
+
+                                <img
+                                    src={product.images?.[2] || product.digitalTwinImage}
+                                    alt={`${product.name} Digital Twin`}
+                                    className="w-full h-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-[2000ms] shadow-2xl z-10 relative block"
+                                />
+
+                                {/* Overlay Lock Indicator */}
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-700 z-10 backdrop-blur-[2px]">
+                                    <svg className="w-12 h-12 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Text & Claim Info */}
+                            <div className="text-left space-y-6">
+                                <div className="inline-block px-3 py-1 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#d4af37] text-[10px] font-black uppercase tracking-widest mb-4">
+                                    Unlockable Asset
+                                </div>
+                                <h2 className="text-3xl md:text-5xl font-oswald font-bold uppercase tracking-widest text-white">
+                                    <span className="text-[#d4af37]">Digital Twin</span> Skin
+                                </h2>
+                                <p className="text-gray-400 text-sm leading-relaxed max-w-lg">
+                                    Experience the metaverse analog of this physical asset. Fully rigorous and engineered for next-gen digital encounters.
+                                </p>
+
+                                <div className="p-6 border border-white/10 bg-white/5 mt-8 max-w-lg">
+                                    <h4 className="text-[12px] font-black uppercase tracking-widest text-white mb-2 flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-[#d4af37]"></div>
+                                        How to Claim
+                                    </h4>
+                                    <p className="text-[11px] text-gray-500 uppercase tracking-widest leading-loose">
+                                        Purchase the physical asset to unlock its digital counterpart. Upon successful acquisition, the 1:1 digital twin skin will be automatically deposited into your <span className="text-white">Operator Vault / My Collection</span> in the user dashboard.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

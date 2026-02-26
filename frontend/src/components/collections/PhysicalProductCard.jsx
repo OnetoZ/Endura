@@ -80,7 +80,7 @@ const PhysicalProductCard = ({ product }) => {
                     className="w-full h-full relative"
                 >
                     <img
-                        src={product.image}
+                        src={product.images?.[0] || product.image}
                         alt={product.name}
                         className="w-full h-full object-cover transition-all duration-1000 grayscale-[0.4] group-hover:grayscale-0 group-hover:contrast-[1.1]"
                     />
@@ -89,14 +89,16 @@ const PhysicalProductCard = ({ product }) => {
                 </motion.div>
 
                 {/* Subcategory Badge */}
-                <div className="absolute top-6 left-6 z-10 overflow-hidden">
-                    <motion.span
-                        animate={{ y: isHovered ? 0 : 0 }}
-                        className="block text-[9px] font-black tracking-[0.4em] text-[#d4af37] uppercase px-4 py-1.5 bg-black/60 backdrop-blur-xl border border-[#d4af37]/30"
-                    >
-                        {product.subcategory}
-                    </motion.span>
-                </div>
+                {product.subcategory && (
+                    <div className="absolute top-6 left-6 z-10 overflow-hidden">
+                        <motion.span
+                            animate={{ y: isHovered ? 0 : 0 }}
+                            className="block text-[9px] font-black tracking-[0.4em] text-[#d4af37] uppercase px-4 py-1.5 bg-black/60 backdrop-blur-xl border border-[#d4af37]/30"
+                        >
+                            {product.subcategory}
+                        </motion.span>
+                    </div>
+                )}
 
                 {/* Accent Line (Bottom) */}
                 <div className="absolute bottom-0 left-0 w-full h-[1px] bg-[#d4af37] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-1000 ease-out"></div>
@@ -110,7 +112,7 @@ const PhysicalProductCard = ({ product }) => {
                 >
                     <div className="flex flex-col gap-4 w-full max-w-[180px]">
                         <Link
-                            to={`/product/${product.id}`}
+                            to={`/product/${product._id || product.id}`}
                             className="w-full py-4 bg-[#d4af37] text-black text-[10px] font-black uppercase tracking-[0.3em] text-center hover:bg-white transition-all duration-500 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
                         >
                             View Product

@@ -7,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 import { useStore } from '../context/StoreContext';
+import { productService } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
 import '../components/collections/collections.css';
@@ -306,21 +307,29 @@ const Vault = () => {
     const pageRef = useRef(null);
     const headingRef = useRef(null);
     const navigate = useNavigate();
-    const vaultItems = useMemo(() => products.filter(p =>
-        p.type === 'physical' &&
-        ['T-Shirt', 'Hoodie', 'Vest', 'Pants', 'Shorts', 'Jacket', 'Coat'].includes(p.subcategory)
-    ).map((p, idx) => {
-        let tier = 'Bronze';
-        if (idx % 8 === 0) tier = 'Diamond';
-        else if (idx % 5 === 0) tier = 'Silver';
-        else if (idx % 3 === 0) tier = 'Gold';
-        return { ...p, tier };
-    }), [products]);
+
+    // Admin-created DB cards
+    const [vaultItems, setDbCards] = useState([]);
+    useEffect(() => {
+        productService.getVaultCards()
+            .then(cards => setDbCards(cards.map(c => ({
+                id: c._id,
+                _id: c._id,
+                name: c.name,
+                description: c.description,
+                image: c.frontImage,   // front = what the flip card shows
+                backImageUrl: c.backImage,
+                tier: c.category,
+                _source: 'db'
+            }))))
+            .catch(() => { }); // silently fail if not logged in
+    }, []);
 
     // Local State
     const [unlockedIds, setUnlockedIds] = useState([]);
     const [credits, setCredits] = useState(0);
-    const [stats, setStats] = useState({ Bronze: 0, Silver: 0, Gold: 0, Diamond: 0 });
+    const [stats, setStats] = useState({ Common: 0, Rare: 0, Epic: 0, Legendary: 0 });
+    const [collectionFilter, setCollectionFilter] = useState('All');
     const [loadingDone, setLoadingDone] = useState(false);
     const [vaultReady, setVaultReady] = useState(false);
     const [exiting, setExiting] = useState(false);
@@ -340,10 +349,10 @@ const Vault = () => {
             setUnlockedIds(data.unlockedItems || []);
             setCredits(data.credits || 50);
             setStats({
-                Bronze: data.bronzeCount || 0,
-                Silver: data.silverCount || 0,
-                Gold: data.goldCount || 0,
-                Diamond: data.diamondCount || 0
+                Common: data.commonCount || 0,
+                Rare: data.rareCount || 0,
+                Epic: data.epicCount || 0,
+                Legendary: data.legendaryCount || 0
             });
         } else {
             setCredits(50);
@@ -354,10 +363,10 @@ const Vault = () => {
         const payload = {
             unlockedItems: newUnlocked,
             credits: newCredits,
-            bronzeCount: newStats.Bronze,
-            silverCount: newStats.Silver,
-            goldCount: newStats.Gold,
-            diamondCount: newStats.Diamond
+            commonCount: newStats.Common,
+            rareCount: newStats.Rare,
+            epicCount: newStats.Epic,
+            legendaryCount: newStats.Legendary
         };
         localStorage.setItem('endura_vault_persistence', JSON.stringify(payload));
     };
@@ -424,11 +433,16 @@ const Vault = () => {
 
     const chunkedItems = useMemo(() => {
         const rows = [];
-        for (let i = 0; i < vaultItems.length; i += 3) {
-            rows.push(vaultItems.slice(i, i + 3));
+        const filtered = vaultItems.filter(item => {
+            if (collectionFilter === 'Collected') return unlockedIds.includes(item.id);
+            if (collectionFilter === 'Not Collected') return !unlockedIds.includes(item.id);
+            return true;
+        });
+        for (let i = 0; i < filtered.length; i += 3) {
+            rows.push(filtered.slice(i, i + 3));
         }
         return rows;
-    }, [vaultItems]);
+    }, [vaultItems, collectionFilter, unlockedIds]);
 
     useEffect(() => {
         if (!loadingDone) return;
@@ -484,34 +498,49 @@ const Vault = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-center gap-12 text-[10px] font-mono tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
-                            <div className="flex items-center gap-3">
-                                <span className="text-white">Credits:</span>
-                                <span className="text-accent text-[12px]"><Counter value={credits} /></span>
+                        <div className="flex items-center justify-between gap-12 text-[10px] font-mono tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
+                            <div className="flex gap-12">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white">Credits:</span>
+                                    <span className="text-accent text-[12px]"><Counter value={credits} /></span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/20">Common:</span>
+                                    <span><Counter value={stats.Common} /></span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/20">Rare:</span>
+                                    <span><Counter value={stats.Rare} /></span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/20">Epic:</span>
+                                    <span><Counter value={stats.Epic} /></span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/20">Legendary:</span>
+                                    <span><Counter value={stats.Legendary} /></span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-white/20">Bronze:</span>
-                                <span><Counter value={stats.Bronze} /></span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-white/20">Silver:</span>
-                                <span><Counter value={stats.Silver} /></span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-white/20">Gold:</span>
-                                <span><Counter value={stats.Gold} /></span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-white/20">Diamond:</span>
-                                <span><Counter value={stats.Diamond} /></span>
-                            </div>
-                            <div className="pl-6 border-l border-white/5 ml-6">
-                                <button
-                                    onClick={handleResetVault}
-                                    className="text-[8px] font-mono text-white/10 hover:text-white/50 transition-colors uppercase tracking-[0.3em] border border-white/5 px-3 py-2"
+
+                            <div className="flex items-center gap-6">
+                                <select
+                                    className="bg-black/50 border border-white/10 px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-white outline-none focus:border-[#d4af37]/50 appearance-none cursor-pointer"
+                                    value={collectionFilter}
+                                    onChange={(e) => setCollectionFilter(e.target.value)}
                                 >
-                                    Reset_Vault
-                                </button>
+                                    <option value="All">View All Archives</option>
+                                    <option value="Collected">Decrypted</option>
+                                    <option value="Not Collected">Encrypted</option>
+                                </select>
+
+                                <div className="pl-6 border-l border-white/5">
+                                    <button
+                                        onClick={handleResetVault}
+                                        className="text-[8px] font-mono text-white/10 hover:text-white/50 transition-colors uppercase tracking-[0.3em] border border-white/5 px-3 py-2"
+                                    >
+                                        Reset_Vault
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

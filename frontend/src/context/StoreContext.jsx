@@ -1,131 +1,121 @@
 
 // StoreContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService, cartService, userService } from '../services/api';
 
 const StoreContext = createContext(undefined);
 
-const INITIAL_PRODUCTS = [
-    { id: '1', name: 'Ghost Core Tee', price: 2499, category: 'Apparel', type: 'physical', subcategory: 'T-Shirt', image: '/collections img/Ghost_Boxy_Oversized_Tshirt_front.webp', description: 'Engineered for performance. 100% premium heavy-duty cotton.', stock: 50 },
-    { id: '2', name: 'Cyberpunk Skin Pack', price: 899, category: 'Digital', type: 'digital', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800', description: 'Exclusive in-game assets for Project Endura universe.' },
-    { id: '3', name: 'Dracon Cargo 01', price: 4500, category: 'Apparel', type: 'physical', subcategory: 'Pants', image: '/collections img/Dracon_Unisex_Straight_Fit_Baggy_Pants_front.webp', description: 'Tactical aesthetics with high durability zippers.', stock: 30 },
-    { id: '4', name: 'Pierce Black Hoodie', price: 3200, category: 'Apparel', type: 'physical', subcategory: 'Hoodie', image: '/collections img/Pierce_Black_Boxy-Oversized_Hoodie_front.webp', description: 'Oversized fit with reflective print.', stock: 20 },
-    { id: '5', name: 'Music Asset Pack Vol 1', price: 1200, category: 'Digital', type: 'digital', image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800', description: 'Professional grade synthwave tracks for creators.' },
-    { id: '6', name: 'Dissect Armor Vest', price: 5500, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Dissect_Black_Boxy_Unisex_Vest_front.webp', description: 'Lightweight tactical vest with modular attachments.', stock: 15 },
-    { id: '7', name: 'Gnarl Tactical Vest', price: 5200, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Gnarl_Red_Boxy_Unisex_Vest_front.webp', description: 'Red accent tactical vest for high visibility operations.', stock: 25 },
-    { id: '8', name: 'Blade Training Shorts', price: 1800, category: 'Apparel', type: 'physical', subcategory: 'Shorts', image: '/collections img/Blade_Black_Unisex_Shorts_front.webp', description: 'Breathable mesh shorts designed for high-intensity training.', stock: 40 },
-    { id: '9', name: 'Zyra Stealth Shorts', price: 1950, category: 'Apparel', type: 'physical', subcategory: 'Shorts', image: '/collections img/Zyra_Black_Unisex_Shorts_front.webp', description: 'Deep black stealth shorts with reinforced stitching.', stock: 60 },
-    { id: '10', name: 'Lean Alpha Hoodie', price: 3800, category: 'Apparel', type: 'physical', subcategory: 'Hoodie', image: '/collections img/Lean_Black_Boxy_Oversized_Hoodie_front.webp', description: 'Minimalist boxy hoodie for a sharp silhouette.', stock: 20 },
-    { id: '11', name: 'Kayla Boxy Vest', price: 4800, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Kayla_Unisex_White_Boxy_Vest_front.webp', description: 'Premium white boxy vest with tactical webbing.', stock: 15 },
-    { id: '12', name: 'Obsess Grey Vest', price: 4900, category: 'Apparel', type: 'physical', subcategory: 'Vest', image: '/collections img/Obsess_Grey_Unisex_Boxy_Vest_front.webp', description: 'Tonal grey vest for urban camouflage.', stock: 15 },
-    { id: '13', name: 'Zenith Tech Tee', price: 2600, category: 'Apparel', type: 'physical', subcategory: 'T-Shirt', image: '/collections img/Whisk_6c9b9a0f7c33940bdb14af3dc5b5ca60dr.png', description: 'High-tech synthetic fabric for ultimate comfort.', stock: 35 },
-];
-
 export const AppProvider = ({ children }) => {
-    const [products, setProducts] = useState(INITIAL_PRODUCTS);
+    const [products, setProducts] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [cart, setCart] = useState([]);
-    const [orders, setOrders] = useState([
-        {
-            id: 'ORD-1723467',
-            userId: 'user_001',
-            items: [
-                { name: 'Ghost Core Tee', quantity: 2, price: 2499 },
-                { name: 'Cyberpunk Skin Pack', quantity: 1, price: 899 }
-            ],
-            total: 5897,
-            status: 'paid',
-            trackingStatus: 'In Transit - Dimension Gate Alpha',
-            creditsEarned: 589,
-            creditsUsed: 200,
-            createdAt: '2026-02-15T10:30:00Z'
-        },
-        {
-            id: 'ORD-1723468',
-            userId: 'user_002',
-            items: [
-                { name: 'Dracon Cargo 01', quantity: 1, price: 4500 },
-                { name: 'Pierce Black Hoodie', quantity: 1, price: 3200 }
-            ],
-            total: 7700,
-            status: 'processing',
-            trackingStatus: 'Scanning Dimension...',
-            creditsEarned: 770,
-            creditsUsed: 500,
-            createdAt: '2026-02-16T14:22:00Z'
-        },
-        {
-            id: 'ORD-1723469',
-            userId: 'user_003',
-            items: [
-                { name: 'Music Asset Pack Vol 1', quantity: 2, price: 1200 },
-                { name: 'Dissect Armor Vest', quantity: 1, price: 5500 }
-            ],
-            total: 7900,
-            status: 'paid',
-            trackingStatus: 'Delivered - Quantum Node 7',
-            creditsEarned: 790,
-            creditsUsed: 300,
-            createdAt: '2026-02-14T09:15:00Z'
-        },
-        {
-            id: 'ORD-1723470',
-            userId: 'user_004',
-            items: [
-                { name: 'Gnarl Tactical Vest', quantity: 1, price: 5200 }
-            ],
-            total: 5200,
-            status: 'processing',
-            trackingStatus: 'Packaging - Zero-G Facility',
-            creditsEarned: 520,
-            creditsUsed: 150,
-            createdAt: '2026-02-17T08:45:00Z'
-        }
-    ]);
-    const [vaultItems, setVaultItems] = useState([
-        { id: 'v1', name: 'Neon Samurai Skin', locked: true, image: 'https://images.unsplash.com/photo-1614728263952-84ea206f2c41?auto=format&fit=crop&q=80&w=800', code: 'ENDURA2026' },
-        { id: 'v2', name: 'Void Walker Cape', locked: true, image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800', code: 'VOID99' },
-        { id: 'v3', name: 'Quantum Blade', locked: false, image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=800', code: 'QUANTUM42' },
-        { id: 'v4', name: 'Plasma Shield', locked: false, image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800', code: 'SHIELD77' }
-    ]);
-    const [users] = useState([
-        { id: 'user_001', name: 'Alex Chen', email: 'alex.chen@endura.com', role: 'user' },
-        { id: 'user_002', name: 'Sarah Williams', email: 'sarah.w@endura.com', role: 'user' },
-        { id: 'user_003', name: 'Marcus Johnson', email: 'marcus.j@endura.com', role: 'user' },
-        { id: 'user_004', name: 'Elena Rodriguez', email: 'elena.r@endura.com', role: 'user' },
-        { id: 'user_005', name: 'David Kim', email: 'david.kim@endura.com', role: 'user' },
-        { id: 'user_006', name: 'Zara Ahmed', email: 'zara.a@endura.com', role: 'user' },
-        { id: 'user_007', name: 'Tom Wilson', email: 'tom.w@endura.com', role: 'user' },
-        { id: 'user_008', name: 'Lisa Park', email: 'lisa.p@endura.com', role: 'user' }
-    ]);
+    const [orders, setOrders] = useState([]);
+    const [vaultItems, setVaultItems] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Local storage persistence simulation
+    // Initial sync
     useEffect(() => {
-        const savedUser = localStorage.getItem('endura_user');
-        if (savedUser) setCurrentUser(JSON.parse(savedUser));
+        const init = async () => {
+            try {
+                // Fetch real products from backend
+                const { productService } = await import('../services/api');
+                const productsData = await productService.getProducts();
+                if (productsData && productsData.products) {
+                    setProducts(productsData.products);
+                }
+            } catch (err) {
+                console.error('Failed to load products from backend:', err);
+            }
 
-        const savedCart = localStorage.getItem('endura_cart');
-        if (savedCart) setCart(JSON.parse(savedCart));
+            const userInfoRaw = localStorage.getItem('userInfo');
+            if (userInfoRaw) {
+                const parsed = JSON.parse(userInfoRaw);
+                setCurrentUser(parsed);
+                await loadCart();
 
-        const savedVault = localStorage.getItem('endura_vault');
-        if (savedVault) setVaultItems(JSON.parse(savedVault));
+                // If we only have a token (common after OAuth redirect), hydrate full profile.
+                const hasIdentity = Boolean(parsed?.email || parsed?.username || parsed?._id);
+                if (!hasIdentity && parsed?.token) {
+                    try {
+                        const fresh = await authService.getProfile();
+                        setCurrentUser(fresh);
+                        localStorage.setItem('userInfo', JSON.stringify(fresh));
+                    } catch (e) {
+                        console.error('Failed to hydrate user profile:', e);
+                        localStorage.removeItem('userInfo');
+                        setCurrentUser(null);
+                    }
+                }
+            }
+            setIsLoading(false);
+        };
+
+        init();
     }, []);
 
-    const login = (email, role, name = null) => {
-        const user = {
-            id: Math.random().toString(36).substr(2, 9),
-            email,
-            name: name || email.split('@')[0],
-            role,
-            credits: 500,
-            operatorRank: role === 'admin' ? 'Master' : 'Initiate'
+    // Load users list for admin
+    useEffect(() => {
+        const syncAdminUsers = async () => {
+            if (!currentUser || currentUser.role !== 'admin') {
+                setUsers([]);
+                return;
+            }
+
+            try {
+                const data = await userService.getUsers();
+                setUsers(Array.isArray(data) ? data : []);
+            } catch (e) {
+                console.error('Failed to load users:', e);
+                setUsers([]);
+            }
         };
-        setCurrentUser(user);
-        localStorage.setItem('endura_user', JSON.stringify(user));
+
+        syncAdminUsers();
+    }, [currentUser?.role, currentUser?.token]);
+
+    const loadCart = async () => {
+        try {
+            const data = await cartService.getCart();
+            setCart(data.items || []);
+        } catch (error) {
+            console.error('Failed to load cart:', error);
+        }
+    };
+
+    const login = async (email, password) => {
+        try {
+            const data = await authService.login(email, password);
+            setCurrentUser(data);
+            await loadCart();
+            return data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Login failed';
+        }
+    };
+
+    const register = async (username, email, password, phone) => {
+        try {
+            const data = await authService.register(username, email, password, phone);
+            setCurrentUser(data);
+            await loadCart();
+            return data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Registration failed';
+        }
+    };
+
+    const loginWithToken = async (userData) => {
+        setCurrentUser(userData);
+        if (userData) localStorage.setItem('userInfo', JSON.stringify(userData));
+        await loadCart();
     };
 
     const logout = () => {
+        authService.logout();
         setCurrentUser(null);
-        localStorage.removeItem('endura_user');
+        setCart([]);
+        localStorage.removeItem('userInfo');
     };
 
     const addToCart = (product) => {
@@ -215,7 +205,7 @@ export const AppProvider = ({ children }) => {
     return (
         <StoreContext.Provider value={{
             products, currentUser, cart, orders, vaultItems, users,
-            login, logout, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
+            login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             addProduct, removeProduct, unlockVaultItem
         }}>
             {children}

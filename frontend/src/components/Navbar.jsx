@@ -54,7 +54,7 @@ const Navbar = React.forwardRef((props, ref) => {
                 <div className="max-w-[1920px] mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between">
                     {/* LEFT: Logo + System Diagnostics */}
                     <div className="flex items-center gap-8">
-                        <Link to="/" className="group relative">
+                        <Link to="/home" className="group relative">
                             {/* Logo Container with Glow */}
                             <div className="relative">
                                 <img
@@ -86,9 +86,9 @@ const Navbar = React.forwardRef((props, ref) => {
                     {/* CENTER: Navigation Links */}
                     <div className="hidden md:flex items-center gap-1">
                         {[
-                            { to: '/', label: 'Home', accent: false },
+                            { to: '/home', label: 'Home', accent: false },
                             { to: '/collections', label: 'collections', accent: false },
-                            { to: '/vault', label: 'The Vault', accent: true }
+                            ...(currentUser ? [{ to: '/vault', label: 'The Vault', accent: true }] : [])
                         ].map((link, idx) => (
                             <Link
                                 key={idx}
@@ -140,15 +140,20 @@ const Navbar = React.forwardRef((props, ref) => {
                                     <div className="relative group">
                                         <button className="flex items-center gap-3 group">
                                             <div className="text-right hidden sm:block">
-                                                <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{currentUser.name.toUpperCase()}</p>
+                                                <p className="text-[8px] text-accent uppercase font-black tracking-[0.2em]">Admin</p>
+                                                <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{(currentUser.username || currentUser.name || 'Admin').toUpperCase()}</p>
                                             </div>
                                             <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
-                                                <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
+                                                {currentUser.avatar ? (
+                                                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                                ) : (
+                                                    <span className="text-[11px] text-primary font-black">{(currentUser.username || currentUser.name || 'A').charAt(0).toUpperCase()}</span>
+                                                )}
                                                 {/* Animated Corner */}
                                                 <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
                                             </div>
                                         </button>
-                                        
+
                                         {/* Dropdown Menu */}
                                         <div className="absolute top-full right-0 mt-2 w-48 glass border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                                             <Link
@@ -158,7 +163,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                                 Admin Dashboard
                                             </Link>
                                             <button
-                                                onClick={() => { logout(); navigate('/'); }}
+                                                onClick={() => { logout(); navigate('/home'); }}
                                                 className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
                                             >
                                                 Logout
@@ -170,15 +175,21 @@ const Navbar = React.forwardRef((props, ref) => {
                                         <button className="flex items-center gap-3 group">
                                             <div className="text-right hidden sm:block">
                                                 <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em]">Agent</p>
-                                                <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">ENDURA</p>
+                                                <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">
+                                                    {(currentUser.username || currentUser.name || 'Operator').toUpperCase()}
+                                                </p>
                                             </div>
                                             <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
-                                                <span className="text-[11px] text-primary font-black">{currentUser.name.charAt(0).toUpperCase()}</span>
+                                                {currentUser.avatar ? (
+                                                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                                ) : (
+                                                    <span className="text-[11px] text-primary font-black">{(currentUser.username || currentUser.name || 'E').charAt(0).toUpperCase()}</span>
+                                                )}
                                                 {/* Animated Corner */}
                                                 <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/0 group-hover:border-accent transition-all duration-300" />
                                             </div>
                                         </button>
-                                        
+
                                         {/* Dropdown Menu */}
                                         <div className="absolute top-full right-0 mt-2 w-48 glass border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                                             <Link
@@ -188,7 +199,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                                 User Dashboard
                                             </Link>
                                             <button
-                                                onClick={() => { logout(); navigate('/'); }}
+                                                onClick={() => { logout(); navigate('/home'); }}
                                                 className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
                                             >
                                                 Logout
