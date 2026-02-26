@@ -122,6 +122,10 @@ export const productService = {
         const response = await api.post('/vault/cards', cardData);
         return response.data;
     },
+    updateVaultCard: async (id, cardData) => {
+        const response = await api.put(`/vault/cards/${id}`, cardData);
+        return response.data;
+    },
     deleteVaultCard: async (id) => {
         const response = await api.delete(`/vault/cards/${id}`);
         return response.data;

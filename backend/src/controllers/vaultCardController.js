@@ -48,4 +48,28 @@ const deleteVaultCard = asyncHandler(async (req, res) => {
     res.json({ message: 'Card deleted' });
 });
 
-module.exports = { getVaultCards, createVaultCard, deleteVaultCard };
+/**
+ * @route   PUT /api/vault/cards/:id
+ * @access  Private/Admin
+ */
+const updateVaultCard = asyncHandler(async (req, res) => {
+    const { name, description, frontImage, backImage, category } = req.body;
+
+    const card = await VaultCard.findById(req.params.id);
+
+    if (card) {
+        card.name = name || card.name;
+        card.description = description !== undefined ? description : card.description;
+        card.frontImage = frontImage || card.frontImage;
+        card.backImage = backImage || card.backImage;
+        card.category = category || card.category;
+
+        const updatedCard = await card.save();
+        res.json(updatedCard);
+    } else {
+        res.status(404);
+        throw new Error('Card not found');
+    }
+});
+
+module.exports = { getVaultCards, createVaultCard, updateVaultCard, deleteVaultCard };

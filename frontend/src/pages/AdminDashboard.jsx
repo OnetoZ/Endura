@@ -39,6 +39,7 @@ const AdminDashboard = () => {
     const [vaultCards, setVaultCards] = useState([]);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [cardSaving, setCardSaving] = useState(false);
+    const [editingCardId, setEditingCardId] = useState(null);
     const [newCard, setNewCard] = useState({
         name: '', description: '', frontImage: '', backImage: '', category: 'Common'
     });
@@ -545,9 +546,15 @@ const AdminDashboard = () => {
                                             <tr key={p._id || p.id} className="group hover:bg-white/5 transition-all">
                                                 <td className="py-6 font-mono text-xs text-gray-600">#{(p._id || p.id || '').slice(-6)}</td>
                                                 <td className="py-6">
-                                                    <div className="flex gap-2">
-                                                        <img src={p.images?.[0] || p.image} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="" />
-                                                        <img src={p.images?.[2] || p.digitalTwinImage} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="" />
+                                                    <div className="flex gap-4 items-center">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <img src={p.images?.[0] || p.image} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="Physical" />
+                                                            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Physical</span>
+                                                        </div>
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <img src={p.images?.[2] || p.digitalTwinImage} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="Digital Twin" />
+                                                            <span className="text-[8px] text-accent uppercase font-black tracking-widest">Digital Twin</span>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="py-6">
@@ -658,7 +665,11 @@ const AdminDashboard = () => {
                                     <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage collectible vault cards shown to users</p>
                                 </div>
                                 <button
-                                    onClick={() => setIsAddingCard(!isAddingCard)}
+                                    onClick={() => {
+                                        setIsAddingCard(!isAddingCard);
+                                        setEditingCardId(null);
+                                        setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'Common' });
+                                    }}
                                     className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white'
                                         }`}
                                 >
@@ -671,7 +682,7 @@ const AdminDashboard = () => {
                                 <div className="glass border-primary/20 p-8 mb-10 animate-in slide-in-from-top-4 duration-500 relative">
                                     <div className="absolute top-0 left-0 w-16 h-px bg-accent" />
                                     <div className="absolute top-0 left-0 w-px h-16 bg-accent" />
-                                    <h4 className="text-accent font-black uppercase tracking-[0.4em] text-xs mb-8">New Vault Card</h4>
+                                    <h4 className="text-accent font-black uppercase tracking-[0.4em] text-xs mb-8">{editingCardId ? 'Edit Vault Card' : 'New Vault Card'}</h4>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                                         {/* Left: Text fields */}
@@ -754,11 +765,18 @@ const AdminDashboard = () => {
                                         onClick={async () => {
                                             setCardSaving(true);
                                             try {
-                                                const created = await productService.createVaultCard(newCard);
-                                                setVaultCards(prev => [created, ...prev]);
+                                                if (editingCardId) {
+                                                    const updated = await productService.updateVaultCard(editingCardId, newCard);
+                                                    setVaultCards(prev => prev.map(c => c._id === editingCardId ? updated : c));
+                                                    toast.success('Card updated successfully!');
+                                                } else {
+                                                    const created = await productService.createVaultCard(newCard);
+                                                    setVaultCards(prev => [created, ...prev]);
+                                                    toast.success('Card added to vault!');
+                                                }
                                                 setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'Common' });
+                                                setEditingCardId(null);
                                                 setIsAddingCard(false);
-                                                toast.success('Card added to vault!');
                                             } catch (err) {
                                                 toast.error(err?.response?.data?.message || 'Failed to save card');
                                             } finally {
@@ -767,7 +785,7 @@ const AdminDashboard = () => {
                                         }}
                                         className="w-full py-5 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                                     >
-                                        {cardSaving ? 'Saving...' : 'Save Card to Vault'}
+                                        {cardSaving ? 'Saving...' : (editingCardId ? 'Save Changes' : 'Save Card to Vault')}
                                     </button>
                                 </div>
                             )}
@@ -815,21 +833,40 @@ const AdminDashboard = () => {
                                                     {card.description && (
                                                         <p className="text-[10px] text-gray-500 line-clamp-2">{card.description}</p>
                                                     )}
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (!window.confirm(`Delete "${card.name}"?`)) return;
-                                                            try {
-                                                                await productService.deleteVaultCard(card._id);
-                                                                setVaultCards(prev => prev.filter(c => c._id !== card._id));
-                                                                toast.success('Card deleted');
-                                                            } catch {
-                                                                toast.error('Failed to delete');
-                                                            }
-                                                        }}
-                                                        className="mt-3 text-[8px] font-black uppercase tracking-widest text-red-500 hover:text-white transition-colors"
-                                                    >
-                                                        Delete
-                                                    </button>
+                                                    <div className="flex gap-4 mt-3">
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingCardId(card._id);
+                                                                setNewCard({
+                                                                    name: card.name || '',
+                                                                    description: card.description || '',
+                                                                    frontImage: card.frontImage || '',
+                                                                    backImage: card.backImage || '',
+                                                                    category: card.category || 'Common'
+                                                                });
+                                                                setIsAddingCard(true);
+                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                            }}
+                                                            className="text-[8px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (!window.confirm(`Delete "${card.name}"?`)) return;
+                                                                try {
+                                                                    await productService.deleteVaultCard(card._id);
+                                                                    setVaultCards(prev => prev.filter(c => c._id !== card._id));
+                                                                    toast.success('Card deleted');
+                                                                } catch {
+                                                                    toast.error('Failed to delete');
+                                                                }
+                                                            }}
+                                                            className="text-[8px] font-black uppercase tracking-widest text-red-500 hover:text-white transition-colors"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
