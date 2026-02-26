@@ -14,11 +14,12 @@ import '../components/collections/collections.css';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
-    if (tier === 'Bronze') return '#8a6e45';
-    if (tier === 'Silver') return '#c0c0c0';
-    if (tier === 'Gold') return '#d4af37';
-    if (tier === 'Diamond') return '#b0e0e6';
-    return '#d4af37';
+    const t = tier ? tier.toLowerCase() : '';
+    if (t === 'common') return '#c0c0c0'; // Silver
+    if (t === 'rare') return '#3b82f6';   // Blue / Diamond
+    if (t === 'epic') return '#d4af37';   // Gold
+    if (t === 'legendary') return '#a855f7'; // Purple
+    return '#c0c0c0';
 };
 
 // ─── Coin Burst Animation ──────────────────────────────────────────────────
@@ -58,16 +59,17 @@ const AnimatedDragon = ({ tier, isHovered }) => {
 
     const getFilter = (tier) => {
         const base = 'contrast(1.2) brightness(1.1) saturate(1.1)';
-        switch (tier) {
-            case 'Silver':
-                return `${base} grayscale(1) brightness(1.5)`;
-            case 'Bronze':
-                return `${base} sepia(1) saturate(1.3) brightness(0.8) hue-rotate(-20deg)`;
-            case 'Diamond':
-                return `${base} hue-rotate(180deg) saturate(1.8) brightness(1.2)`;
-            case 'Gold':
+        const t = tier ? tier.toLowerCase() : '';
+        switch (t) {
+            case 'common':
+                return `${base} grayscale(1) brightness(1.5)`; // Silver
+            case 'rare':
+                return `${base} hue-rotate(180deg) saturate(1.8) brightness(1.2)`; // Diamond Blue
+            case 'legendary':
+                return `${base} hue-rotate(270deg) saturate(2) brightness(1.1)`; // Purple
+            case 'epic':
             default:
-                return base;
+                return `${base} sepia(1) saturate(1.3) brightness(1.2) hue-rotate(-20deg)`; // Gold
         }
     };
 
@@ -328,7 +330,7 @@ const Vault = () => {
     // Local State
     const [unlockedIds, setUnlockedIds] = useState([]);
     const [credits, setCredits] = useState(0);
-    const [stats, setStats] = useState({ Common: 0, Rare: 0, Epic: 0, Legendary: 0 });
+    const [stats, setStats] = useState({ common: 0, rare: 0, epic: 0, legendary: 0 });
     const [collectionFilter, setCollectionFilter] = useState('All');
     const [loadingDone, setLoadingDone] = useState(false);
     const [vaultReady, setVaultReady] = useState(false);
@@ -349,10 +351,10 @@ const Vault = () => {
             setUnlockedIds(data.unlockedItems || []);
             setCredits(data.credits || 50);
             setStats({
-                Common: data.commonCount || 0,
-                Rare: data.rareCount || 0,
-                Epic: data.epicCount || 0,
-                Legendary: data.legendaryCount || 0
+                common: data.commonCount || 0,
+                rare: data.rareCount || 0,
+                epic: data.epicCount || 0,
+                legendary: data.legendaryCount || 0
             });
         } else {
             setCredits(50);
@@ -363,10 +365,10 @@ const Vault = () => {
         const payload = {
             unlockedItems: newUnlocked,
             credits: newCredits,
-            commonCount: newStats.Common,
-            rareCount: newStats.Rare,
-            epicCount: newStats.Epic,
-            legendaryCount: newStats.Legendary
+            commonCount: newStats.common,
+            rareCount: newStats.rare,
+            epicCount: newStats.epic,
+            legendaryCount: newStats.legendary
         };
         localStorage.setItem('endura_vault_persistence', JSON.stringify(payload));
     };
@@ -385,7 +387,8 @@ const Vault = () => {
         if (isSecretCode || (isNumeric && unlockCode.length > 0)) {
             const nextUnlocked = [...unlockedIds, targetItem.id];
             const nextCredits = credits + 1;
-            const nextStats = { ...stats, [targetItem.tier]: stats[targetItem.tier] + 1 };
+            const safeTier = targetItem.tier ? targetItem.tier.toLowerCase() : 'common';
+            const nextStats = { ...stats, [safeTier]: (stats[safeTier] || 0) + 1 };
 
             setUnlockedIds(nextUnlocked);
             setCredits(nextCredits);
@@ -426,7 +429,7 @@ const Vault = () => {
             localStorage.removeItem('endura_vault_persistence');
             setUnlockedIds([]);
             setCredits(50);
-            setStats({ Bronze: 0, Silver: 0, Gold: 0, Diamond: 0 });
+            setStats({ common: 0, rare: 0, epic: 0, legendary: 0 });
             toast.success('VAULT PROTOCOL RESET');
         }
     };
@@ -505,20 +508,20 @@ const Vault = () => {
                                     <span className="text-accent text-[12px]"><Counter value={credits} /></span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Common:</span>
-                                    <span><Counter value={stats.Common} /></span>
+                                    <span className="text-white/20">Silver:</span>
+                                    <span><Counter value={stats.common} /></span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Rare:</span>
-                                    <span><Counter value={stats.Rare} /></span>
+                                    <span className="text-white/20">Gold:</span>
+                                    <span><Counter value={stats.rare} /></span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Epic:</span>
-                                    <span><Counter value={stats.Epic} /></span>
+                                    <span className="text-white/20">Diamond:</span>
+                                    <span><Counter value={stats.epic} /></span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <span className="text-white/20">Legendary:</span>
-                                    <span><Counter value={stats.Legendary} /></span>
+                                    <span><Counter value={stats.legendary} /></span>
                                 </div>
                             </div>
 

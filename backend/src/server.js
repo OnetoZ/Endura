@@ -53,7 +53,7 @@ app.use(passport.session());
 // ── Rate Limiting (auth routes) ───────────────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
+  max: 200,
   message: { message: 'Too many requests, please try again in 15 minutes.' },
 });
 app.use('/api/auth', authLimiter);

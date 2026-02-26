@@ -11,11 +11,12 @@ import { useStore } from '../context/StoreContext';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
-    if (tier === 'Bronze') return '#8a6e45';
-    if (tier === 'Silver') return '#c0c0c0';
-    if (tier === 'Gold') return '#d4af37';
-    if (tier === 'Diamond') return '#b0e0e6';
-    return '#d4af37';
+    const t = tier ? tier.toLowerCase() : '';
+    if (t === 'common') return '#c0c0c0'; // Silver
+    if (t === 'rare') return '#3b82f6';   // Blue / Diamond
+    if (t === 'epic') return '#d4af37';   // Gold
+    if (t === 'legendary') return '#a855f7'; // Purple
+    return '#c0c0c0';
 };
 
 // ─── Grid Card ──────────────────────────────────────────────────────────────
@@ -272,10 +273,10 @@ const CollectedPage = () => {
             p.type === 'physical' &&
             ['T-Shirt', 'Hoodie', 'Vest', 'Pants', 'Shorts', 'Jacket', 'Coat'].includes(p.subcategory)
         ).map((p, idx) => {
-            let tier = 'Bronze';
-            if (idx % 8 === 0) tier = 'Diamond';
-            else if (idx % 5 === 0) tier = 'Silver';
-            else if (idx % 3 === 0) tier = 'Gold';
+            let tier = 'common';
+            if (idx % 8 === 0) tier = 'legendary';
+            else if (idx % 5 === 0) tier = 'epic';
+            else if (idx % 3 === 0) tier = 'rare';
             return { ...p, tier };
         });
 

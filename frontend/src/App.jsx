@@ -17,17 +17,19 @@ import Footer from './components/Footer';
 import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useStore } from './context/StoreContext';
+import Onboarding from './pages/Onboarding';
 
 // These must be inside BrowserRouter to use useLocation,
 // so they are defined here but rendered inside the Router tree.
 function AppLayout() {
   const location = useLocation();
 
-  const hideLayoutRoutes = ['/'];
+  const { currentUser } = useStore();
+
+  const hideLayoutRoutes = ['/', '/onboarding'];
   const showNavbar = !hideLayoutRoutes.includes(location.pathname);
-
   const showFooter = showNavbar;
-
   const topPad = showNavbar ? 'pt-20' : 'pt-0';
 
   return (
@@ -45,12 +47,21 @@ function AppLayout() {
               <Vault />
             </ProtectedRoute>
           } />
+          <Route path="/onboarding" element={
+            <ProtectedRoute>
+              <Onboarding />
+            </ProtectedRoute>
+          } />
           <Route path="/collected" element={<CollectedPage />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth" element={
+            currentUser ? <Navigate to="/home" replace /> : <Auth />
+          } />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/dashboard" element={<UserDashboard />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/admin/*" element={
+            currentUser && currentUser.role === 'admin' ? <AdminDashboard /> : <Navigate to="/auth" replace />
+          } />
           <Route path="*" element={<Navigate to="/home" />} />
         </Routes>
       </main>

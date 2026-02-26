@@ -27,7 +27,7 @@ const createVaultCard = asyncHandler(async (req, res) => {
         description,
         frontImage,
         backImage,
-        category: category || 'Gold',
+        category: category || 'common',
         createdBy: req.user._id,
     });
 

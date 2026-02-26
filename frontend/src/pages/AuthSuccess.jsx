@@ -17,7 +17,11 @@ const AuthSuccess = () => {
             authService.getProfile()
                 .then(userData => {
                     loginWithToken(userData);
-                    navigate('/home');
+                    if (!userData.phone) {
+                        navigate('/onboarding');
+                    } else {
+                        navigate('/home');
+                    }
                 })
                 .catch(err => {
                     console.error('OAuth profile sync failed:', err);
