@@ -163,7 +163,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                                 Admin Dashboard
                                             </Link>
                                             <button
-                                                onClick={() => { logout(); navigate('/home'); }}
+                                                onClick={() => { logout(); navigate('/auth'); }}
                                                 className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
                                             >
                                                 Logout
@@ -199,7 +199,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                                 User Dashboard
                                             </Link>
                                             <button
-                                                onClick={() => { logout(); navigate('/home'); }}
+                                                onClick={() => { logout(); navigate('/auth'); }}
                                                 className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
                                             >
                                                 Logout

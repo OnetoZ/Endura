@@ -4,10 +4,10 @@ import { productService, userService, uploadService } from '../services/api';
 import { toast } from 'react-hot-toast';
 
 const CATEGORY_STYLES = {
-    Common: { border: '#a3a3a3', glow: '#a3a3a355', label: 'COMMON' },
-    Rare: { border: '#3b82f6', glow: '#3b82f655', label: 'RARE' },
-    Epic: { border: '#a855f7', glow: '#a855f755', label: 'EPIC' },
-    Legendary: { border: '#eab308', glow: '#eab30855', label: 'LEGENDARY' },
+    common: { border: '#a3a3a3', glow: '#a3a3a355', label: 'COMMON' },
+    rare: { border: '#3b82f6', glow: '#3b82f655', label: 'RARE' },
+    epic: { border: '#eab308', glow: '#eab30855', label: 'EPIC' },
+    legendary: { border: '#a855f7', glow: '#a855f755', label: 'LEGENDARY' },
 };
 
 const INITIAL_PRODUCT_STATE = {
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
     const [cardSaving, setCardSaving] = useState(false);
     const [editingCardId, setEditingCardId] = useState(null);
     const [newCard, setNewCard] = useState({
-        name: '', description: '', frontImage: '', backImage: '', category: 'Common'
+        name: '', description: '', frontImage: '', backImage: '', category: 'common'
     });
 
     // ── Filters & Search ───────────────────────────────────────────────────
@@ -668,7 +668,7 @@ const AdminDashboard = () => {
                                     onClick={() => {
                                         setIsAddingCard(!isAddingCard);
                                         setEditingCardId(null);
-                                        setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'Common' });
+                                        setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
                                     }}
                                     className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white'
                                         }`}
@@ -709,7 +709,7 @@ const AdminDashboard = () => {
                                             <div className="space-y-2">
                                                 <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Category</label>
                                                 <div className="grid grid-cols-4 gap-2">
-                                                    {['Silver', 'Gold', 'Diamond', 'Legendary'].map(cat => (
+                                                    {['common', 'rare', 'epic', 'legendary'].map(cat => (
                                                         <button
                                                             key={cat}
                                                             type="button"
@@ -774,7 +774,7 @@ const AdminDashboard = () => {
                                                     setVaultCards(prev => [created, ...prev]);
                                                     toast.success('Card added to vault!');
                                                 }
-                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'Common' });
+                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
                                                 setEditingCardId(null);
                                                 setIsAddingCard(false);
                                             } catch (err) {
@@ -798,7 +798,7 @@ const AdminDashboard = () => {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {vaultCards.map(card => {
-                                        const style = CATEGORY_STYLES[card.category] || CATEGORY_STYLES.Common;
+                                        const style = CATEGORY_STYLES[card.category] || CATEGORY_STYLES.common;
                                         return (
                                             <div
                                                 key={card._id}
@@ -842,7 +842,7 @@ const AdminDashboard = () => {
                                                                     description: card.description || '',
                                                                     frontImage: card.frontImage || '',
                                                                     backImage: card.backImage || '',
-                                                                    category: card.category || 'Common'
+                                                                    category: card.category || 'common'
                                                                 });
                                                                 setIsAddingCard(true);
                                                                 window.scrollTo({ top: 0, behavior: 'smooth' });

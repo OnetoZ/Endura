@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
 
 /**
  * SystemBootHero Component
@@ -15,6 +16,7 @@ import { Link } from 'react-router-dom';
 const SystemBootHero = () => {
     const [bootStage, setBootStage] = useState(0);
     const [glitchActive, setGlitchActive] = useState(false);
+    const { currentUser } = useStore();
 
     useEffect(() => {
         const stages = [
@@ -171,7 +173,7 @@ const SystemBootHero = () => {
                         }`}
                 >
                     <Link
-                        to="/auth"
+                        to={currentUser ? "/collections" : "/auth"}
                         className="group relative inline-block mt-8"
                     >
                         {/* Animated Background Layers */}
@@ -189,7 +191,7 @@ const SystemBootHero = () => {
                         {/* Content */}
                         <div className="relative z-10 px-12 py-4 flex items-center gap-3">
                             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">
-                                Login_Entrance
+                                {currentUser ? "Explore_Collection" : "Login_Entrance"}
                             </span>
                             <svg className="w-4 h-4 text-accent group-hover:translate-x-2 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />

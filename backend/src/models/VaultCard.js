@@ -7,8 +7,8 @@ const vaultCardSchema = new mongoose.Schema({
     backImage: { type: String, required: true },
     category: {
         type: String,
-        enum: ['Silver', 'Gold', 'Diamond', 'Legendary'],
-        default: 'Gold',
+        enum: ['common', 'rare', 'epic', 'legendary'],
+        default: 'common',
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,

@@ -18,10 +18,10 @@ const TierBadge = ({ rank = 'Initiate' }) => {
 
     const getRankColor = () => {
         switch (rank.toLowerCase()) {
-            case 'initiate': return 'from-slate-400 to-slate-200';
-            case 'silver': return 'from-gray-300 to-white';
-            case 'gold': return 'from-accent to-yellow-200';
-            case 'master': return 'from-purple-500 to-accent';
+            case 'common': return 'from-slate-400 to-slate-200';
+            case 'rare': return 'from-gray-300 to-white';
+            case 'epic': return 'from-accent to-yellow-200';
+            case 'legendary': return 'from-purple-500 to-accent';
             default: return 'from-accent to-accent-light';
         }
     };
