@@ -35,6 +35,11 @@ const Navbar = React.forwardRef((props, ref) => {
         return () => clearInterval(interval);
     }, []);
 
+    const istTime = time.toLocaleTimeString('en-US', {
+        hour12: false,
+        timeZone: 'Asia/Kolkata'
+    });
+
     return (
         <nav
             ref={ref}
@@ -73,7 +78,7 @@ const Navbar = React.forwardRef((props, ref) => {
                             <div className="flex items-center gap-2">
                                 <div className="w-1 h-1 bg-accent rounded-full animate-pulse" />
                                 <span className="font-mono text-[9px] text-white/40 tracking-[0.2em]">
-                                    {time.toLocaleTimeString('en-US', { hour12: false })}
+                                    {istTime}
                                 </span>
                             </div>
                             <div className="w-px h-4 bg-white/10" />
@@ -87,6 +92,7 @@ const Navbar = React.forwardRef((props, ref) => {
                     <div className="hidden md:flex items-center gap-1">
                         {[
                             { to: '/home', label: 'Home', accent: false },
+                            { to: '/cult', label: 'The Cult', accent: false },
                             { to: '/collections', label: 'collections', accent: false },
                             ...(currentUser ? [{ to: '/vault', label: 'The Vault', accent: true }] : [])
                         ].map((link, idx) => (

@@ -6,7 +6,7 @@ import { useGSAP } from '@gsap/react';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-const TOTAL_FRAMES = 115; // frame_000 to frame_114
+const TOTAL_FRAMES = 117; // frame_000 to frame_114
 
 // Helper function to generate frame path matching actual filenames
 const getFramePath = (index) => {

@@ -4,6 +4,7 @@ import { AppProvider } from './context/StoreContext';
 import IntroAnimation from './pages/IntroAnimation';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import CultPage from './pages/CultPage';
 import Auth from './pages/Auth';
 import AuthSuccess from './pages/AuthSuccess';
 import Cart from './pages/Cart';
@@ -39,6 +40,7 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<IntroAnimation />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/cult" element={<CultPage />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/product/:id" element={<ProductDetail />} />

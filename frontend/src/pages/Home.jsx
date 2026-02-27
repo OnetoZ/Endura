@@ -1,17 +1,10 @@
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
 import SystemBootHero from '../components/SystemBootHero';
-import PhilosophyScene from '../components/PhilosophyScene';
-import VisionScene from '../components/VisionScene';
-import VaultScene from '../components/VaultScene';
-import RoadmapScene from '../components/RoadmapScene';
 import DivideScene from '../components/DivideScene';
 import DoppelPieceScene from '../components/DoppelPieceScene';
-import CallScene from '../components/CallScene';
-import CultWorlds from '../components/CultWorlds';
-import CinematicFooter from '../components/CinematicFooter';
+// import CinematicFooter from '../components/CinematicFooter';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -21,35 +14,20 @@ const Home = () => {
 
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">
-            {/* SCENE 1 & 2: System Boot / Hero Identity */}
+            {/* SCENE 1: System Boot / Hero Identity */}
             <SystemBootHero />
 
-            {/* SCENE 3: PHILOSOPHY (The Anomaly) */}
-            <PhilosophyScene />
-
-            {/* SCENE 4: VISION (Strength & Soul) */}
-            <VisionScene />
-
-            {/* SCENE 4: CULT WORLDS */}
-            <CultWorlds />
-
-            {/* SCENE 5: THE VAULT (Entrance) */}
-            <VaultScene />
-
-            {/* SCENE 6: ROADMAP (The Future Layer) */}
-            <RoadmapScene />
-
-            {/* SCENE 7: THE DIVIDE (Reality vs Digital) */}
-            <DivideScene />
-
-            {/* SCENE 8: THE DOPPEL PIECE (Product Philosophy) */}
+            {/* SCENE 2: THE DOPPEL PIECE (Product Philosophy) */}
             <DoppelPieceScene />
 
-            {/* SCENE 10: THE CALL (Final CTA) */}
-            <CallScene />
+            {/* SCENE 3: THE DIVIDE (Reality vs Digital) */}
+            <DivideScene />
 
-            {/* SCENE 11: THE CLOSURE (Cinematic Footer) */}
-            <CinematicFooter />
+            {/* SCENE 4: IMPACT STATEMENT (Emotional Hook) */}
+            {/* <ImpactStatement /> */}
+
+            {/* SCENE 5: THE CLOSURE (Cinematic Footer) */}
+            {/* <CinematicFooter /> */}
         </div>
     );
 };
