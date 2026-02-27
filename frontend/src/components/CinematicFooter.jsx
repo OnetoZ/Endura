@@ -1,136 +1,103 @@
 import React, { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/**
- * SCENE 11 — THE CLOSURE
- * 
- * PURPOSE: Final frame. Archive shutdown. Ritual completion.
- * EMOTION: "This wasn't a website. This was an experience."
- * 
- * VISUAL INTENT:
- * - Deep black void with subtle purple mist
- * - Gold accents (minimal, ceremonial)
- * - Everything centered and deliberate
- * - No traditional footer elements
- * 
- * ANIMATION PHILOSOPHY:
- * - Extremely slow reveals (8-12s cycles)
- * - Fade-in only, no slides
- * - Scroll pins briefly (lingering effect)
- * - User feels they are exiting a secret world
- */
-
 const CinematicFooter = () => {
     const containerRef = useRef();
-    const navigate = useNavigate();
 
     useGSAP(() => {
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: containerRef.current,
-                start: "top bottom",
-                end: "bottom bottom",
-                scrub: 1,
-                pin: false,
+                start: "top 80%",
+                toggleActions: "play none none reverse"
             }
         });
 
-        // Slow fade-in sequence
-        tl.from(".footer-logo", {
-            opacity: 0,
-            scale: 0.95,
-            duration: 3,
-            ease: "power1.inOut"
-        })
-            .from(".closing-line", {
-                opacity: 0,
-                letterSpacing: "2em",
-                duration: 4,
-                ease: "power2.out"
-            }, "-=2")
-            .from(".ritual-cta", {
-                opacity: 0,
-                duration: 3,
-                ease: "power1.inOut"
-            }, "-=1.5")
-            .from(".system-status", {
-                opacity: 0,
-                duration: 2
-            }, "-=1");
-
-        // Ambient mist movement (extremely slow)
-        gsap.to(".ambient-mist", {
-            x: "5%",
-            y: "-3%",
-            duration: 20,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-        });
-
-        // Logo pulse (imperceptible, 10s cycle)
-        gsap.to(".footer-logo", {
-            opacity: 0.7,
-            duration: 10,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-        });
+        tl.from(".footer-brand", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
+            .from(".footer-col", { y: 30, opacity: 0, duration: 0.8, stagger: 0.2 }, "-=0.5")
+            .from(".footer-bottom", { opacity: 0, duration: 1 }, "-=0.5");
 
     }, { scope: containerRef });
 
-    const handleVaultEntry = () => {
-        navigate('/vault');
-    };
-
     return (
-        <footer
-            ref={containerRef}
-            className="relative min-h-screen w-full bg-black flex items-center justify-center overflow-hidden"
-        >
-            {/* Ambient Background Mist */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="ambient-mist absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-black opacity-30 blur-3xl" />
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] mix-blend-overlay" />
-            </div>
+        <footer ref={containerRef} className="bg-black text-white pt-32 pb-12 px-8 border-t border-white/5 relative overflow-hidden">
+            {/* Background Ambient Glow */}
+            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
 
-            {/* Main Content Container */}
-            <div className="relative z-10 flex flex-col items-center justify-center px-6 py-24 max-w-4xl mx-auto text-center">
-
-                {/* ENDURA Logo */}
-                <div className="footer-logo mb-12 md:mb-16">
-                    <h1 className="text-4xl md:text-7xl font-heading tracking-[0.2em] md:tracking-[0.3em] uppercase text-white">
-                        ENDURA
-                    </h1>
-                    <div className="mt-3 md:mt-4 h-px w-20 md:w-32 bg-gradient-to-r from-transparent via-accent to-transparent mx-auto opacity-40" />
+            <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
+                {/* Brand Column */}
+                <div className="footer-brand col-span-1 md:col-span-2 space-y-8">
+                    <h2 className="text-7xl md:text-9xl font-heading tracking-tight uppercase leading-none hover:text-primary transition-colors duration-500 cursor-default">
+                        ENDURA<span className="text-primary">.</span>
+                    </h2>
+                    <p className="max-w-md text-gray-500 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm">
+                        The intersection of high-end fashion and digital permanence.
+                        Building the infrastructure for the next generation of
+                        digital identity and physical luxury.
+                    </p>
+                    {/* Socials */}
+                    <div className="flex gap-4 pt-4">
+                        {['instagram', 'twitter', 'discord'].map((social) => (
+                            <a
+                                key={social}
+                                href="#"
+                                className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
+                            >
+                                <span className="text-[10px] font-mono uppercase tracking-widest">{social[0]}</span>
+                                {/* In a real app, replace with actual icons */}
+                            </a>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Closing Line */}
-                <p className="closing-line text-white/60 font-body font-light text-xs md:text-base tracking-[0.4em] md:tracking-[0.8em] uppercase mb-16 md:mb-20 leading-loose max-w-2xl">
-                    The Order is not for everyone.
-                </p>
+                {/* Dimensions Column */}
+                <div className="footer-col space-y-10">
+                    <h3 className="font-mono text-[10px] tracking-[0.5em] text-primary uppercase">Dimensions</h3>
+                    <ul className="space-y-6">
+                        {['All Inventory', 'Digital Skins', 'The Vault', 'Operator Node'].map(link => (
+                            <li key={link}>
+                                <Link to="#" className="text-xs md:text-sm uppercase tracking-[0.2em] font-bold text-gray-600 hover:text-white transition-colors">
+                                    {link}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
 
-                {/* Ritual CTA */}
-                <button
-                    onClick={handleVaultEntry}
-                    className="ritual-cta group relative px-8 md:px-12 py-3 md:py-4 border border-accent/30 text-accent font-mono text-[10px] md:text-xs tracking-[0.3em] md:tracking-[0.5em] uppercase transition-all duration-700 hover:border-accent/60 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
-                >
-                    <span className="relative z-10">Enter the Vault</span>
-                    <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-all duration-700" />
-                </button>
-
-                <p className="text-gray-400 text-lg md:text-2xl font-light italic leading-relaxed mt-16">
-                    "We don’t just make clothes; we design digital identities. In a world of fleeting physical trends, Endura provides timeless digital assets tied to every thread."
-                </p>
-
+                {/* Protocol Column */}
+                <div className="footer-col space-y-10">
+                    <h3 className="font-mono text-[10px] tracking-[0.5em] text-primary uppercase">Protocol</h3>
+                    <ul className="space-y-6">
+                        {['Privacy Encryption', 'Service Terms', 'Logistics', 'System Status'].map(link => (
+                            <li key={link}>
+                                <Link to="#" className="text-xs md:text-sm uppercase tracking-[0.2em] font-bold text-gray-600 hover:text-white transition-colors">
+                                    {link}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
 
-
+            {/* Bottom Credits */}
+            <div className="footer-bottom mt-32 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                <span className="font-mono text-[9px] text-gray-700 tracking-[0.3em] uppercase">
+                    © 2026 ENDURA_NETWORK_PROTOCOL // ALL_DATA_SECURED
+                </span>
+                <div className="flex gap-8">
+                    <span className="font-mono text-[9px] text-gray-800 tracking-widest uppercase cursor-help hover:text-primary/40 transition-colors">
+                        LATENCY: 14MS
+                    </span>
+                    <span className="font-mono text-[9px] text-gray-800 tracking-widest uppercase">
+                        NODE: [REDACTED]
+                    </span>
+                </div>
+            </div>
         </footer>
     );
 };

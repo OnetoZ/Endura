@@ -16,104 +16,115 @@ const DivideScene = () => {
             scrollTrigger: {
                 trigger: containerRef.current,
                 start: "top top",
-                end: "+=3500",
+                end: "+=2500",
                 scrub: 1,
                 pin: true,
                 anticipatePin: 1
             }
         });
 
-        // 1. Pull the split apart
-        tl.to(leftSideRef.current, { xPercent: -50, duration: 2 }, 0)
-            .to(rightSideRef.current, { xPercent: 50, duration: 2 }, 0);
+        // 1. Pull the split apart with scale effect
+        tl.to(leftSideRef.current, {
+            xPercent: -60,
+            scale: 1.1,
+            rotateY: 10,
+            duration: 2,
+            ease: "power2.inOut"
+        }, 0)
+            .to(rightSideRef.current, {
+                xPercent: 60,
+                scale: 1.1,
+                rotateY: -10,
+                duration: 2,
+                ease: "power2.inOut"
+            }, 0);
 
         // 2. Reveal Text in the center gap
         tl.fromTo(".divide-text",
-            { opacity: 0, scale: 0.8, filter: 'blur(10px)' },
-            { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1.5, stagger: 0.8 },
+            { opacity: 0, scale: 0.9, filter: 'blur(15px)' },
+            { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1.2, stagger: 0.5 },
             0.5
         );
 
-        // 3. Keep the text visible then fade out to make room for symbol
-        tl.to(".divide-text", { opacity: 0, filter: 'blur(15px)', duration: 1 }, 2.5);
+        // 3. Dissolve to symbol
+        tl.to(".divide-text", { opacity: 0, scale: 1.1, filter: 'blur(10px)', duration: 0.8 }, 2);
 
-        // 4. Collapse split into symbol
-        tl.to(leftSideRef.current, { xPercent: 0, opacity: 0, duration: 1.5 }, 3)
-            .to(rightSideRef.current, { xPercent: 0, opacity: 0, duration: 1.5 }, 3)
+        tl.to(leftSideRef.current, { xPercent: 0, opacity: 0, scale: 0.5, duration: 1.5 }, 2.5)
+            .to(rightSideRef.current, { xPercent: 0, opacity: 0, scale: 0.5, duration: 1.5 }, 2.5)
             .fromTo(symbolRef.current,
-                { scale: 0.2, opacity: 0, filter: 'brightness(5) blur(10px)' },
+                { scale: 0.1, opacity: 0, filter: 'brightness(10) blur(20px)' },
                 { scale: 1, opacity: 1, filter: 'brightness(1.5) blur(0px)', duration: 1.5, ease: "expo.out" },
-                3
+                2.5
             );
 
-        // 5. Final dissolve
-        tl.to(symbolRef.current, { opacity: 0, scale: 1.5, filter: 'blur(20px)', duration: 1 }, 4.5);
+        // Final zoom
+        tl.to(symbolRef.current, { scale: 1.5, opacity: 0, filter: 'blur(30px)', duration: 1 }, 4);
 
     }, { scope: containerRef });
 
     return (
-        <section ref={containerRef} className="h-screen w-full relative bg-black overflow-hidden flex items-center justify-center">
-            {/* LEFT SIDE: REALITY (IRL Fabric / Texture) */}
+        <section ref={containerRef} className="min-h-screen w-full relative bg-black overflow-hidden flex items-center justify-center persistent-3d">
+            {/* LEFT SIDE: REALITY */}
             <div
                 ref={leftSideRef}
-                className="absolute inset-y-0 left-0 w-1/2 overflow-hidden border-r border-white/5 z-10"
+                className="absolute inset-y-0 left-0 w-1/2 overflow-hidden border-r border-white/10 z-10 origin-right transition-transform duration-500"
             >
                 <div
-                    className="w-[200%] h-full bg-cover bg-center grayscale brightness-75 contrast-125"
+                    className="w-[200%] h-full bg-cover bg-center grayscale brightness-50 contrast-150"
                     style={{ backgroundImage: 'url(/factions/forged.jpg)' }}
                 />
-                <div className="absolute inset-0 bg-black/40" />
-                <div className="absolute inset-0 film-grain opacity-20" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black" />
                 <div className="absolute top-12 left-12">
-                    <span className="text-[10px] text-gray-500 font-mono tracking-[0.4em] uppercase">// REALITY_STITCH</span>
+                    <span className="text-[9px] text-gray-500 font-mono tracking-[0.5em] uppercase">// PHYSICAL_FABRIC</span>
                 </div>
             </div>
 
-            {/* RIGHT SIDE: DIGITAL (Glow / Energy) */}
+            {/* RIGHT SIDE: DIGITAL */}
             <div
                 ref={rightSideRef}
-                className="absolute inset-y-0 right-0 w-1/2 overflow-hidden border-l border-white/5 z-10"
+                className="absolute inset-y-0 right-0 w-1/2 overflow-hidden border-l border-white/10 z-10 origin-left transition-transform duration-500"
             >
                 <div
                     className="w-[200%] h-full translate-x-[-50%] bg-cover bg-center"
                     style={{ backgroundImage: 'url(/vision.png)' }}
                 />
-                <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px]" />
-                <div className="absolute inset-0 scanlines opacity-10" />
+                <div className="absolute inset-0 bg-primary/30 backdrop-blur-[4px]" />
+                <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-transparent to-black" />
                 <div className="absolute top-12 right-12 text-right">
-                    <span className="text-[10px] text-accent font-mono tracking-[0.4em] uppercase">// DIGITAL_PULSE_01</span>
+                    <span className="text-[9px] text-accent font-mono tracking-[0.5em] uppercase">// ENERGY_PULSE_99</span>
                 </div>
-
-                {/* Purple Energy Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
-            {/* CENTER: THE VOID / NARRATIVE */}
-            <div className="relative z-20 text-center space-y-12">
-                <div className="divide-text space-y-4">
-                    <h3 className="text-accent font-mono text-xs tracking-[1em] uppercase">Identity is dual.</h3>
-                    <h2 className="text-5xl md:text-8xl font-oswald uppercase leading-none tracking-tighter">
-                        The body wears <br />
-                        <span className="text-white/20">Fabric.</span>
+            {/* CENTER: THE VOID */}
+            <div className="relative z-20 text-center space-y-24 px-6">
+                <div className="divide-text">
+                    <h3 className="text-accent font-mono text-[10px] tracking-[1.5em] uppercase mb-8">Dual Existence</h3>
+                    <h2 className="text-6xl md:text-9xl font-oswald uppercase leading-none tracking-tighter">
+                        THE BODY WEARS <br />
+                        <span className="text-white/10">MATTER.</span>
                     </h2>
                 </div>
 
-                <div className="divide-text mt-24">
-                    <h2 className="text-5xl md:text-8xl font-oswald uppercase leading-none tracking-tighter">
-                        The avatar wears <br />
-                        <span className="text-primary system-text-glow">Energy.</span>
+                <div className="divide-text">
+                    <h2 className="text-6xl md:text-9xl font-oswald uppercase leading-none tracking-tighter">
+                        THE SOUL WEARS <br />
+                        <span className="text-primary system-text-glow">DATA.</span>
                     </h2>
                 </div>
             </div>
 
-            {/* FINAL SYMBOL: THE ENDURA EMBLEM */}
+            {/* FINAL SYMBOL */}
             <div ref={symbolRef} className="absolute inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none">
-                <img src="/logo.png" alt="ENDURA" className="h-24 md:h-40 object-contain brightness-200" />
-                <div className="absolute inset-0 bg-radial-gradient from-accent/20 via-transparent to-transparent animate-pulse" />
+                <img src="/logo.png" alt="ENDURA" className="h-32 md:h-52 object-contain brightness-200" />
+                <div className="absolute inset-0 bg-radial-gradient from-accent/30 via-transparent to-transparent animate-pulse" />
             </div>
 
             {/* Cinematic Noise */}
-            <div className="absolute inset-0 z-40 pointer-events-none bg-gradient-to-b from-black via-transparent to-black opacity-60" />
+            <div className="absolute inset-0 z-40 pointer-events-none film-grain opacity-10" />
+
+            <style jsx>{`
+                .persistent-3d { perspective: 1500px; }
+            `}</style>
         </section>
     );
 };
