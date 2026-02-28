@@ -10,6 +10,7 @@ import { useStore } from '../context/StoreContext';
 import { productService } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
+import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
 import '../components/collections/collections.css';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
@@ -119,8 +120,8 @@ const VaultCard = ({
         >
             <motion.div
                 className="relative w-full h-full duration-700 [transform-style:preserve-3d]"
-                animate={{ rotateY: isUnlocked ? 180 : 0 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
+                animate={{ rotateY: isUnlocked ? 1080 + 180 : 0 }}
+                transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
             >
                 {/* Front Side: Pure Image Card */}
                 <div
@@ -202,10 +203,10 @@ const DressItem = ({
 
 
             {/* Central Content */}
-            <div className="relative h-full flex flex-col items-center justify-center p-8">
+            <div className="relative w-full h-full flex flex-col items-center justify-center p-8 overflow-visible">
                 {/* Always Floating Dress Artwork */}
                 <motion.div
-                    className="relative z-10"
+                    className="relative z-10 w-full h-full flex items-center justify-center overflow-visible"
                     animate={vaultReady ? {
                         y: [-8, 8, -8],
                     } : {}}
@@ -216,7 +217,7 @@ const DressItem = ({
                     <img
                         src={item.image}
                         alt={item.name}
-                        className="h-44 object-contain transition-transform duration-700"
+                        className="w-full h-full object-contain block transition-transform duration-700"
                         style={{
                             transform: isHovered ? 'scale(1.1)' : 'scale(1)'
                         }}
@@ -343,6 +344,7 @@ const Vault = () => {
     const [unlockCode, setUnlockCode] = useState('');
     const [targetItem, setTargetItem] = useState(null);
     const [clickPos, setClickPos] = useState({ x: 0, y: 0 });
+    const [rewardUnlockItem, setRewardUnlockItem] = useState(null);
 
     useEffect(() => {
         const savedData = localStorage.getItem('endura_vault_persistence');
@@ -398,6 +400,10 @@ const Vault = () => {
 
             setBursts(prev => [...prev, { id: Date.now(), x: clickPos.x, y: clickPos.y }]);
             setIsModalOpen(false);
+
+            setTimeout(() => {
+                setRewardUnlockItem(targetItem);
+            }, 1200);
 
             toast.success('DECRYPTION SUCCESSFUL', {
                 style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' }
@@ -602,6 +608,13 @@ const Vault = () => {
                         </div>
                     )}
                 </AnimatePresence>
+
+                {rewardUnlockItem && (
+                    <RewardUnlockOverlay
+                        item={rewardUnlockItem}
+                        onClose={() => setRewardUnlockItem(null)}
+                    />
+                )}
             </div>
         </>
     );
