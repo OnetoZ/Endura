@@ -24,6 +24,44 @@ const IntroAnimation = () => {
     const [showBlackScreen, setShowBlackScreen] = useState(false);
     const imagesRef = useRef([]);
     const navigate = useNavigate();
+    // Shared completion guard across scroll + keyboard triggers
+    const hasCompletedRef = useRef(false);
+
+    // Lock scroll-behavior while intro is mounted so the document
+    // scroll position never drifts — /home will always start at top
+    useEffect(() => {
+        document.documentElement.style.scrollBehavior = 'auto';
+        return () => {
+            document.documentElement.style.scrollBehavior = '';
+        };
+    }, []);
+
+    const goToHome = () => {
+        if (hasCompletedRef.current) return;
+        hasCompletedRef.current = true;
+        localStorage.setItem('endura_animation_completed', 'true');
+        setShowBlackScreen(true);
+
+        // Kill all ScrollTriggers to stop them interfering post-navigation
+        ScrollTrigger.killAll();
+
+        setTimeout(() => {
+            // Force scroll position to absolute top before /home renders
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            navigate('/home');
+        }, 400);
+    };
+
+    // Press Enter at any time during the intro to skip to /home
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter') goToHome();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Preload all images and store them in a ref to avoid re-renders
     useEffect(() => {
@@ -102,13 +140,8 @@ const IntroAnimation = () => {
         window.addEventListener('resize', updateCanvasSize);
         updateCanvasSize();
 
-        const handleComplete = () => {
-            localStorage.setItem('endura_animation_completed', 'true');
-            // Small delay to let the black screen / transition feel intentional
-            setTimeout(() => {
-                navigate('/home');
-            }, 300);
-        };
+        // Use the shared ref-based guard for scroll-triggered completion
+        const handleComplete = () => goToHome();
 
         // Animation sequence
         const tl = gsap.timeline({
@@ -121,20 +154,19 @@ const IntroAnimation = () => {
                 onUpdate: (self) => {
                     renderFrame(Math.floor(airbnb.frame));
 
-                    // Show black screen towards the very end
+                    // Show black screen overlay as we near the end
                     if (self.progress > 0.95 && !showBlackScreen) {
                         setShowBlackScreen(true);
                     }
-                },
-                onLeave: () => {
-                    handleComplete();
-                },
-                onScrubComplete: () => {
-                    // Safety check if we already scrolled past
-                    const st = ScrollTrigger.getById("intro-scroll");
-                    if (st && st.progress >= 0.98) {
+
+                    // Primary trigger: navigate once progress is effectively complete
+                    if (self.progress >= 0.99) {
                         handleComplete();
                     }
+                },
+                // Fallback: fires when the user scrolls past the pinned section
+                onLeave: () => {
+                    handleComplete();
                 },
                 id: "intro-scroll"
             }
@@ -191,6 +223,7 @@ const IntroAnimation = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                         </svg>
                         <div className="text-[10px] uppercase tracking-[0.3em]">Scroll</div>
+                        <div className="text-[9px] tracking-widest mt-1 opacity-60">or press Enter ↵</div>
                     </div>
                 </div>
             </div>
