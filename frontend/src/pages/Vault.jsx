@@ -495,9 +495,9 @@ const Vault = () => {
                                 >VAULT</span>
                             </h1>
                             <div className="w-[160px] flex justify-end">
-                                <button onClick={handleGoCollected} disabled={exiting} className="px-6 py-3 border border-white/10 text-[10px] font-mono tracking-widest uppercase text-white/40 hover:text-white hover:border-white/50 transition-all active:scale-95">
+                                {/* <button onClick={handleGoCollected} disabled={exiting} className="px-6 py-3 border border-white/10 text-[10px] font-mono tracking-widest uppercase text-white/40 hover:text-white hover:border-white/50 transition-all active:scale-95">
                                     Collected Items
-                                </button>
+                                </button> */}
                             </div>
                         </div>
 
