@@ -1,68 +1,91 @@
-
-import { ReactLenis } from 'lenis/react';
+import { ReactLenis, useLenis } from 'lenis/react';
 import 'lenis/dist/lenis.css';
 import React, { useEffect, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 /**
  * SmoothScroll Component
- * 
+ *
  * Provides a cinematic, weighted scroll experience using Lenis.
- * Tuned for a "heavy" and "deliberate" feel similar to premium narrative sites.
- * 
- * Features:
- * - Respects prefers-reduced-motion for accessibility
- * - Optimized for React performance
- * - Cinematic easing and physics
+ * Lenis is connected to GSAP ScrollTrigger so they work together.
  */
+
+// Inner connector: must live inside ReactLenis so useLenis() works
+const LenisScrollTriggerConnector = () => {
+    const lenis = useLenis();
+
+    useEffect(() => {
+        if (!lenis) return;
+
+        // Tell ScrollTrigger to use Lenis's scroll position
+        ScrollTrigger.scrollerProxy(document.documentElement, {
+            scrollTop(value) {
+                if (arguments.length) {
+                    lenis.scrollTo(value, { immediate: true });
+                }
+                return lenis.scroll;
+            },
+            getBoundingClientRect() {
+                return {
+                    top: 0,
+                    left: 0,
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                };
+            },
+        });
+
+        // On every Lenis scroll tick, tell ScrollTrigger to update
+        const unsubscribe = lenis.on('scroll', ScrollTrigger.update);
+
+        // Keep ScrollTrigger in sync via GSAP ticker too
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+        gsap.ticker.lagSmoothing(0);
+
+        return () => {
+            unsubscribe();
+            ScrollTrigger.scrollerProxy(document.documentElement, null);
+        };
+    }, [lenis]);
+
+    return null;
+};
+
 const SmoothScroll = ({ children }) => {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
     useEffect(() => {
-        // Check for reduced motion preference
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         setPrefersReducedMotion(mediaQuery.matches);
-
-        const handleChange = (e) => {
-            setPrefersReducedMotion(e.matches);
-        };
-
+        const handleChange = (e) => setPrefersReducedMotion(e.matches);
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
-    // If user prefers reduced motion, disable smooth scroll
     if (prefersReducedMotion) {
         return <>{children}</>;
     }
 
-    // Lenis options for "Heavy & Intentional" cinematic feel
     const lenisOptions = {
-        lerp: 0.05,           // Lower = smoother/heavier (0.1 is default)
-        // Range: 0.03 (very heavy) to 0.1 (lighter)
-
-        duration: 1.5,        // Scroll animation duration in seconds
-        // Longer = more weighted feel
-
-        smoothWheel: true,    // Enable smooth wheel scrolling
-
-        wheelMultiplier: 0.8, // Reduce scroll speed for control
-        // Lower = slower, more deliberate
-        // Range: 0.5 (very slow) to 1.2 (faster)
-
-        touchMultiplier: 1.5, // Mobile touch sensitivity
-        // Higher = more responsive on mobile
-
-        normalizeWheel: true, // Normalize wheel delta across browsers
-
-        infinite: false,      // Disable infinite scroll
-
-        // Custom easing for cinematic start/stop
-        // Exponential ease-out creates a "settling" effect
+        lerp: 0.05,
+        duration: 1.5,
+        smoothWheel: true,
+        wheelMultiplier: 0.8,
+        touchMultiplier: 1.5,
+        normalizeWheel: true,
+        infinite: false,
+        autoRaf: false,   // We drive RAF manually via gsap.ticker
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     };
 
     return (
         <ReactLenis root options={lenisOptions}>
+            <LenisScrollTriggerConnector />
             {children}
         </ReactLenis>
     );

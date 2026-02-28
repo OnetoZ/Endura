@@ -132,9 +132,9 @@ const SystemBootHero = () => {
 
             {/* Main Content */}
             <div ref={contentRef} className="relative z-20 text-center flex flex-col items-center px-6">
-                <div className={`transition-all duration-1000 mb-6 ${bootStage >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                {/* <div className={`transition-all duration-1000 mb-6 ${bootStage >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                     <img src="/logo.png" alt="ENDURA" className="h-12 md:h-20 object-contain brightness-200 drop-shadow-[0_0_30px_rgba(147,112,219,0.5)]" />
-                </div>
+                </div> */}
 
                 <div className={`transition-all duration-1000 ${bootStage >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                     <h1 className={`text-6xl md:text-[12rem] font-heading tracking-[0.1em] md:tracking-[0.2em] uppercase text-white mb-4 relative leading-none ${glitchActive ? 'glitch-text' : ''}`}>
@@ -152,7 +152,7 @@ const SystemBootHero = () => {
                         ASCEND TO <span className="text-primary system-text-glow">PERFECTION.</span>
                     </h2>
                     <p className="text-[10px] md:text-xs text-gray-400 font-light tracking-[0.6em] uppercase mb-12">
-                        Physical Body <span className="text-primary mx-2">//</span> Digital Soul
+                        Physical form <span className="text-primary mx-2">//</span> Digital Soul
                     </p>
                 </div>
 

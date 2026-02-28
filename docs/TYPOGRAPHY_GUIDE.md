@@ -154,7 +154,7 @@ className="font-mono"
 ### Body Text
 ```jsx
 <p className="text-base font-body font-light tracking-wide">
-  Physical Body // Digital Soul
+  Physical from // Digital Soul
 </p>
 ```
 

@@ -23,6 +23,17 @@ import Onboarding from './pages/Onboarding';
 
 // These must be inside BrowserRouter to use useLocation,
 // so they are defined here but rendered inside the Router tree.
+
+// Resets scroll to top on every route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname]);
+  return null;
+}
 function AppLayout() {
   const location = useLocation();
 
@@ -35,6 +46,7 @@ function AppLayout() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
+      <ScrollToTop />
       {showNavbar && <Navbar />}
       <main key={location.pathname} className={`flex-grow ${topPad}`}>
         <Routes>
