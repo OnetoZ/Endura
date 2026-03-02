@@ -153,7 +153,7 @@ const CultPage = () => {
             {/* FACTION 05 — TRANSCENDENT (Galaxy BG, clean character on black) */}
             <FactionSection
                 id="transcendent"
-                factionName="ASCENDED"
+                factionName="TRANSCENDENT"
                 factionNumber="FACTION_05"
                 description="The apex of consciousness. A celestial sage floating beyond linear time, holding the ancient ledger of the starlight. Perfection through divine digital evolution."
                 image="/factions/transcendent_faction.png"
