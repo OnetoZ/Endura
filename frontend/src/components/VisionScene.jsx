@@ -25,6 +25,7 @@ const VisionScene = () => {
             }
         });
 
+
         // 1. Image Animation: Scale down from a "zoomed" state
         tl.fromTo(imageRef.current,
             { scale: 1.4, filter: 'brightness(0.3) blur(10px)' },
