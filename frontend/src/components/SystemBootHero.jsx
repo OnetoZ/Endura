@@ -137,7 +137,9 @@ const SystemBootHero = () => {
                 </div> */}
 
                 <div className={`transition-all duration-1000 ${bootStage >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                    <h1 className={`text-6xl md:text-[12rem] font-heading tracking-[0.1em] md:tracking-[0.2em] uppercase text-white mb-4 relative leading-none ${glitchActive ? 'glitch-text' : ''}`}>
+                    <h1
+                        className={`text-6xl md:text-[12rem] font-heading tracking-[0.1em] md:tracking-[0.2em] uppercase text-white mb-4 relative leading-none cursor-pointer transition-colors duration-500 hover:text-pink-500 ${glitchActive ? 'glitch-text' : ''}`}
+                    >
                         ENDURA
                     </h1>
                     <div className="flex items-center justify-center gap-4 mb-6">

@@ -1,10 +1,93 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import FactionSection from '../components/CultFactions/FactionSection';
 // import CinematicFooter from '../components/CinematicFooter';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// ─── Endura Logo Reveal Section ───────────────────────────────────────────────
+const EnduraLogoSection = () => {
+    const sectionRef = useRef();
+    const logoRef = useRef();
+    const taglineRef = useRef();
+    // dotRef not needed — dot is part of the logo image
+
+    useGSAP(() => {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: 'top top',
+                end: '+=1200',
+                scrub: 1,
+                pin: true,
+                anticipatePin: 1,
+            }
+        });
+
+        // Phase 1 — blank black (logo invisible for first portion of scroll)
+        // Phase 2 — Logo rises in with blur dissolve (same pattern as FactionSection character)
+        tl.fromTo(logoRef.current,
+            { opacity: 0, y: 40, filter: 'blur(12px) brightness(0.2)', scale: 0.95 },
+            { opacity: 1, y: 0, filter: 'blur(0px) brightness(1)', scale: 1, duration: 2, ease: 'power3.out' },
+            0.3
+        );
+
+        // Tagline fades in with slight upward drift (same as descRef in FactionSection)
+        tl.fromTo(taglineRef.current,
+            { opacity: 0, y: 15 },
+            { opacity: 1, y: 0, duration: 1.2 },
+            0.8
+        );
+
+
+        // Phase 3 — exit: everything fades out upward (same as FactionSection exit)
+        tl.to([logoRef.current, taglineRef.current], {
+            opacity: 0,
+            y: -40,
+            duration: 0.8,
+        }, '+=0.5');
+
+    }, { scope: sectionRef });
+
+    return (
+        <section
+            ref={sectionRef}
+            className="h-screen w-full relative bg-black overflow-hidden flex flex-col items-center justify-center"
+        >
+            {/* Subtle radial purple glow — same as hero header */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(147,112,219,0.08)_0%,transparent_70%)]" />
+
+            {/* Top scan line — same style as FactionSection */}
+            <div
+                className="absolute top-0 left-0 right-0 h-[1px] z-[30] pointer-events-none"
+                style={{ background: 'linear-gradient(to right, transparent, rgba(147,112,219,0.4), transparent)' }}
+            />
+
+            {/* Logo */}
+            <div ref={logoRef} className="relative z-10 flex items-center justify-center" style={{ opacity: 0 }}>
+                <img
+                    src="/logo.png"
+                    alt="ENDURA"
+                    className="w-[clamp(280px,40vw,600px)] h-auto object-contain"
+                    draggable={false}
+                />
+            </div>
+
+            {/* Tagline */}
+            <p
+                ref={taglineRef}
+                className="font-mono text-[10px] tracking-[1.5em] text-white/30 uppercase mt-8 relative z-10"
+                style={{ opacity: 0 }}
+            >
+                // DIGITAL_LEGACY_PROTOCOL
+            </p>
+        </section>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const CultPage = () => {
     const pageRef = useRef();
@@ -106,7 +189,10 @@ const CultPage = () => {
                 grayscaleBg={false}
             />
 
-            {/* FOOTER */}
+            {/* ENDURA LOGO REVEAL — blank scroll → logo appears → footer */}
+            <EnduraLogoSection />
+
+            {/* FOOTER rendered globally by App.jsx */}
             {/* <CinematicFooter /> */}
         </div>
     );

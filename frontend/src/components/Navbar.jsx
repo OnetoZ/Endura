@@ -65,7 +65,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                 <img
                                     src="/logo.png"
                                     alt="ENDURA"
-                                    className="h-10 md:h-12 object-contain brightness-200 transition-all duration-500 group-hover:brightness-150 group-hover:drop-shadow-[0_0_20px_rgba(147,112,219,0.6)]"
+                                    className="h-14 md:h-20 object-contain brightness-150 transition-all duration-500 group-hover:brightness-200 group-hover:drop-shadow-[0_0_20px_rgba(147,112,219,0.6)]"
                                 />
                                 {/* Animated Corner Brackets */}
                                 <div className="absolute -top-1 -left-1 w-3 h-3 border-l border-t border-primary/40 group-hover:border-primary transition-all duration-300" />
