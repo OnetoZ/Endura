@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 
 /**
@@ -13,7 +13,27 @@ import { useStore } from '../../context/StoreContext';
  */
 const PhysicalProductCard = ({ product }) => {
     const { addToCart } = useStore();
+    const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const imageIntervalRef = useRef(null);
+
+    const images = product.images && product.images.length > 0
+        ? product.images
+        : [product.image];
+
+    // Image Cycling Effect on Hover
+    useEffect(() => {
+        if (isHovered && images.length > 1) {
+            imageIntervalRef.current = setInterval(() => {
+                setCurrentImageIndex((prev) => (prev + 1) % images.length);
+            }, 2000);
+        } else {
+            clearInterval(imageIntervalRef.current);
+            setCurrentImageIndex(0);
+        }
+        return () => clearInterval(imageIntervalRef.current);
+    }, [isHovered, images.length]);
 
     // Tilt Animation
     const x = useMotionValue(0);
@@ -49,7 +69,8 @@ const PhysicalProductCard = ({ product }) => {
             whileInView={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="group relative"
+            className="group relative cursor-pointer"
+            onClick={() => navigate(`/product/${product._id || product.id}`)}
         >
             <motion.div
                 onMouseMove={handleMouseMove}
@@ -60,7 +81,7 @@ const PhysicalProductCard = ({ product }) => {
                     rotateY,
                     transformStyle: "preserve-3d",
                 }}
-                className={`relative aspect-[4/5] w-full bg-[#111111] overflow-hidden rounded-sm transition-all duration-700 ${isHovered ? 'shadow-[0_40px_80px_rgba(0,0,0,0.9)] scale-[1.02]' : 'shadow-2xl'}`}
+                className={`relative aspect-[4/5] w-full bg-[#111111] overflow-hidden rounded-xl transition-all duration-700 ${isHovered ? 'shadow-[0_40px_80px_rgba(0,0,0,0.9)] scale-[1.02]' : 'shadow-2xl'}`}
             >
                 {/* Corner Brackets */}
                 <div className="corner-bracket bracket-tl"></div>
@@ -79,11 +100,18 @@ const PhysicalProductCard = ({ product }) => {
                     }}
                     className="w-full h-full relative"
                 >
-                    <img
-                        src={product.images?.[0] || product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-all duration-1000 grayscale-[0.4] group-hover:grayscale-0 group-hover:contrast-[1.1]"
-                    />
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={currentImageIndex}
+                            src={images[currentImageIndex]}
+                            alt={product.name}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-full h-full object-cover transition-all duration-1000 grayscale-[0.4] group-hover:grayscale-0 group-hover:contrast-[1.1]"
+                        />
+                    </AnimatePresence>
                     {/* Subtle Overlay Glow */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-500"></div>
                 </motion.div>
@@ -107,19 +135,16 @@ const PhysicalProductCard = ({ product }) => {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: isHovered ? 1 : 0 }}
-                    className="absolute inset-0 bg-[#050505]/40 backdrop-blur-[3px] flex flex-col items-center justify-center p-8 z-20"
+                    className="absolute inset-0 bg-[#050505]/40 backdrop-blur-[3px] flex flex-col items-center justify-center p-8 z-20 rounded-xl"
                     style={{ transform: "translateZ(100px)" }}
                 >
                     <div className="flex flex-col gap-4 w-full max-w-[180px]">
-                        <Link
-                            to={`/product/${product._id || product.id}`}
-                            className="w-full py-4 bg-[#d4af37] text-black text-[10px] font-black uppercase tracking-[0.3em] text-center hover:bg-white transition-all duration-500 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
-                        >
-                            View Product
-                        </Link>
                         <button
-                            onClick={() => addToCart(product)}
-                            className="w-full py-4 border border-white/10 bg-black/40 text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all duration-500"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(product);
+                            }}
+                            className="w-full py-4 border border-[#d4af37]/30 bg-black/60 text-[#d4af37] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#d4af37] hover:text-black transition-all duration-500 shadow-[0_0_20px_rgba(212,175,55,0.1)]"
                         >
                             Sync to Cart
                         </button>

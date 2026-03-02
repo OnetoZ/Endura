@@ -162,16 +162,14 @@ const Cart = () => {
                 </div>
 
                 {/* Two Column Layout */}
-                <div className="cart-container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                <div className="cart-container grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8 lg:gap-16 items-start">
                     {/* Left Column - Cart Items */}
                     <div className="cart-items">
                         <div
                             ref={gridRef}
                             className="grid grid-cols-1 md:grid-cols-2 gap-8"
-                            style={{ 
-                                perspective: "2000px",
-                                maxHeight: "calc(100vh - 120px)",
-                                overflowY: "auto"
+                            style={{
+                                perspective: "2000px"
                             }}
                         >
                             <AnimatePresence mode='popLayout'>
@@ -189,10 +187,10 @@ const Cart = () => {
                     </div>
 
                     {/* Right Column - Summary Grid */}
-                    <div className="cart-summary">
+                    <div className="cart-summary lg:sticky lg:top-32 h-fit">
                         <AnimatePresence>
                             {step === 1 && (
-                                <div className="sticky top-24">
+                                <div className="">
                                     <CartSummary
                                         subtotal={subtotal}
                                         total={finalTotal}
@@ -208,73 +206,73 @@ const Cart = () => {
                     </div>
                 </div>
 
-            {/* Payment Modal */}
-            <AnimatePresence>
-                {step === 2 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6"
-                    >
+                {/* Payment Modal */}
+                <AnimatePresence>
+                    {step === 2 && (
                         <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            className="glass max-w-md w-full p-10 border-white/10"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6"
                         >
-                            <h3 className="text-2xl font-heading mb-8 border-b border-white/5 pb-4 uppercase">Secure Payment</h3>
+                            <motion.div
+                                initial={{ scale: 0.9, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                className="glass max-w-md w-full p-10 border-white/10"
+                            >
+                                <h3 className="text-2xl font-heading mb-8 border-b border-white/5 pb-4 uppercase">Secure Payment</h3>
 
-                            <div className="space-y-6 mb-10">
-                                <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
-                                    <p className="text-[10px] font-mono text-primary-light uppercase tracking-widest mb-4">Neural Payment Linked</p>
-                                    <div className="flex justify-between items-center mb-6">
-                                        <div className="flex gap-2">
-                                            <div className="w-8 h-5 bg-white/20 rounded" />
-                                            <div className="w-8 h-5 bg-white/20 rounded" />
+                                <div className="space-y-6 mb-10">
+                                    <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
+                                        <p className="text-[10px] font-mono text-primary-light uppercase tracking-widest mb-4">Neural Payment Linked</p>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <div className="flex gap-2">
+                                                <div className="w-8 h-5 bg-white/20 rounded" />
+                                                <div className="w-8 h-5 bg-white/20 rounded" />
+                                            </div>
+                                            <span className="text-xs font-mono">**** 4242</span>
                                         </div>
-                                        <span className="text-xs font-mono">**** 4242</span>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500 uppercase tracking-widest text-[9px]">Amount Due</span>
+                                            <span className="text-accent font-heading">₹{finalTotal}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500 uppercase tracking-widest text-[9px]">Amount Due</span>
-                                        <span className="text-accent font-heading">₹{finalTotal}</span>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-[10px] font-mono text-gray-500 uppercase">
+                                            <span>Encryption Status</span>
+                                            <span className="text-green-500">ACTIVE</span>
+                                        </div>
+                                        <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ x: '-100%' }}
+                                                animate={{ x: '100%' }}
+                                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                                className="w-1/2 h-full bg-primary-light"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-[10px] font-mono text-gray-500 uppercase">
-                                        <span>Encryption Status</span>
-                                        <span className="text-green-500">ACTIVE</span>
-                                    </div>
-                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ x: '-100%' }}
-                                            animate={{ x: '100%' }}
-                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                            className="w-1/2 h-full bg-primary-light"
-                                        />
-                                    </div>
+                                <div className="flex flex-col gap-4">
+                                    <button
+                                        onClick={confirmPayment}
+                                        disabled={isCheckingOut}
+                                        className="w-full py-4 bg-accent text-black font-heading font-black uppercase tracking-[0.2em] hover:bg-white transition-all disabled:opacity-50"
+                                    >
+                                        {isCheckingOut ? 'VERIFYING...' : 'CONFIRM TRANSACTION'}
+                                    </button>
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="w-full py-3 text-[10px] font-heading text-gray-500 hover:text-white uppercase tracking-widest transition-colors"
+                                    >
+                                        ABORT
+                                    </button>
                                 </div>
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                                <button
-                                    onClick={confirmPayment}
-                                    disabled={isCheckingOut}
-                                    className="w-full py-4 bg-accent text-black font-heading font-black uppercase tracking-[0.2em] hover:bg-white transition-all disabled:opacity-50"
-                                >
-                                    {isCheckingOut ? 'VERIFYING...' : 'CONFIRM TRANSACTION'}
-                                </button>
-                                <button
-                                    onClick={() => setStep(1)}
-                                    className="w-full py-3 text-[10px] font-heading text-gray-500 hover:text-white uppercase tracking-widest transition-colors"
-                                >
-                                    ABORT
-                                </button>
-                            </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
