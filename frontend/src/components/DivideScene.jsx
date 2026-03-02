@@ -63,7 +63,7 @@ const DivideScene = () => {
     }, { scope: containerRef });
 
     return (
-        <section ref={containerRef} className="min-h-screen w-full relative bg-black overflow-hidden flex items-center justify-center persistent-3d">
+        <section ref={containerRef} className="min-h-screen w-full relative bg-black overflow-hidden flex items-center justify-center" style={{ perspective: '1500px' }}>
             {/* LEFT SIDE: REALITY */}
             <div
                 ref={leftSideRef}
@@ -122,9 +122,6 @@ const DivideScene = () => {
             {/* Cinematic Noise */}
             <div className="absolute inset-0 z-40 pointer-events-none film-grain opacity-10" />
 
-            <style jsx>{`
-                .persistent-3d { perspective: 1500px; }
-            `}</style>
         </section>
     );
 };

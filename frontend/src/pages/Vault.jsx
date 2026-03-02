@@ -12,6 +12,8 @@ import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
 import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
 import '../components/collections/collections.css';
+import { useVaultScore } from '../hooks/useVaultScore';
+import VaultCongratsOverlay from '../components/Vault/UI/VaultCongratsOverlay';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
@@ -306,10 +308,11 @@ const vaultHeroImages = [
 ];
 
 const Vault = () => {
-    const { products } = useStore();
     const pageRef = useRef(null);
     const headingRef = useRef(null);
     const navigate = useNavigate();
+    const { loginWithToken } = useStore();
+    const { collectItem } = useVaultScore();
 
     // Admin-created DB cards
     const [vaultItems, setDbCards] = useState([]);
@@ -345,6 +348,8 @@ const Vault = () => {
     const [targetItem, setTargetItem] = useState(null);
     const [clickPos, setClickPos] = useState({ x: 0, y: 0 });
     const [rewardUnlockItem, setRewardUnlockItem] = useState(null);
+    const [showCongrats, setShowCongrats] = useState(false);
+    const [congratsData, setCongratsData] = useState(null);
 
     useEffect(() => {
         const savedData = localStorage.getItem('endura_vault_persistence');
@@ -393,8 +398,32 @@ const Vault = () => {
             const nextStats = { ...stats, [safeTier]: (stats[safeTier] || 0) + 1 };
 
             setUnlockedIds(nextUnlocked);
-            setCredits(nextCredits);
             setStats(nextStats);
+
+            // Handle backend collection and score update
+            if (targetItem._source === 'db') {
+                collectItem(targetItem.id)
+                    .then(data => {
+                        setCongratsData(data);
+                        setCredits(data.newScore);
+
+                        // Sync with global store
+                        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                        const updatedUser = { ...userInfo, credits: data.newScore, creditScore: data.newScore };
+                        loginWithToken(updatedUser);
+
+                        // SHOW NEW CONGRATS POPUP IMMEDIATELY
+                        setTimeout(() => {
+                            setShowCongrats(true);
+                        }, 800);
+                    })
+                    .catch(err => {
+                        console.error('Collection sync failed:', err);
+                        setShowCongrats(true); // Fallback to show popup anyway
+                    });
+            } else {
+                setCredits(nextCredits);
+            }
 
             updatePersistence(nextUnlocked, nextCredits, nextStats);
 
@@ -402,7 +431,9 @@ const Vault = () => {
             setIsModalOpen(false);
 
             setTimeout(() => {
-                setRewardUnlockItem(targetItem);
+                if (targetItem._source !== 'db') {
+                    setRewardUnlockItem(targetItem);
+                }
             }, 1200);
 
             toast.success('DECRYPTION SUCCESSFUL', {
@@ -495,7 +526,7 @@ const Vault = () => {
                         <div className="flex items-center justify-between mb-8">
                             <div className="w-[160px]" />
                             <h1 ref={headingRef} className="text-4xl md:text-6xl font-heading font-black tracking-[0.2em] text-white opacity-0 translate-y-4">
-                                THE ENDURA <span
+                                THE <span
                                     className={`vault-word-reveal cursor-pointer transition-all ${isVaultActive ? 'active' : ''}`}
                                     onClick={() => setIsVaultActive(!isVaultActive)}
                                 >VAULT</span>
@@ -615,6 +646,25 @@ const Vault = () => {
                         onClose={() => setRewardUnlockItem(null)}
                     />
                 )}
+
+                <AnimatePresence>
+                    {showCongrats && (
+                        <VaultCongratsOverlay
+                            oldScore={congratsData?.oldScore}
+                            newScore={congratsData?.newScore}
+                            creditDelta={congratsData?.creditDelta}
+                            onEnterDashboard={() => navigate('/dashboard')}
+                            onClose={() => setShowCongrats(false)}
+                        >
+                            {targetItem && (
+                                <DressItem
+                                    item={{ ...targetItem, image: targetItem.image }}
+                                    vaultReady={true}
+                                />
+                            )}
+                        </VaultCongratsOverlay>
+                    )}
+                </AnimatePresence>
             </div>
         </>
     );
