@@ -203,7 +203,7 @@
 }
 
 .group:hover .corner-bracket {
-    opacity: 1;
+    opacity: 100;
     border-color: rgba(212, 175, 55, 1);
 }
 
@@ -236,23 +236,23 @@
 }
 
 .group:hover .bracket-tl {
-    top: 20px;
-    left: 20px;
+    top: 15px;
+    left: 15px;
 }
 
 .group:hover .bracket-tr {
-    top: 20px;
-    right: 20px;
+    top: 15px;
+    right: 15px;
 }
 
 .group:hover .bracket-bl {
-    bottom: 20px;
-    left: 20px;
+    bottom: 15px;
+    left: 15px;
 }
 
 .group:hover .bracket-br {
-    bottom: 20px;
-    right: 20px;
+    bottom: 15px;
+    right: 15px;
 }
 
 /* Refined Typography Motion */
