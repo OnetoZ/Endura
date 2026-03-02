@@ -58,7 +58,7 @@ const CollectionHero = ({ images }) => {
             >
                 {/* <span className="restricted-label block mb-2 tracking-[0.3em]">REPOSSESSION PROTOCOL</span> */}
                 <h1 className="text-6xl md:text-8xl font-heading uppercase tracking-tighter leading-none mb-6">
-                    YOUR <span className="text-accent italic">VAULT</span>
+                    THE <span className="text-accent italic">VAULT</span>
                 </h1>
                 <p className="max-w-xl mx-auto text-sm text-gray-400 font-body uppercase tracking-widest leading-relaxed opacity-60">
                     Secure asset verification in progress. <br />
