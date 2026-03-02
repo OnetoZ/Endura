@@ -21,6 +21,8 @@ const userResponse = (user) => ({
     phone: user.phone,
     isVerified: user.isVerified,
     addresses: user.addresses,
+    credits: user.credits,
+    creditScore: user.creditScore,
     token: generateToken(user._id),
 });
 

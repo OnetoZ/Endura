@@ -10,12 +10,17 @@ const vaultItemSchema = new mongoose.Schema({
     order: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
-        required: true,
+        required: false,
+    },
+    vaultCard: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'VaultCard',
+        required: false,
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
-        required: true,
+        required: false,
     },
     productName: { type: String, required: true },
     productImage: { type: String },
