@@ -10,7 +10,10 @@ import { useStore } from '../context/StoreContext';
 import { productService } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
+import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
 import '../components/collections/collections.css';
+import { useVaultScore } from '../hooks/useVaultScore';
+import VaultCongratsOverlay from '../components/Vault/UI/VaultCongratsOverlay';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
@@ -119,8 +122,8 @@ const VaultCard = ({
         >
             <motion.div
                 className="relative w-full h-full duration-700 [transform-style:preserve-3d]"
-                animate={{ rotateY: isUnlocked ? 180 : 0 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
+                animate={{ rotateY: isUnlocked ? 1080 + 180 : 0 }}
+                transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
             >
                 {/* Front Side: Pure Image Card */}
                 <div
@@ -202,10 +205,10 @@ const DressItem = ({
 
 
             {/* Central Content */}
-            <div className="relative h-full flex flex-col items-center justify-center p-8">
+            <div className="relative w-full h-full flex flex-col items-center justify-center p-8 overflow-visible">
                 {/* Always Floating Dress Artwork */}
                 <motion.div
-                    className="relative z-10"
+                    className="relative z-10 w-full h-full flex items-center justify-center overflow-visible"
                     animate={vaultReady ? {
                         y: [-8, 8, -8],
                     } : {}}
@@ -216,7 +219,7 @@ const DressItem = ({
                     <img
                         src={item.image}
                         alt={item.name}
-                        className="h-44 object-contain transition-transform duration-700"
+                        className="w-full h-full object-contain block transition-transform duration-700"
                         style={{
                             transform: isHovered ? 'scale(1.1)' : 'scale(1)'
                         }}
@@ -305,10 +308,11 @@ const vaultHeroImages = [
 ];
 
 const Vault = () => {
-    const { products } = useStore();
     const pageRef = useRef(null);
     const headingRef = useRef(null);
     const navigate = useNavigate();
+    const { loginWithToken } = useStore();
+    const { collectItem } = useVaultScore();
 
     // Admin-created DB cards
     const [vaultItems, setDbCards] = useState([]);
@@ -343,6 +347,9 @@ const Vault = () => {
     const [unlockCode, setUnlockCode] = useState('');
     const [targetItem, setTargetItem] = useState(null);
     const [clickPos, setClickPos] = useState({ x: 0, y: 0 });
+    const [rewardUnlockItem, setRewardUnlockItem] = useState(null);
+    const [showCongrats, setShowCongrats] = useState(false);
+    const [congratsData, setCongratsData] = useState(null);
 
     useEffect(() => {
         const savedData = localStorage.getItem('endura_vault_persistence');
@@ -391,13 +398,43 @@ const Vault = () => {
             const nextStats = { ...stats, [safeTier]: (stats[safeTier] || 0) + 1 };
 
             setUnlockedIds(nextUnlocked);
-            setCredits(nextCredits);
             setStats(nextStats);
+
+            // Handle backend collection and score update
+            if (targetItem._source === 'db') {
+                collectItem(targetItem.id)
+                    .then(data => {
+                        setCongratsData(data);
+                        setCredits(data.newScore);
+
+                        // Sync with global store
+                        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                        const updatedUser = { ...userInfo, credits: data.newScore, creditScore: data.newScore };
+                        loginWithToken(updatedUser);
+
+                        // SHOW NEW CONGRATS POPUP IMMEDIATELY
+                        setTimeout(() => {
+                            setShowCongrats(true);
+                        }, 800);
+                    })
+                    .catch(err => {
+                        console.error('Collection sync failed:', err);
+                        setShowCongrats(true); // Fallback to show popup anyway
+                    });
+            } else {
+                setCredits(nextCredits);
+            }
 
             updatePersistence(nextUnlocked, nextCredits, nextStats);
 
             setBursts(prev => [...prev, { id: Date.now(), x: clickPos.x, y: clickPos.y }]);
             setIsModalOpen(false);
+
+            setTimeout(() => {
+                if (targetItem._source !== 'db') {
+                    setRewardUnlockItem(targetItem);
+                }
+            }, 1200);
 
             toast.success('DECRYPTION SUCCESSFUL', {
                 style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' }
@@ -489,7 +526,7 @@ const Vault = () => {
                         <div className="flex items-center justify-between mb-8">
                             <div className="w-[160px]" />
                             <h1 ref={headingRef} className="text-4xl md:text-6xl font-heading font-black tracking-[0.2em] text-white opacity-0 translate-y-4">
-                                THE ENDURA <span
+                                THE <span
                                     className={`vault-word-reveal cursor-pointer transition-all ${isVaultActive ? 'active' : ''}`}
                                     onClick={() => setIsVaultActive(!isVaultActive)}
                                 >VAULT</span>
@@ -600,6 +637,32 @@ const Vault = () => {
                                 </div>
                             </motion.div>
                         </div>
+                    )}
+                </AnimatePresence>
+
+                {rewardUnlockItem && (
+                    <RewardUnlockOverlay
+                        item={rewardUnlockItem}
+                        onClose={() => setRewardUnlockItem(null)}
+                    />
+                )}
+
+                <AnimatePresence>
+                    {showCongrats && (
+                        <VaultCongratsOverlay
+                            oldScore={congratsData?.oldScore}
+                            newScore={congratsData?.newScore}
+                            creditDelta={congratsData?.creditDelta}
+                            onEnterDashboard={() => navigate('/dashboard')}
+                            onClose={() => setShowCongrats(false)}
+                        >
+                            {targetItem && (
+                                <DressItem
+                                    item={{ ...targetItem, image: targetItem.image }}
+                                    vaultReady={true}
+                                />
+                            )}
+                        </VaultCongratsOverlay>
                     )}
                 </AnimatePresence>
             </div>

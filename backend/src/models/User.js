@@ -151,6 +151,17 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    // Credit system
+    creditScore: {
+        type: Number,
+        default: 0,
+        min: 0,
+    },
+    creditHistory: [{
+        delta: Number,
+        reason: String,
+        timestamp: { type: Date, default: Date.now }
+    }],
 }, { timestamps: true });
 
 // Hash password before saving (skip if it's a Google OAuth placeholder or admin without password)
