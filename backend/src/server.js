@@ -99,3 +99,10 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ MongoDB connection error:', error.message);
     process.exit(1);
   });
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀")
+})
+
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`)
+})
