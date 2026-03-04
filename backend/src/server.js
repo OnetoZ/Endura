@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const session = require('express-session');
+const { MongoStore } = require('connect-mongo');
 const rateLimit = require('express-rate-limit');
 
 dotenv.config();
@@ -19,6 +20,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5177',
+  'https://endura-2.onrender.com', // Your Render URL
+  'https://endura-xi.vercel.app',   // Your Vercel frontend URL
 ];
 
 app.use(cors({
@@ -38,12 +41,19 @@ app.use(express.urlencoded({ extended: true }));
 // ── Logger ────────────────────────────────────────────────────────────────────
 app.use(morgan('dev'));
 
-// ── Session (needed for passport OAuth redirect flow) ─────────────────────────
+// ── Session (Production Ready with MongoDB Store) ─────────────────────────────
 app.use(session({
   secret: process.env.JWT_SECRET || 'endura_session_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    ttl: 24 * 60 * 60 // 1 day
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000
+  },
 }));
 
 // ── Passport ──────────────────────────────────────────────────────────────────
@@ -58,12 +68,15 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth', authLimiter);
 
-// ── Health Check ──────────────────────────────────────────────────────────────
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.send('Backend is running 🚀');
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Endura API is running ✅' });
 });
 
-// ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
@@ -92,10 +105,11 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Successfully connected to MongoDB');
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running on http://localhost:${PORT}`);
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
     console.error('❌ MongoDB connection error:', error.message);
     process.exit(1);
   });
+
