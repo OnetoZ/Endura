@@ -198,7 +198,7 @@ const DressItem = ({
 
     return (
         <div
-            className="relative w-full h-full bg-black overflow-hidden group/dress rounded-xl"
+            className="relative w-full h-full bg-transparent overflow-hidden group/dress"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >

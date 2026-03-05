@@ -21,13 +21,13 @@ const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accen
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 backdrop-blur-2xl px-6 pointer-events-auto"
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-[8px] px-6 pointer-events-auto"
             onClick={(e) => {
                 if (e.target === e.currentTarget) handleClose(e);
             }}
         >
             {/* HUD WRAPPER - Stable Rectangle with Natural Scaling */}
-            <div className="relative w-[520px] min-h-[320px] bg-[#111111] p-[24px_48px] box-border flex flex-col items-center justify-center gap-16 overflow-hidden">
+            <div className="relative w-[520px] min-h-[320px] bg-[#000000] p-[24px_48px] box-border flex flex-col items-center justify-center gap-16 overflow-hidden">
                 {/* HUD CORNERS LAYER */}
                 <div className="absolute inset-0 pointer-events-none z-50">
                     {/* Top Left Corners */}
@@ -70,6 +70,7 @@ const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accen
                         <motion.div
                             animate={{ y: [0, -10, 0], rotateZ: [0, 1, 0] }}
                             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                            style={{ background: 'transparent' }}
                             className="artifact-container w-full max-h-[180px] flex items-center justify-center flex-shrink-0 overflow-hidden [&_img]:max-h-[180px] [&_img]:max-w-full [&_img]:object-contain [&_img]:block"
                         >
                             {children}
