@@ -624,6 +624,7 @@ const Vault = () => {
                             oldScore={congratsData?.oldScore}
                             newScore={congratsData?.newScore}
                             creditDelta={congratsData?.creditDelta}
+                            accent={targetItem ? tierAccent(targetItem.tier) : '#C9A227'}
                             onEnterDashboard={() => navigate('/dashboard')}
                             onClose={() => setShowCongrats(false)}
                         >

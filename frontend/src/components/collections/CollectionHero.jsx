@@ -61,8 +61,8 @@ const CollectionHero = ({ images }) => {
                     THE <span className="text-accent italic">VAULT</span>
                 </h1>
                 <p className="max-w-xl mx-auto text-sm text-gray-400 font-body uppercase tracking-widest leading-relaxed opacity-60">
-                    Secure asset verification in progress. <br />
-                    Authenticating curated items for vault access.
+                    Limited pieces authenticated. <br />
+                    Preparing the vault reveal.
                 </p>
             </div>
 
