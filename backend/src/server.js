@@ -13,6 +13,12 @@ const passport = require('./config/passport');
 
 const app = express();
 
+// ── Trust Proxy (needed for Render / Heroku / etc.) ──────────────────────────
+const isProduction = process.env.NODE_ENV === 'production';
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:5173',
@@ -43,7 +49,11 @@ app.use(session({
   secret: process.env.JWT_SECRET || 'endura_session_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+  cookie: {
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  },
 }));
 
 // ── Passport ──────────────────────────────────────────────────────────────────
@@ -57,6 +67,11 @@ const authLimiter = rateLimit({
   message: { message: 'Too many requests, please try again in 15 minutes.' },
 });
 app.use('/api/auth', authLimiter);
+
+// ── Root Route ────────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Endura API Server' });
+});
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
