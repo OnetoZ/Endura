@@ -14,6 +14,12 @@ const passport = require('./config/passport');
 
 const app = express();
 
+// ── Trust Proxy (needed for Render / Heroku / etc.) ──────────────────────────
+const isProduction = process.env.NODE_ENV === 'production';
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:5173',
