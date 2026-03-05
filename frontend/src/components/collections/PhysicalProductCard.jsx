@@ -83,14 +83,26 @@ const PhysicalProductCard = ({ product }) => {
                 }}
                 className={`relative aspect-[4/5] w-full bg-[#111111] overflow-hidden rounded-xl transition-all duration-700 ${isHovered ? 'shadow-[0_40px_80px_rgba(0,0,0,0.9)] scale-[1.02]' : 'shadow-2xl'}`}
             >
-                {/* Corner Brackets */}
-                <div className="corner-bracket bracket-tl"></div>
-                <div className="corner-bracket bracket-tr"></div>
-                <div className="corner-bracket bracket-bl"></div>
-                <div className="corner-bracket bracket-br"></div>
+                {/* Tactical HUD Overlay Layer */}
+                <div className="hud-overlay">
+                    {/* Corner Brackets */}
+                    <div className="corner-bracket bracket-tl"></div>
+                    <div className="corner-bracket bracket-tr"></div>
+                    <div className="corner-bracket bracket-bl"></div>
+                    <div className="corner-bracket bracket-br"></div>
 
-                {/* Scanning Beam */}
-                <div className="scanner-line"></div>
+                    {/* Scanning Beam */}
+                    <div className="scanner-line"></div>
+
+                    {/* Ambient Glow Overlay */}
+                    <div className="artifact-glow"></div>
+
+                    {/* System Metadata Tags */}
+                    <div className="hud-metadata meta-tl">ID_ENTRY // {product._id?.slice(-8) || product.id?.toString().slice(-8)}</div>
+                    <div className="hud-metadata meta-tr">SECURE_AUTH // VERIFIED</div>
+                    <div className="hud-metadata meta-bl">NODE_ARCHIVE</div>
+                    <div className="hud-metadata meta-br">HASH_CHECK</div>
+                </div>
 
                 {/* Product Image with Parallax & Glitch Overlay */}
                 <motion.div

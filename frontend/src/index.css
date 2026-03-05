@@ -928,3 +928,134 @@ h6 {
     0 0 20px rgba(212, 175, 55, 0.6),
     0 0 40px rgba(212, 175, 55, 0.3);
 }
+
+/* ===================================
+   HUD FRAME SYSTEM
+   =================================== */
+
+.hud-outer-frame {
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+  background: #8A6B12;
+  /* Dark Gold Border accent */
+  padding: 1px;
+}
+
+.hud-inner-frame {
+  background: #111111;
+  position: relative;
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  /* Muted Gold Inner Border */
+}
+
+.hud-corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-corner::before,
+.hud-corner::after {
+  content: '';
+  position: absolute;
+  background: #C9A227;
+  /* Muted Gold */
+}
+
+/* Embroidery Style: Right angles without curves */
+.hud-corner.top-left {
+  top: -1px;
+  left: -1px;
+}
+
+.hud-corner.top-left::before {
+  top: 0;
+  left: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.top-left::after {
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 25px;
+}
+
+.hud-corner.top-right {
+  top: -1px;
+  right: -1px;
+}
+
+.hud-corner.top-right::before {
+  top: 0;
+  right: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.top-right::after {
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 25px;
+}
+
+.hud-corner.bottom-left {
+  bottom: -1px;
+  left: -1px;
+}
+
+.hud-corner.bottom-left::before {
+  bottom: 0;
+  left: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.bottom-left::after {
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 25px;
+}
+
+.hud-corner.bottom-right {
+  bottom: -1px;
+  right: -1px;
+}
+
+.hud-corner.bottom-right::before {
+  bottom: 0;
+  right: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.bottom-right::after {
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  height: 25px;
+}
+
+/* Keep it sharp */
+.hud-outer-frame,
+.hud-inner-frame,
+.hud-corner,
+.hud-corner::before,
+.hud-corner::after {
+  border-radius: 0 !important;
+}
+
+/* Final override for HUD sharpness */
+.hud-outer-frame,
+.hud-outer-frame *,
+.hud-inner-frame,
+.hud-inner-frame *,
+.hud-corner,
+.hud-corner::before,
+.hud-corner::after {
+  border-radius: 0 !important;
+}
