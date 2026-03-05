@@ -198,7 +198,7 @@ const DressItem = ({
 
     return (
         <div
-            className="relative w-full h-full bg-black overflow-hidden group/dress rounded-xl"
+            className="relative w-full h-full bg-transparent overflow-hidden group/dress"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -335,6 +335,7 @@ const Vault = () => {
     const [unlockedIds, setUnlockedIds] = useState([]);
     const [credits, setCredits] = useState(0);
     const [stats, setStats] = useState({ common: 0, rare: 0, epic: 0, legendary: 0 });
+    const [ritualId, setRitualId] = useState(null);
     const [collectionFilter, setCollectionFilter] = useState('All');
     const [loadingDone, setLoadingDone] = useState(false);
     const [vaultReady, setVaultReady] = useState(false);
@@ -391,54 +392,9 @@ const Vault = () => {
         const isNumeric = /^\d+$/.test(unlockCode);
         const isSecretCode = unlockCode.toUpperCase() === 'ENDURA-LEVEL1';
 
-        if (isSecretCode || (isNumeric && unlockCode.length > 0)) {
-            const nextUnlocked = [...unlockedIds, targetItem.id];
-            const nextCredits = credits + 1;
-            const safeTier = targetItem.tier ? targetItem.tier.toLowerCase() : 'common';
-            const nextStats = { ...stats, [safeTier]: (stats[safeTier] || 0) + 1 };
-
-            setUnlockedIds(nextUnlocked);
-            setStats(nextStats);
-
-            // Handle backend collection and score update
-            if (targetItem._source === 'db') {
-                collectItem(targetItem.id)
-                    .then(data => {
-                        setCongratsData(data);
-                        setCredits(data.newScore);
-
-                        // Sync with global store
-                        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                        const updatedUser = { ...userInfo, credits: data.newScore, creditScore: data.newScore };
-                        loginWithToken(updatedUser);
-
-                        // SHOW NEW CONGRATS POPUP IMMEDIATELY
-                        setTimeout(() => {
-                            setShowCongrats(true);
-                        }, 800);
-                    })
-                    .catch(err => {
-                        console.error('Collection sync failed:', err);
-                        setShowCongrats(true); // Fallback to show popup anyway
-                    });
-            } else {
-                setCredits(nextCredits);
-            }
-
-            updatePersistence(nextUnlocked, nextCredits, nextStats);
-
-            setBursts(prev => [...prev, { id: Date.now(), x: clickPos.x, y: clickPos.y }]);
-            setIsModalOpen(false);
-
-            setTimeout(() => {
-                if (targetItem._source !== 'db') {
-                    setRewardUnlockItem(targetItem);
-                }
-            }, 1200);
-
-            toast.success('DECRYPTION SUCCESSFUL', {
-                style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' }
-            });
+        if (unlockCode.toUpperCase() === 'ENDURA-LEVEL1' || /^\d+$/.test(unlockCode)) {
+            setRitualId(targetItem.id); setIsModalOpen(false);
+            toast.success('DECRYPTION SUCCESSFUL', { style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' } });
         } else {
             toast.error('ACCESS DENIED', {
                 style: { background: '#0a0a0a', color: '#ff4444', border: '1px solid #ff4444', fontFamily: 'Orbitron', fontSize: '10px' }
@@ -610,6 +566,21 @@ const Vault = () => {
                 ))}
 
                 <AnimatePresence>
+                    {ritualId && (
+                        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-none">
+                            <motion.div initial={{ rotateY: 0 }} animate={{ rotateY: 360 }} transition={{ duration: 1.6, ease: "easeInOut" }} className="w-[280px]" onAnimationComplete={() => {
+                                const it = targetItem; if (!it) return; const nU = [...unlockedIds, it.id]; const nS = { ...stats, [(it.tier || 'common').toLowerCase()]: (stats[(it.tier || 'common').toLowerCase()] || 0) + 1 };
+                                setUnlockedIds(nU); setStats(nS); updatePersistence(nU, credits + 1, nS);
+                                if (it._source === 'db') collectItem(it.id).then(d => { setCongratsData(d); setCredits(d.newScore); setShowCongrats(true); setRitualId(null); }).catch(() => { setShowCongrats(true); setRitualId(null); });
+                                else { setCredits(credits + 1); setRewardUnlockItem(it); setRitualId(null); }
+                            }}>
+                                <VaultCard item={vaultItems.find(it => it.id === ritualId)} isUnlocked={false} onUnlockRequest={() => { }} vaultReady={true} />
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
                     {isModalOpen && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/60">
                             <motion.div
@@ -653,6 +624,7 @@ const Vault = () => {
                             oldScore={congratsData?.oldScore}
                             newScore={congratsData?.newScore}
                             creditDelta={congratsData?.creditDelta}
+                            accent={targetItem ? tierAccent(targetItem.tier) : '#C9A227'}
                             onEnterDashboard={() => navigate('/dashboard')}
                             onClose={() => setShowCongrats(false)}
                         >
