@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
+import { Link } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,15 +40,22 @@ const DivideScene = () => {
                 ease: "power2.inOut"
             }, 0);
 
-        // 2. Reveal Text in the center gap
+        // 2. Reveal Content in the center gap
         tl.fromTo(".divide-text",
             { opacity: 0, scale: 0.9, filter: 'blur(15px)' },
             { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1.2, stagger: 0.5 },
             0.5
         );
 
-        // 3. Dissolve to symbol
-        tl.to(".divide-text", { opacity: 0, scale: 1.1, filter: 'blur(10px)', duration: 0.8 }, 2);
+        // SYNC BUTTON with split
+        tl.fromTo(".divide-button",
+            { opacity: 0, scale: 0.5, filter: 'blur(20px)' },
+            { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1.5 },
+            0
+        );
+
+        // 3. Dissolve to symbol (includes button)
+        tl.to([".divide-text", ".divide-button"], { opacity: 0, scale: 1.1, filter: 'blur(10px)', duration: 0.8 }, 2);
 
         tl.to(leftSideRef.current, { xPercent: 0, opacity: 0, scale: 0.5, duration: 1.5 }, 2.5)
             .to(rightSideRef.current, { xPercent: 0, opacity: 0, scale: 0.5, duration: 1.5 }, 2.5)
@@ -96,26 +104,49 @@ const DivideScene = () => {
             </div>
 
             {/* CENTER: THE VOID */}
-            <div className="relative z-20 text-center space-y-24 px-6">
+            <div className="relative z-20 text-center space-y-12 px-6">
                 <div className="divide-text">
-                    <h3 className="text-accent font-mono text-[10px] tracking-[1.5em] uppercase mb-8">Dual Existence</h3>
-                    <h2 className="text-6xl md:text-9xl font-oswald uppercase leading-none tracking-tighter">
+                    <h2 className="text-4xl md:text-7xl font-oswald uppercase leading-none tracking-tighter">
                         THE BODY WEARS <br />
                         <span className="text-white/10">MATTER.</span>
                     </h2>
                 </div>
 
+                <div className="divide-button">
+                    <Link
+                        to="/collections"
+                        className="group relative inline-flex items-center gap-6 px-12 py-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 transition-all duration-700 overflow-hidden"
+                    >
+                        {/* Interactive Background */}
+                        <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-700" />
+                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-primary/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left" />
+
+                        {/* Button Content */}
+                        <div className="relative z-10 flex items-center gap-4">
+                            <span className="text-[11px] font-black uppercase tracking-[0.6em] text-white/80 group-hover:text-white transition-colors duration-500">
+                                EXPLORE_COLLECTIONS
+                            </span>
+                            <div className="relative w-2 h-2 border border-primary/50 rotate-45 group-hover:bg-primary group-hover:shadow-[0_0_10px_#A855F7] transition-all duration-500" />
+                        </div>
+
+                        {/* Corner Accents */}
+                        <div className="absolute top-0 left-0 w-2 h-2 border-l border-t border-white/20 group-hover:border-primary transition-colors" />
+                        <div className="absolute bottom-0 right-0 w-2 h-2 border-r border-b border-white/20 group-hover:border-primary transition-colors" />
+                    </Link>
+                </div>
+
                 <div className="divide-text">
-                    <h2 className="text-6xl md:text-9xl font-oswald uppercase leading-none tracking-tighter">
+                    <h2 className="text-4xl md:text-7xl font-oswald uppercase leading-none tracking-tighter">
                         THE SOUL WEARS <br />
                         <span className="text-primary system-text-glow">DATA.</span>
                     </h2>
                 </div>
+
             </div>
 
             {/* FINAL SYMBOL */}
             <div ref={symbolRef} className="absolute inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none">
-                <img src="/logo.png" alt="ENDURA" className="h-32 md:h-52 object-contain brightness-200" />
+                <img src="/logo.png" alt="ENDURA" className="h-16 md:h-24 object-contain brightness-200" />
                 <div className="absolute inset-0 bg-radial-gradient from-accent/30 via-transparent to-transparent animate-pulse" />
             </div>
 

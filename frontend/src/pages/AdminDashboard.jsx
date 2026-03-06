@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productService, userService, uploadService, orderService, getImageUrl } from '../services/api';
+import { productService, userService, uploadService } from '../services/api';
 import { toast } from 'react-hot-toast';
 
 const CATEGORY_STYLES = {
@@ -20,7 +20,6 @@ const INITIAL_PRODUCT_STATE = {
     additionalImages: [],
     digitalTwinImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
     type: 'Common',
-    category: 'Premium Gear',
     shortAtmosphericLine: ''
 };
 
@@ -56,7 +55,7 @@ const AdminDashboard = () => {
             try {
                 const [productsData, ordersData, usersData, userData, cardsData] = await Promise.all([
                     productService.getProducts(),
-                    orderService.getOrders().catch(() => []),
+                    userService.getUserOrders(),
                     userService.getUsers(),
                     userService.getCurrentUser(),
                     productService.getVaultCards(),
@@ -178,11 +177,7 @@ const AdminDashboard = () => {
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
-        // Validation: Mandatory fields
-        if (!newProduct.name || !newProduct.price) {
-            toast.error('Error: Name and Price are mandatory fields.');
-            return;
-        }
+        // Validation: Cannot publish without digital twin
         if (!newProduct.digitalTwinImage) {
             toast.error('Error: Digital Twin Image is mandatory.');
             return;
@@ -197,12 +192,11 @@ const AdminDashboard = () => {
                 stock: Number(newProduct.stock)
             };
 
-            console.log('Attempting to save product:', productData);
-
             if (editingProductId) {
                 const updated = await productService.updateProduct(editingProductId, productData);
                 setProducts(prev => prev.map(p => {
                     const idToMatch = p._id || p.id;
+                    const resultId = updated._id || updated.id || updated.product?._id || updated.product?.id;
                     return idToMatch === editingProductId ? (updated.product || updated) : p;
                 }));
                 toast.success('Product updated successfully!');
@@ -212,7 +206,7 @@ const AdminDashboard = () => {
                 toast.success('Product added successfully!');
             }
 
-            // Auto reload after 1.5s to refresh data
+            // Automaticaly reload after 1.5s to refresh data
             setTimeout(() => window.location.reload(), 1500);
 
             setIsAdding(false);
@@ -319,19 +313,10 @@ const AdminDashboard = () => {
                                 </h3>
                                 <div className="space-y-4">
                                     {[
-                                        ...products.slice(0, 3).map(p => ({
-                                            action: 'Product Added',
-                                            time: new Date(p.createdAt).toLocaleDateString(),
-                                            detail: p.name,
-                                            type: 'product'
-                                        })),
-                                        ...orders.slice(0, 3).map(o => ({
-                                            action: 'Order Processed',
-                                            time: new Date(o.createdAt).toLocaleDateString(),
-                                            detail: `Order #${(o._id || o.id || '').slice(-6)}`,
-                                            type: 'order'
-                                        }))
-                                    ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5).map((log, i) => (
+                                        { action: 'Product Added', time: '2m ago', detail: 'Alpha Core Shield' },
+                                        { action: 'Store Purchase', time: '15m ago', detail: 'Order #8832 Processed' },
+                                        { action: 'Order Shipped', time: '1h ago', detail: 'Order #ORD-1723467 dispatched' }
+                                    ].map((log, i) => (
                                         <div key={i} className="flex items-center justify-between py-4 border-b border-white/5 hover:bg-white/5 px-2 transition-all">
                                             <div className="flex items-center gap-8">
                                                 <span className="text-[10px] font-mono text-primary/60">{log.time}</span>
@@ -342,9 +327,6 @@ const AdminDashboard = () => {
                                             </div>
                                         </div>
                                     ))}
-                                    {products.length === 0 && orders.length === 0 && (
-                                        <p className="text-[10px] text-gray-600 uppercase tracking-widest text-center py-10">No recent activity detected</p>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -569,11 +551,11 @@ const AdminDashboard = () => {
                                                 <td className="py-6">
                                                     <div className="flex gap-4 items-center">
                                                         <div className="flex flex-col items-center gap-1">
-                                                            <img src={getImageUrl(p.images?.[0] || p.image)} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="Physical" />
+                                                            <img src={p.images?.[0] || p.image} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="Physical" />
                                                             <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Physical</span>
                                                         </div>
                                                         <div className="flex flex-col items-center gap-1">
-                                                            <img src={getImageUrl(p.images?.[2] || p.digitalTwinImage)} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="Digital Twin" />
+                                                            <img src={p.images?.[2] || p.digitalTwinImage} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="Digital Twin" />
                                                             <span className="text-[8px] text-accent uppercase font-black tracking-widest">Digital Twin</span>
                                                         </div>
                                                     </div>
@@ -795,6 +777,10 @@ const AdminDashboard = () => {
                                                     setVaultCards(prev => [created, ...prev]);
                                                     toast.success('Card added to vault!');
                                                 }
+
+                                                // Automaticaly reload after 1.5s to refresh data
+                                                setTimeout(() => window.location.reload(), 1500);
+
                                                 setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
                                                 setEditingCardId(null);
                                                 setIsAddingCard(false);

@@ -137,11 +137,14 @@ const SystemBootHero = () => {
                 </div> */}
 
                 <div className={`transition-all duration-1000 ${bootStage >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                    <h1
-                        className={`text-6xl md:text-[12rem] font-heading tracking-[0.1em] md:tracking-[0.2em] uppercase text-white mb-4 relative leading-none cursor-pointer transition-colors duration-500 hover:text-pink-500 ${glitchActive ? 'glitch-text' : ''}`}
-                    >
-                        ENDURA
-                    </h1>
+                    <img
+                        src="/logo.png"
+                        alt="ENDURA"
+                        className={`mx-auto h-24 md:h-52  w-auto object-contain transition-all duration-500 cursor-pointer mb-8 ${glitchActive ? 'glitch-image' : ''}`}
+                        style={{ filter: 'brightness(0) invert(1)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.5) invert(0)'}
+                        onMouseLeave={(e) => e.currentTarget.style.filter = 'brightness(0) invert(1)'}
+                    />
                     <div className="flex items-center justify-center gap-4 mb-6">
                         <div className="h-[2px] w-24 md:w-48 bg-gradient-to-r from-transparent via-accent to-transparent" />
                         <div className="w-2 h-2 bg-accent rotate-45 animate-pulse shadow-[0_0_15px_rgba(212,175,55,1)]" />

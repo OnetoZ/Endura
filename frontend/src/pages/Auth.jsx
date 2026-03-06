@@ -78,7 +78,7 @@ const Auth = () => {
 
             toast.success(isLogin ? 'Login Successful! Access Granted.' : 'Registration Complete! Welcome Operator.');
 
-            // Auto reload/redirect after 1.5s
+            // Automatically reload/redirect after 1.5s
             setTimeout(() => {
                 window.location.href = '/home';
             }, 1500);
@@ -133,7 +133,7 @@ const Auth = () => {
 
                     toast.success('Admin Verified. System Synchronized.');
 
-                    // Auto reload/redirect after 1.5s
+                    // Automatically reload/redirect after 1.5s
                     setTimeout(() => {
                         window.location.href = '/admin';
                     }, 1500);
