@@ -166,6 +166,25 @@ export const userService = {
     },
 };
 
+export const orderService = {
+    getOrders: async () => {
+        const response = await api.get('/orders');
+        return response.data;
+    },
+    getMyOrders: async () => {
+        const response = await api.get('/orders/myorders');
+        return response.data;
+    },
+    getOrderById: async (id) => {
+        const response = await api.get(`/orders/${id}`);
+        return response.data;
+    },
+    updateOrderStatus: async (id, status) => {
+        const response = await api.put(`/orders/${id}/status`, { status });
+        return response.data;
+    }
+};
+
 export const uploadService = {
     uploadImage: async (file) => {
         const formData = new FormData();

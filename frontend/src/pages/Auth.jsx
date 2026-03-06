@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const Auth = () => {
     const [authType, setAuthType] = useState('user');
@@ -74,7 +75,13 @@ const Auth = () => {
                 if (!formData.username) throw new Error('Username is required for initialization');
                 await register(formData.username, formData.email, formData.password, formData.phone);
             }
-            navigate('/home');
+
+            toast.success(isLogin ? 'Login Successful! Access Granted.' : 'Registration Complete! Welcome Operator.');
+
+            // Auto reload/redirect after 1.5s
+            setTimeout(() => {
+                window.location.href = '/home';
+            }, 1500);
         } catch (err) {
             setError(err.toString().toUpperCase());
         } finally {
@@ -123,7 +130,13 @@ const Auth = () => {
                 if (response.ok && data.token) {
                     // Store session (same format as normal login)
                     localStorage.setItem('userInfo', JSON.stringify(data));
-                    navigate('/admin');
+
+                    toast.success('Admin Verified. System Synchronized.');
+
+                    // Auto reload/redirect after 1.5s
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 1500);
                 } else {
                     setError('INVALID_CODE: ' + (data.message || 'Verification failed'));
                     setIsLoading(false);
