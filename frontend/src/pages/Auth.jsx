@@ -23,7 +23,11 @@ const Auth = () => {
     const { login, register } = useStore();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const API = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+    const API = import.meta.env.VITE_API_URL;
+    if (!API) {
+        console.error('❌ CRITICAL: VITE_API_URL is NOT defined in your .env file or Vite needs a restart.');
+    }
+    console.log('📡 [ENDURA_AUTH_V3] Current API Endpoint:', API);
 
     // On mount: detect redirect back from Google OAuth with admin 2FA params
     useEffect(() => {
@@ -53,6 +57,9 @@ const Auth = () => {
             setStep(1);
             setError('ACCESS_DENIED: That Google account does not have admin privileges');
             window.history.replaceState({}, '', '/auth');
+        } else if (errorCode === 'oauth_failed') {
+            setError('OAUTH_ERROR: Google authentication failed. Please try again.');
+            window.history.replaceState({}, '', '/auth');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -80,7 +87,7 @@ const Auth = () => {
 
             // Automatically reload/redirect after 1.5s
             setTimeout(() => {
-                window.location.href = '/home';
+                window.location.href = '/';
             }, 1500);
         } catch (err) {
             setError(err.toString().toUpperCase());
@@ -105,9 +112,16 @@ const Auth = () => {
                 const data = await response.json();
 
                 if (response.ok && data.verified) {
+                    if (!API) {
+                        toast.error("System Error: API_URL is not configured.");
+                        setIsLoading(false);
+                        return;
+                    }
                     // Redirect to Google OAuth — login_hint skips the account picker
                     const hint = encodeURIComponent(formData.email);
-                    window.location.href = `http://localhost:5001/api/auth/google?login_hint=${hint}`;
+                    const finalUrl = `${API}/auth/google?login_hint=${hint}`;
+                    console.log('🚀 [ADMIN_FLOW] Redirecting to:', finalUrl);
+                    window.location.href = finalUrl;
                 } else {
                     setError(data.message || 'ACCESS_DENIED: You are not an admin');
                     setIsLoading(false);

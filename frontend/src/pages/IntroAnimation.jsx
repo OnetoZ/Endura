@@ -16,7 +16,7 @@ const getFramePath = (index) => {
     return `/ezgif-split/frame_${frameNumber}_delay-0.041s.webp`;
 };
 
-const IntroAnimation = () => {
+const IntroAnimation = ({ onComplete }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -26,32 +26,55 @@ const IntroAnimation = () => {
     const navigate = useNavigate();
     // Shared completion guard across scroll + keyboard triggers
     const hasCompletedRef = useRef(false);
+    const mountTimeRef = useRef(Date.now());
 
-    // Lock scroll-behavior while intro is mounted so the document
-    // scroll position never drifts — /home will always start at top
+    // Enforce top scroll position on mount
     useEffect(() => {
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
         document.documentElement.style.scrollBehavior = 'auto';
+
         return () => {
             document.documentElement.style.scrollBehavior = '';
+            if ('scrollRestoration' in window.history) {
+                window.history.scrollRestoration = 'auto';
+            }
         };
     }, []);
 
     const goToHome = () => {
         if (hasCompletedRef.current) return;
+
+        // Prevent accidental completion triggered by scroll persistence on mount
+        if (Date.now() - mountTimeRef.current < 800) return;
+
         hasCompletedRef.current = true;
         localStorage.setItem('endura_animation_completed', 'true');
+
+        // 1. Enter blackout phase immediately
         setShowBlackScreen(true);
 
-        // Kill all ScrollTriggers to stop them interfering post-navigation
-        ScrollTrigger.killAll();
+        // Kill all ScrollTriggers to stop them interfering
+        ScrollTrigger.getAll().forEach(st => st.kill());
 
+        // 2. Wait 0.5 seconds in the dark for a clean cinematic transition
         setTimeout(() => {
-            // Force scroll position to absolute top before /home renders
+            // Signal completion to App.jsx to mount the Home component
+            if (onComplete) {
+                onComplete();
+            }
+
+            // Reset scroll definitive while the screen is black
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;
-            navigate('/home');
-        }, 400);
+
+            if (!onComplete) {
+                navigate('/');
+            }
+        }, 500); // 0.5s pause as requested
     };
 
     // Press Enter at any time during the intro to skip to /home
@@ -101,13 +124,14 @@ const IntroAnimation = () => {
         preloadImages();
     }, []);
 
+    const scrollHeight = window.innerHeight * 5; // Height of the scroll container
+
     // Handle canvas drawing and scroll animation
     useGSAP(() => {
         if (!imagesLoaded || !containerRef.current || !canvasRef.current || imagesRef.current.length === 0) return;
 
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
-        const scrollHeight = window.innerHeight * 5; // Height of the scroll container
 
         // Object to hold the current frame index for GSAP to animate
         const airbnb = { frame: 0 };
@@ -140,8 +164,8 @@ const IntroAnimation = () => {
         window.addEventListener('resize', updateCanvasSize);
         updateCanvasSize();
 
-        // Use the shared ref-based guard for scroll-triggered completion
-        const handleComplete = () => goToHome();
+        // Refresh ScrollTrigger after a tick to ensure layout is settled
+        setTimeout(() => ScrollTrigger.refresh(), 100);
 
         // Animation sequence
         const tl = gsap.timeline({
@@ -161,12 +185,8 @@ const IntroAnimation = () => {
 
                     // Primary trigger: navigate once progress is effectively complete
                     if (self.progress >= 0.99) {
-                        handleComplete();
+                        goToHome();
                     }
-                },
-                // Fallback: fires when the user scrolls past the pinned section
-                onLeave: () => {
-                    handleComplete();
                 },
                 id: "intro-scroll"
             }
@@ -201,7 +221,7 @@ const IntroAnimation = () => {
     }
 
     return (
-        <div className="relative bg-black overflow-hidden">
+        <div className="relative bg-black">
             {/* Black screen overlay */}
             {showBlackScreen && (
                 <div className="fixed inset-0 z-50 bg-black flex items-center justify-center transition-opacity duration-300">
@@ -229,7 +249,7 @@ const IntroAnimation = () => {
             </div>
 
             {/* Scrollable container */}
-            <div ref={containerRef} className="relative">
+            <div ref={containerRef} className="relative z-20" style={{ height: scrollHeight }}>
                 {/* This creates the scrollable space */}
             </div>
         </div>

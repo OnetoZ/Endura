@@ -53,6 +53,12 @@ router.get('/google', (req, res, next) => {
         options.login_hint = req.query.login_hint;
         // Persist the expected admin email so the callback can enforce it
         req.session.expectedAdminEmail = req.query.login_hint;
+
+        // Ensure the session is saved to the store before redirecting to Google
+        return req.session.save((err) => {
+            if (err) return next(err);
+            passport.authenticate('google', options)(req, res, next);
+        });
     } else {
         // Regular user OAuth — clear any stale admin expectation
         delete req.session.expectedAdminEmail;
@@ -61,7 +67,7 @@ router.get('/google', (req, res, next) => {
 });
 // Step 2: Google redirects back here
 router.get('/google/callback',
-    passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/auth?error=oauth_failed` }),
+    passport.authenticate('google', { session: true, failureRedirect: `${process.env.CLIENT_URL}/auth?error=oauth_failed` }),
     googleCallback
 );
 

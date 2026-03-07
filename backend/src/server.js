@@ -57,7 +57,8 @@ app.use(session({
     ttl: 24 * 60 * 60 // 1 day
   }),
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Required for sameSite: 'none'
+    sameSite: 'none', // Allow cross-domain cookies for OAuth
     maxAge: 24 * 60 * 60 * 1000
   },
 }));
@@ -118,10 +119,3 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ MongoDB connection error:', error.message);
     process.exit(1);
   });
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀")
-})
-
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`)
-})

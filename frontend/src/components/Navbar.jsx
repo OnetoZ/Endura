@@ -10,6 +10,7 @@ const Navbar = React.forwardRef((props, ref) => {
     const [visible, setVisible] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [time, setTime] = useState(new Date());
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -59,7 +60,7 @@ const Navbar = React.forwardRef((props, ref) => {
                 <div className="max-w-[1920px] mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between">
                     {/* LEFT: Logo + System Diagnostics */}
                     <div className="flex items-center gap-8">
-                        <Link to="/home" className="group relative">
+                        <Link to="/" className="group relative">
                             {/* Logo Container with Glow */}
                             <div className="relative">
                                 <img
@@ -91,7 +92,7 @@ const Navbar = React.forwardRef((props, ref) => {
                     {/* CENTER: Navigation Links */}
                     <div className="hidden md:flex items-center gap-1">
                         {[
-                            { to: '/home', label: 'Home', accent: false },
+                            { to: '/', label: 'Home', accent: false },
                             { to: '/cult', label: 'The Cult', accent: false },
                             { to: '/collections', label: 'collections', accent: false },
                             ...(currentUser ? [{ to: '/vault', label: 'The Vault', accent: true }] : [])
@@ -234,6 +235,94 @@ const Navbar = React.forwardRef((props, ref) => {
                                 </div>
                             </Link>
                         )}
+
+                        {/* MOBILE MENU TOGGLE - 3 Dots */}
+                        <div className="md:hidden flex items-center">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="p-2.5 border border-white/10 glass hover:border-primary/50 transition-all duration-300 group"
+                            >
+                                <div className="flex flex-col gap-1">
+                                    <div className={`w-1 h-1 bg-white/70 group-hover:bg-primary rounded-full transition-all duration-300 ${isMenuOpen ? 'scale-125' : ''}`} />
+                                    <div className={`w-1 h-1 bg-white/70 group-hover:bg-primary rounded-full transition-all duration-300 ${isMenuOpen ? 'scale-125' : ''}`} />
+                                    <div className={`w-1 h-1 bg-white/70 group-hover:bg-primary rounded-full transition-all duration-300 ${isMenuOpen ? 'scale-125' : ''}`} />
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* MOBILE MENU DRAWER */}
+                <div className={`md:hidden fixed inset-0 z-40 transition-all duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsMenuOpen(false)} />
+                    <div className={`absolute top-0 right-0 h-screen w-64 glass border-l border-white/10 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-8 space-y-8 pt-24">
+                            <div className="space-y-4">
+                                <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500 mb-6">Navigation_Nodes</p>
+                                {[
+                                    { to: '/', label: 'Home' },
+                                    { to: '/cult', label: 'The Cult' },
+                                    { to: '/collections', label: 'Collections' },
+                                    ...(currentUser ? [{ to: '/vault', label: 'The Vault', accent: true }] : [])
+                                ].map((link, idx) => (
+                                    <Link
+                                        key={idx}
+                                        to={link.to}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="block group"
+                                    >
+                                        <span className={`text-[12px] font-black uppercase tracking-[0.3em] transition-all duration-300 ${link.accent ? 'text-accent' : 'text-white/70 group-hover:text-primary'}`}>
+                                            {link.label}
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+
+                            {currentUser && (
+                                <div className="pt-8 border-t border-white/5 space-y-4">
+                                    <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500">System_Access</p>
+                                    <Link
+                                        to={currentUser.role === 'admin' ? '/admin' : '/dashboard'}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="block"
+                                    >
+                                        <span className="text-[12px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-primary transition-all">
+                                            {currentUser.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
+                                        </span>
+                                    </Link>
+                                    <button
+                                        onClick={() => { logout(); navigate('/auth'); setIsMenuOpen(false); }}
+                                        className="block text-[12px] font-black uppercase tracking-[0.3em] text-red-500/70 hover:text-red-400 transition-all"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+
+                            {!currentUser && (
+                                <div className="pt-8 border-t border-white/5">
+                                    <Link
+                                        to="/auth"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="block"
+                                    >
+                                        <span className="text-[12px] font-black uppercase tracking-[0.3em] text-accent hover:text-white transition-all">
+                                            Initialize Auth
+                                        </span>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Technical Metadata Decoration */}
+                        <div className="absolute bottom-8 left-8">
+                            <p className="text-[8px] font-black uppercase tracking-widest text-white/10 uppercase mb-1 font-mono">Endura_Mobile_OS_v1.0</p>
+                            <div className="flex gap-1.5">
+                                <div className="w-1 h-1 bg-primary/20 rounded-full" />
+                                <div className="w-1 h-1 bg-primary/20 rounded-full" />
+                                <div className="w-1 h-1 bg-primary/20 rounded-full" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
