@@ -4,18 +4,18 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
     return (
-        <footer className="bg-black border-t border-white/5 py-24 px-6 overflow-hidden relative">
+        <footer className="bg-black border-t border-white/5 pt-4 pb-4 px-6 overflow-hidden relative">
             {/* Background Accent */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-primary/10 blur-[120px] rounded-full -z-10"></div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
                 <div className="col-span-2 relative flex flex-col items-start gap-6">
                     {/* Logo — large, behind text as watermark */}
-                    <Link to="/home" className="absolute -top-12 -left-12 z-0 group">
+                    <Link to="/home" className="absolute -top-2 -left-4 z-0 group">
                         <img
                             src="/logo.png"
                             alt="ENDURA"
-                            className="h-44 w-auto object-contain opacity-90 transition-all duration-500 group-hover:opacity-100"
+                            className="h-16 w-auto object-contain opacity-90 transition-all duration-500 group-hover:opacity-100"
                             style={{ filter: 'brightness(0.85) saturate(1)' }}
                             onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.3) saturate(2) drop-shadow(0 0 20px #A855F7)'}
                             onMouseLeave={e => e.currentTarget.style.filter = 'brightness(0.85) saturate(1)'}

@@ -124,8 +124,21 @@ const FactionSection = ({
                     </span>
                     <h2
                         ref={titleRef}
-                        className="text-5xl md:text-8xl font-heading tracking-tight uppercase text-white leading-none mb-6"
-                        style={{ opacity: 0 }}
+                        className="text-5xl md:text-8xl font-heading tracking-tight uppercase text-white leading-none mb-6 transition-all duration-500 cursor-default hover:opacity-100"
+                        style={{
+                            opacity: 0,
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.color = themeColor;
+                            if (id === 'transcendent' || id === 'hollow') {
+                                e.target.style.textShadow = `0 0 30px ${themeColor}`;
+                            }
+                        }
+                        }
+                        onMouseLeave={(e) => {
+                            e.target.style.color = 'white';
+                            e.target.style.textShadow = 'none';
+                        }}
                     >
                         {factionName}
                     </h2>

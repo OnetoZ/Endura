@@ -109,7 +109,7 @@ const CultPage = () => {
                         // IDENTITY_SELECTION_PROTOCOL
                     </span>
                     <h1 className="text-7xl md:text-[11rem] font-heading tracking-tight uppercase leading-none">
-                        THE FIVE<br />
+                        <span className="hover:text-primary transition-colors duration-500 cursor-default">THE FIVE</span><br />
                         <span className="text-white/15">FACTIONS</span>
                     </h1>
                     <p className="text-gray-500 font-light tracking-[0.4em] uppercase text-xs max-w-md mx-auto border-t border-white/10 pt-8">
@@ -132,7 +132,7 @@ const CultPage = () => {
                 description="The first of the high order. A sheer curtain between the mundane and the infinite. Masters of shadow luxury, they wear the secrets of the network as their secondary skin."
                 image="/factions/the_veil_faction.png"
                 bgImage="/factions/veil.jpg"
-                themeColor="#A855F7"
+                themeColor="#FF2D92"
                 isLeft={true}
                 grayscaleBg={true}
             />
@@ -163,10 +163,10 @@ const CultPage = () => {
                 grayscaleBg={false}
             />
 
-            {/* FACTION 02 — THE DEFIANT */}
+            {/* FACTION 02 — THE CROWN LESS */}
             <FactionSection
                 id="defiant"
-                factionName="THE DEFIANT"
+                factionName="THE CROWN LESS"
                 factionNumber="FACTION_02"
                 description="Rebels against the central order. High-energy disruption and unpredictable kinetics. Chaos as a tool for liberation."
                 image="/factions/the crownless.png"

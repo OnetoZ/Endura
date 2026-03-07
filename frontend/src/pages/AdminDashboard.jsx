@@ -19,7 +19,7 @@ const INITIAL_PRODUCT_STATE = {
     backImage: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800',
     additionalImages: [],
     digitalTwinImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
-    type: 'Worn',
+    type: 'Common',
     shortAtmosphericLine: ''
 };
 
@@ -206,6 +206,9 @@ const AdminDashboard = () => {
                 toast.success('Product added successfully!');
             }
 
+            // Automaticaly reload after 1.5s to refresh data
+            setTimeout(() => window.location.reload(), 1500);
+
             setIsAdding(false);
             setEditingProductId(null);
             setNewProduct(INITIAL_PRODUCT_STATE);
@@ -228,7 +231,7 @@ const AdminDashboard = () => {
             backImage: product.images?.[1] || product.backImage || '',
             digitalTwinImage: product.images?.[2] || product.digitalTwinImage || '',
             additionalImages: product.images?.slice(3) || product.additionalImages || [],
-            type: product.type || 'Worn',
+            type: product.type || 'Common',
             shortAtmosphericLine: product.shortAtmosphericLine || ''
         });
         setIsAdding(true);
@@ -502,10 +505,10 @@ const AdminDashboard = () => {
                                                         value={newProduct.type}
                                                         onChange={e => setNewProduct({ ...newProduct, type: e.target.value })}
                                                     >
-                                                        <option value="Worn">Worn</option>
-                                                        <option value="Refined">Refined</option>
-                                                        <option value="Exalted">Exalted</option>
-                                                        <option value="Mythic">Mythic</option>
+                                                        <option value="Common">Common</option>
+                                                        <option value="Rare">Rare</option>
+                                                        <option value="Epic">Epic</option>
+                                                        <option value="Legendary">Legendary</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -562,7 +565,7 @@ const AdminDashboard = () => {
                                                     <p className="text-accent font-mono text-[10px]">₹{p.price}</p>
                                                 </td>
                                                 <td className="py-6">
-                                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.type === 'Mythic' ? 'purple-500' : 'primary'}/30 text-white/70`}>
+                                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.type === 'Legendary' ? 'purple-500' : 'primary'}/30 text-white/70`}>
                                                         {p.type || p.faction}
                                                     </span>
                                                 </td>
@@ -774,6 +777,10 @@ const AdminDashboard = () => {
                                                     setVaultCards(prev => [created, ...prev]);
                                                     toast.success('Card added to vault!');
                                                 }
+
+                                                // Automaticaly reload after 1.5s to refresh data
+                                                setTimeout(() => window.location.reload(), 1500);
+
                                                 setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
                                                 setEditingCardId(null);
                                                 setIsAddingCard(false);

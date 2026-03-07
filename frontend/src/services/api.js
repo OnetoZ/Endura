@@ -2,6 +2,29 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
+export const getImageUrl = (path) => {
+    if (!path) return '';
+
+    // If it's already a Base64 string (stored in Mongo), return it as is
+    if (path.startsWith('data:image')) return path;
+
+    // Self-healing logic: If the URL is absolute but points to our internal uploads,
+    // we swap the hostname to match our current API_BASE_URL.
+    // This fixes issues when a database has 'localhost' links but is being used on Render.
+    if (path.startsWith('http')) {
+        if (path.includes('/uploads/')) {
+            const parts = path.split('/uploads/');
+            const fileName = parts[1];
+            const baseUrl = API_BASE_URL.replace(/\/api$/, '');
+            return `${baseUrl}/uploads/${fileName}`;
+        }
+        return path;
+    }
+
+    const baseUrl = API_BASE_URL.replace(/\/api$/, '');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
