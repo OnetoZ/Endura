@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ReactLenis, useLenis } from 'lenis/react';
 import { AppProvider } from './context/StoreContext';
 import IntroAnimation from './pages/IntroAnimation';
 import Navbar from './components/Navbar';
@@ -27,20 +28,48 @@ import Onboarding from './pages/Onboarding';
 // Resets scroll to top on every route change
 function ScrollToTop() {
   const { pathname } = useLocation();
+  const lenis = useLenis();
+
   useEffect(() => {
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    }
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-  }, [pathname]);
+  }, [pathname, lenis]);
   return null;
 }
+
 function AppLayout() {
   const location = useLocation();
-
   const { currentUser } = useStore();
+  const lenis = useLenis();
+
+  // Start as false to ensure it plays on fresh hit/refresh
+  const [introDone, setIntroDone] = useState(false);
+
+  // Force scroll to top when intro finishes
+  useEffect(() => {
+    if (introDone) {
+      if (lenis) {
+        lenis.scrollTo(0, { immediate: true });
+      }
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      // Also refresh GSAP ScrollTriggers
+      import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+        ScrollTrigger.refresh();
+      });
+    }
+  }, [introDone, lenis]);
 
   const hideLayoutRoutes = ['/', '/onboarding'];
-  const showNavbar = !hideLayoutRoutes.includes(location.pathname);
+  // Show navbar/footer on root '/' ONLY if intro is done
+  const isIntroPage = location.pathname === '/' && !introDone;
+  const showNavbar = !hideLayoutRoutes.includes(location.pathname) || (location.pathname === '/' && introDone);
   const showFooter = showNavbar;
   const topPad = showNavbar ? 'pt-20' : 'pt-0';
 
@@ -50,8 +79,10 @@ function AppLayout() {
       {showNavbar && <Navbar />}
       <main key={location.pathname} className={`flex-grow ${topPad}`}>
         <Routes>
-          <Route path="/" element={<IntroAnimation />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={
+            introDone ? <Home /> : <IntroAnimation onComplete={() => setIntroDone(true)} />
+          } />
+          <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/cult" element={<CultPage />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/collections" element={<Collections />} />
@@ -68,7 +99,7 @@ function AppLayout() {
           } />
           <Route path="/collected" element={<CollectedPage />} />
           <Route path="/auth" element={
-            currentUser ? <Navigate to="/home" replace /> : <Auth />
+            currentUser ? <Navigate to="/" replace /> : <Auth />
           } />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/cart" element={<Cart />} />
@@ -76,7 +107,7 @@ function AppLayout() {
           <Route path="/admin/*" element={
             currentUser && currentUser.role === 'admin' ? <AdminDashboard /> : <Navigate to="/auth" replace />
           } />
-          <Route path="*" element={<Navigate to="/home" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
       {showFooter && <Footer />}

@@ -235,9 +235,12 @@ const googleCallback = asyncHandler(async (req, res) => {
 
     // ── Admin flow: enforce the expected email set before the OAuth redirect ────
     const expectedEmail = req.session?.expectedAdminEmail;
+    console.log(`📡 Google Callback for ${user.email}. Expected Admin: ${expectedEmail || 'NONE'}`);
+
     if (expectedEmail) {
         // Always clear the session flag, regardless of outcome
         delete req.session.expectedAdminEmail;
+        req.session.save(); // Cleanup session
 
         // Reject if the signed-in Google account doesn't match the admin email
         if (user.email.toLowerCase() !== expectedEmail.toLowerCase()) {

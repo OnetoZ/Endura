@@ -9,8 +9,21 @@ import DoppelPieceScene from '../components/DoppelPieceScene';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
+import { useGSAP } from '@gsap/react';
+
 const Home = () => {
     const mainRef = useRef();
+
+    useGSAP(() => {
+        // Failsafe: Ensure home always starts at absolute top
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+
+        // Let things settle then refresh all markers
+        setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
+    }, { scope: mainRef });
 
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">

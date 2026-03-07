@@ -88,11 +88,16 @@ const generateAndStoreTwoFactorCode = async (user) => {
     user.twoFactorCodeExpires = expires;
     await user.save();
 
+    // Default to 'email' if no method is specified or if it's an admin flow
+    const method = user.twoFactorMethod || 'email';
+    console.log(`🔐 Generating 2FA for ${user.email} using method: ${method}`);
+
     // Send code via configured method
-    if (user.twoFactorMethod === 'email') {
+    if (method === 'email') {
         await sendTwoFactorEmail(user.email, code);
+    } else {
+        console.warn(`⚠️  Unsupported 2FA method: ${method}. No code sent.`);
     }
-    // SMS implementation can be added here
 
     return code;
 };

@@ -11,7 +11,7 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
                 <div className="col-span-2 relative flex flex-col items-start gap-6">
                     {/* Logo — large, behind text as watermark */}
-                    <Link to="/home" className="absolute -top-2 -left-4 z-0 group">
+                    <Link to="/" className="absolute -top-2 -left-4 z-0 group">
                         <img
                             src="/logo.png"
                             alt="ENDURA"
