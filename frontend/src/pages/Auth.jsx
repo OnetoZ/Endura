@@ -203,7 +203,7 @@ const Auth = () => {
             type="button"
             className="w-full py-4 border border-white/10 glass flex items-center justify-center gap-4 hover:bg-white/5 transition-all mb-4 group"
             onClick={() => {
-                window.location.href = `http://localhost:5001/api/auth/google`;
+                window.location.href = `${API}/auth/google`;
             }}
         >
             {provider === 'google' && (
