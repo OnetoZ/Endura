@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useLenis } from 'lenis/react';
 import { useStore } from '../context/StoreContext';
 
 const Navbar = React.forwardRef((props, ref) => {
     const { currentUser, cart, logout } = useStore();
     const navigate = useNavigate();
     const location = useLocation();
+    const lenis = useLenis();
     const [visible, setVisible] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [time, setTime] = useState(new Date());
@@ -14,13 +16,19 @@ const Navbar = React.forwardRef((props, ref) => {
 
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-    useEffect(() => {
+    const handleLogoClick = (e) => {
         if (location.pathname === '/') {
-            const timer = setTimeout(() => setVisible(true), 3500);
-            return () => clearTimeout(timer);
-        } else {
-            setVisible(true);
+            e.preventDefault();
+            if (lenis) {
+                lenis.scrollTo(0, { immediate: false, duration: 1.5 });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
+    };
+
+    useEffect(() => {
+        setVisible(true);
     }, [location.pathname]);
 
     useEffect(() => {
@@ -36,6 +44,17 @@ const Navbar = React.forwardRef((props, ref) => {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isMenuOpen]);
+
     const istTime = time.toLocaleTimeString('en-US', {
         hour12: false,
         timeZone: 'Asia/Kolkata'
@@ -45,13 +64,13 @@ const Navbar = React.forwardRef((props, ref) => {
         <nav
             ref={ref}
             style={props.style}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}
         >
             {/* Holographic Top Border - Hidden on mobile */}
             <div className="hidden md:block absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-            {/* Main Navbar Container - Minimal on mobile */}
-            <div className={`relative transition-all duration-500 ${scrolled ? 'md:bg-black/90 bg-black/50 border-b border-primary/30 md:backdrop-blur-xl backdrop-blur-sm' : 'bg-transparent md:bg-black/40 border-b border-white/5 md:backdrop-blur-xl backdrop-blur-none'}`}>
+            {/* Main Navbar Container - Dynamic Transparency */}
+            <div className={`relative transition-all duration-500 ${scrolled ? 'bg-black/60 border-b border-primary/20 blur-extreme' : 'bg-transparent border-b border-transparent'}`}>
                 {/* Animated Scan Line - Desktop only */}
                 <div className="hidden md:block absolute top-0 left-0 right-0 h-full overflow-hidden pointer-events-none">
                     <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent animate-[scan_4s_ease-in-out_infinite]" />
@@ -60,7 +79,7 @@ const Navbar = React.forwardRef((props, ref) => {
                 <div className="max-w-[1920px] mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between">
                     {/* LEFT: Logo + System Diagnostics */}
                     <div className="flex items-center gap-8">
-                        <Link to="/" className="group relative">
+                        <Link to="/" onClick={handleLogoClick} className="group relative">
                             {/* Logo Container with Glow */}
                             <div className="relative">
                                 <img
@@ -100,6 +119,7 @@ const Navbar = React.forwardRef((props, ref) => {
                             <Link
                                 key={idx}
                                 to={link.to}
+                                onClick={link.to === '/' ? handleLogoClick : undefined}
                                 className={`relative px-6 py-3 group overflow-hidden ${link.accent ? 'text-accent' : 'text-white/70'}`}
                             >
                                 {/* Hover Background */}
@@ -254,8 +274,18 @@ const Navbar = React.forwardRef((props, ref) => {
 
                 {/* MOBILE MENU DRAWER */}
                 <div className={`md:hidden fixed inset-0 z-40 transition-all duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsMenuOpen(false)} />
+                    <div className="absolute inset-0 bg-black/95 blur-extreme" onClick={() => setIsMenuOpen(false)} />
                     <div className={`absolute top-0 right-0 h-screen w-64 glass border-l border-white/10 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        {/* CLOSE BUTTON */}
+                        <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="absolute top-6 right-6 p-2 border border-white/10 hover:border-primary/50 transition-all text-white/50 hover:text-white"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
                         <div className="p-8 space-y-8 pt-24">
                             <div className="space-y-4">
                                 <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500 mb-6">Navigation_Nodes</p>
@@ -268,8 +298,11 @@ const Navbar = React.forwardRef((props, ref) => {
                                     <Link
                                         key={idx}
                                         to={link.to}
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="block group"
+                                        onClick={(e) => {
+                                            if (link.to === '/') handleLogoClick(e);
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className="block text-2xl font-oswald font-bold uppercase tracking-tighter hover:text-primary transition-colors"
                                     >
                                         <span className={`text-[12px] font-black uppercase tracking-[0.3em] transition-all duration-300 ${link.accent ? 'text-accent' : 'text-white/70 group-hover:text-primary'}`}>
                                             {link.label}

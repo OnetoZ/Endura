@@ -46,8 +46,15 @@ function AppLayout() {
   const { currentUser } = useStore();
   const lenis = useLenis();
 
-  // Start as false to ensure it plays on fresh hit/refresh
-  const [introDone, setIntroDone] = useState(false);
+  // Only play intro on a fresh session (new tab). Reloads skip it.
+  const [introDone, setIntroDone] = useState(() => {
+    return sessionStorage.getItem('introDone') === '1';
+  });
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem('introDone', '1');
+    setIntroDone(true);
+  };
 
   // Force scroll to top when intro finishes
   useEffect(() => {
@@ -71,16 +78,15 @@ function AppLayout() {
   const isIntroPage = location.pathname === '/' && !introDone;
   const showNavbar = !hideLayoutRoutes.includes(location.pathname) || (location.pathname === '/' && introDone);
   const showFooter = showNavbar;
-  const topPad = showNavbar ? 'pt-20' : 'pt-0';
 
   return (
     <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
       <ScrollToTop />
       {showNavbar && <Navbar />}
-      <main key={location.pathname} className={`flex-grow ${topPad}`}>
+      <main key={location.pathname} className="flex-grow">
         <Routes>
           <Route path="/" element={
-            introDone ? <Home /> : <IntroAnimation onComplete={() => setIntroDone(true)} />
+            introDone ? <Home /> : <IntroAnimation onComplete={handleIntroComplete} />
           } />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/cult" element={<CultPage />} />
@@ -99,7 +105,9 @@ function AppLayout() {
           } />
           <Route path="/collected" element={<CollectedPage />} />
           <Route path="/auth" element={
-            currentUser ? <Navigate to="/" replace /> : <Auth />
+            currentUser && !location.search.includes('admin2fa') && !location.search.includes('tempToken') && !location.search.includes('token')
+              ? <Navigate to="/" replace />
+              : <Auth />
           } />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/cart" element={<Cart />} />

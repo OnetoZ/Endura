@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const titles = [
     "RITUAL COMPLETE",
@@ -8,6 +9,7 @@ const titles = [
 ];
 
 const RewardUnlockOverlay = ({ item, onClose }) => {
+    const navigate = useNavigate();
     const [isVisible, setIsVisible] = useState(true);
 
     const title = useMemo(() => titles[Math.floor(Math.random() * titles.length)], []);
@@ -204,7 +206,7 @@ const RewardUnlockOverlay = ({ item, onClose }) => {
                             className="mt-3 relative z-10"
                         >
                             <button
-                                onClick={() => window.location.href = '/collected'}
+                                onClick={() => navigate('/collected')}
                                 className="relative group px-1 py-1 text-[#3ddc97] font-heading font-medium uppercase tracking-[0.15em] text-xs lg:text-sm transition-colors duration-700 hover:brightness-125"
                             >
                                 <span

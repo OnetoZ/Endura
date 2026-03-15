@@ -108,7 +108,7 @@ const CultPage = () => {
                     <span className="font-mono text-[10px] tracking-[1.5em] text-primary uppercase animate-pulse">
                         // IDENTITY_SELECTION_PROTOCOL
                     </span>
-                    <h1 className="text-7xl md:text-[11rem] font-heading tracking-tight uppercase leading-none">
+                    <h1 className="text-5xl sm:text-7xl md:text-[11rem] font-heading tracking-tighter sm:tracking-tight uppercase leading-none">
                         <span className="hover:text-primary transition-colors duration-500 cursor-default">THE FIVE</span><br />
                         <span className="text-white/15">FACTIONS</span>
                     </h1>
