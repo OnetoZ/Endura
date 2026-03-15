@@ -23,8 +23,8 @@
   --primary-light: #fee08b;
   --accent: #d4af37;
   --accent-dark: #b8860b;
-  --glass: rgba(255, 255, 255, 0.02);
-  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass: rgba(10, 10, 10, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --gold-glow: rgba(212, 175, 55, 0.25);
   --cinematic-tracking: 0.5em;
 
@@ -130,13 +130,20 @@ h6 {
 /* Glassmorphism */
 .glass {
   background: var(--glass);
-  backdrop-filter: blur(15px);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
   border: 1px solid var(--glass-border);
+}
+
+.blur-extreme {
+  backdrop-filter: blur(100px) saturate(150%);
+  -webkit-backdrop-filter: blur(100px) saturate(150%);
 }
 
 .glass-gold {
   background: rgba(212, 175, 55, 0.05);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(212, 175, 55, 0.2);
 }
 

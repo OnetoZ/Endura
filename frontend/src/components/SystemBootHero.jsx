@@ -113,19 +113,21 @@ const SystemBootHero = () => {
             <div className="absolute bottom-0 left-0 w-32 h-32 md:w-64 md:h-64 border-l-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-32 h-32 md:w-64 md:h-64 border-r-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
 
-            {/* Status indicators */}
-            <div className={`absolute top-12 left-12 space-y-3 transition-all duration-1000 z-20 ${bootStage >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-                <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 border border-accent/20 backdrop-blur-sm">
-                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
-                    <span className="text-[9px] font-mono tracking-widest text-accent uppercase">ARCHIVE_00.LOCKED</span>
+            {/* Status indicators - Shifted down to clear fixed navbar */}
+            <div className="absolute top-20 left-6 right-6 md:top-32 md:left-12 md:right-12 flex flex-col md:flex-row items-start md:items-start justify-between gap-4 z-20 pointer-events-none">
+                <div className={`transition-all duration-1000 ${bootStage >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+                    <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 border border-accent/20 backdrop-blur-sm">
+                        <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
+                        <span className="text-[9px] font-mono tracking-widest text-accent uppercase">ARCHIVE_00.LOCKED</span>
+                    </div>
                 </div>
-            </div>
 
-            <div className={`absolute top-12 right-12 transition-all duration-1000 z-20 ${bootStage >= 3 ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="relative border border-primary/40 bg-black/60 backdrop-blur-md px-4 py-2">
-                    <div className="flex items-center gap-3">
-                        <span className="text-accent text-sm">◈</span>
-                        <p className="text-[9px] font-mono tracking-widest text-white uppercase">IDENTITY_LEVEL: OMEGA</p>
+                <div className={`transition-all duration-1000 ${bootStage >= 3 ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className="relative border border-primary/40 bg-black/60 backdrop-blur-md px-4 py-2">
+                        <div className="flex items-center gap-3">
+                            <span className="text-accent text-sm">◈</span>
+                            <p className="text-[9px] font-mono tracking-widest text-white uppercase">IDENTITY_LEVEL: OMEGA</p>
+                        </div>
                     </div>
                 </div>
             </div>

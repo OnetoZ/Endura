@@ -17,6 +17,14 @@ const AuthSuccess = () => {
             authService.getProfile()
                 .then(userData => {
                     loginWithToken(userData);
+
+                    // If this is a popup, notify parent and close
+                    if (window.opener && window.name === 'OAuthPopup') {
+                        window.opener.postMessage({ type: 'AUTH_FINAL_SUCCESS', userData }, window.location.origin);
+                        window.close();
+                        return;
+                    }
+
                     if (!userData.phone) {
                         navigate('/onboarding');
                     } else {
@@ -26,9 +34,21 @@ const AuthSuccess = () => {
                 .catch(err => {
                     console.error('OAuth profile sync failed:', err);
                     localStorage.removeItem('userInfo');
+
+                    if (window.opener && window.name === 'OAuthPopup') {
+                        window.opener.postMessage({ type: 'AUTH_FINAL_ERROR', error: 'sync_failed' }, window.location.origin);
+                        window.close();
+                        return;
+                    }
+
                     navigate('/auth?error=sync_failed');
                 });
         } else {
+            if (window.opener && window.name === 'OAuthPopup') {
+                window.opener.postMessage({ type: 'AUTH_FINAL_ERROR', error: 'no_token' }, window.location.origin);
+                window.close();
+                return;
+            }
             navigate('/auth?error=no_token');
         }
     }, [searchParams, navigate, loginWithToken]);

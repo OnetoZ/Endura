@@ -206,8 +206,8 @@ const AdminDashboard = () => {
                 toast.success('Product added successfully!');
             }
 
-            // Automaticaly reload after 1.5s to refresh data
-            setTimeout(() => window.location.reload(), 1500);
+            // Reload removed since state is updated manually for seamless UX
+            // setTimeout(() => window.location.reload(), 1500);
 
             setIsAdding(false);
             setEditingProductId(null);
@@ -778,8 +778,8 @@ const AdminDashboard = () => {
                                                     toast.success('Card added to vault!');
                                                 }
 
-                                                // Automaticaly reload after 1.5s to refresh data
-                                                setTimeout(() => window.location.reload(), 1500);
+                                                // Reload removed since state is updated manually for seamless UX
+                                                // setTimeout(() => window.location.reload(), 1500);
 
                                                 setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
                                                 setEditingCardId(null);
