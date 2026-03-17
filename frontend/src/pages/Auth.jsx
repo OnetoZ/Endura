@@ -87,7 +87,8 @@ const Auth = () => {
                 loginWithToken(e.data.userData);
                 toast.dismiss('auth_wait');
                 toast.success('IDENTITY_SYNCHRONIZED');
-                if (!e.data.userData.phone) navigate('/onboarding');
+                if (e.data.userData.role === 'admin') navigate('/admin');
+                else if (!e.data.userData.phone) navigate('/onboarding');
                 else navigate('/home');
             } else if (e.data?.type === 'AUTH_FINAL_ERROR') {
                 console.log('📩 [PARENT] Received final error signal');
@@ -228,21 +229,8 @@ const Auth = () => {
                     const hint = encodeURIComponent(formData.email);
                     const authUrl = `${API}/auth/google?login_hint=${hint}`;
 
-                    // Open Google OAuth in a popup window
-                    const width = 500;
-                    const height = 650;
-                    const left = window.screen.width / 2 - width / 2;
-                    const top = window.screen.height / 2 - height / 2;
-
-                    const popup = window.open(authUrl, 'OAuthPopup', `width=${width},height=${height},top=${top},left=${left}`);
-
-                    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-                        toast.error('POPUP_BLOCKED: PLEASE ALLOW POPUPS');
-                        // Fallback to current window only if blocked (though might lose state)
-                        window.location.href = authUrl;
-                    } else {
-                        toast.loading('AUTHORIZING_WITH_GOOGLE', { id: 'auth_wait' });
-                    }
+                    // Open Google OAuth in the same window
+                    window.location.href = authUrl;
                 } else {
                     setError('ACCESS_DENIED: ' + (data.message || 'Verification failed'));
                     toast.error('ACCESS DENIED');
@@ -320,17 +308,7 @@ const Auth = () => {
     const SocialButton = ({ label, provider }) => {
         const handleSocialClick = () => {
             const authUrl = `${API}/auth/${provider}`;
-            const width = 500;
-            const height = 650;
-            const left = window.screen.width / 2 - width / 2;
-            const top = window.screen.height / 2 - height / 2;
-
-            const popup = window.open(authUrl, 'OAuthPopup', `width=${width},height=${height},top=${top},left=${left}`);
-
-            if (!popup) {
-                toast.error('POPUP_BLOCKED: PLEASE ALLOW POPUPS');
-                window.location.href = authUrl;
-            }
+            window.location.href = authUrl;
         };
 
         return (
@@ -365,13 +343,13 @@ const Auth = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden pt-20">
+        <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden pt-32">
             {/* Background Glows */}
             <div className="absolute top-1/4 -left-24 w-96 h-96 bg-primary/20 blur-[150px] rounded-full"></div>
             <div className="absolute bottom-1/4 -right-24 w-96 h-96 bg-accent/10 blur-[150px] rounded-full"></div>
 
             <div className="w-full max-w-xl relative">
-                <div className="flex mb-12 border-b border-white/10">
+                <div className="flex mb-8 border-b border-white/10">
                     <button
                         onClick={() => { setAuthType('user'); setStep(1); }}
                         className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all ${authType === 'user' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
@@ -387,11 +365,11 @@ const Auth = () => {
                 </div>
 
                 <div className="glass p-12 border-white/5 relative group">
-                    <div className="absolute top-4 left-4 text-[8px] font-mono text-gray-600 tracking-widest uppercase">
+                    <div className="absolute top-6 left-6 text-[8px] font-mono text-gray-600 tracking-widest uppercase">
                         Secure_Node // {authType.toUpperCase()}_AUTH
                     </div>
 
-                    <div className="text-center mb-10 reveal active">
+                    <div className="text-center mb-10 mt-2 reveal active">
                         <h2 className="text-4xl font-oswald font-bold uppercase tracking-tight mb-2">
                             {authType === 'user' ? (isLogin ? 'Initiate Profile' : 'Create Operator') : 'Level 4 Clearance'}
                         </h2>
@@ -496,12 +474,12 @@ const Auth = () => {
                             {step === 1 && (
                                 <>
                                     <div>
-                                        <label className="block text-8px font-black uppercase tracking-wide-3em text-accent mb-2">Admin Email ID</label>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-accent mb-2">Admin Email ID</label>
                                         <input
                                             type="email"
                                             name="email"
                                             required
-                                            className="w-full bg-white-5 border border-accent-20 px-6 py-4 focus-border-accent outline-none transition-all text-sm tracking-widest"
+                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-accent outline-none transition-all text-sm tracking-widest text-white"
                                             placeholder="Enter Admin Email"
                                             onChange={handleInputChange}
                                         />

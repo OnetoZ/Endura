@@ -25,7 +25,9 @@ const AuthSuccess = () => {
                         return;
                     }
 
-                    if (!userData.phone) {
+                    if (userData.role === 'admin') {
+                        navigate('/admin');
+                    } else if (!userData.phone) {
                         navigate('/onboarding');
                     } else {
                         navigate('/home');
