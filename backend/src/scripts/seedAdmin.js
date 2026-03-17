@@ -11,37 +11,24 @@ const seedAdmin = async () => {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Connected to MongoDB');
 
-        // Check if admin already exists
-        const existingAdmin = await User.findOne({ email: 'santhanamk9604@gmail.com', role: 'admin' });
-        
-        if (existingAdmin) {
-            console.log('✅ Admin user already exists!');
-            console.log('   Email:    santhanamk9604@gmail.com');
-            console.log('   Password: Not applicable (Email-only authentication)');
-            console.log('   ID:', existingAdmin._id);
-            console.log('   2FA:', existingAdmin.twoFactorEnabled ? 'Enabled (Email)' : 'Disabled');
-            console.log('   Role: Admin');
-            process.exit(0);
-        }
-
-        // Create new admin user
-        const admin = await User.create({
-            username: 'Santhanam',
-            email: 'santhanamk9604@gmail.com',
+        // Update or create new admin
+        const adminData = {
+            username: 'Endura Team',
+            email: 'enduraclothing.team@gmail.com',
             role: 'admin',
             isVerified: true,
-            // 2FA settings
-            twoFactorEnabled: true,
-            twoFactorMethod: 'email',
-            phone: '8122819604' // Optional phone for SMS 2FA
-        });
+            twoFactorEnabled: false
+        };
 
-        console.log('✅ Admin user created successfully!');
-        console.log('   Email:    santhanamk9604@gmail.com');
-        console.log('   Password: Not applicable (Email-only authentication)');
-        console.log('   ID:', admin._id);
-        console.log('   2FA: Enabled (Email)');
-        console.log('   Role: Admin');
+        const result = await User.findOneAndUpdate(
+            { email: 'enduraclothing.team@gmail.com' },
+            { $set: adminData },
+            { new: true, upsert: true }
+        );
+
+        console.log('✅ Admin user created/updated successfully!');
+        console.log('   Email:    enduraclothing.team@gmail.com');
+        console.log('   Role:     Admin');
 
         process.exit(0);
     } catch (error) {

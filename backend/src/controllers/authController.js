@@ -256,21 +256,15 @@ const googleCallback = asyncHandler(async (req, res) => {
             return res.redirect(`${process.env.CLIENT_URL}/auth?error=NOT_ADMIN&admin=1`);
         }
 
-        // ✅ All checks passed — send 2FA code then redirect to 2FA page
-        const admin = await User.findById(user._id)
-            .select('+twoFactorCode +twoFactorCodeExpires');
+        // ✅ All checks passed — bypass 2FA and login directly
+        const admin = await User.findById(user._id);
 
-        await generateAndStoreTwoFactorCode(admin);
-        console.log('🔐 Admin Google OAuth complete. 2FA code sent to', admin.email);
+        console.log('✅ Admin Google OAuth complete. Logging in directly:', admin.email);
 
-        const tempToken = jwt.sign(
-            { id: admin._id, email: admin.email, adminAuth: true, temp: true },
-            process.env.JWT_SECRET,
-            { expiresIn: '10m' }
-        );
+        const token = generateToken(admin._id);
 
         return res.redirect(
-            `${process.env.CLIENT_URL}/auth?admin2fa=1&tempToken=${tempToken}&email=${encodeURIComponent(admin.email)}`
+            `${process.env.CLIENT_URL}/auth?token=${token}`
         );
     }
 
