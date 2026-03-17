@@ -32,8 +32,8 @@ const productSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['Worn', 'Refined', 'Exalted', 'Mythic'],
-        default: 'Worn',
+        enum: ['Common', 'Rare', 'Epic', 'Legendary'],
+        default: 'Common',
     },
     category: {
         type: String,
