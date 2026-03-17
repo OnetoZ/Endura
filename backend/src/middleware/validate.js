@@ -40,7 +40,7 @@ const productValidation = [
     body('name').notEmpty().withMessage('Product name is required'),
     body('price').isNumeric().withMessage('Price must be a number'),
     body('description').notEmpty().withMessage('Description is required'),
-    body('type').isIn(['Worn', 'Refined', 'Exalted', 'Mythic']).withMessage('Invalid type'),
+    body('type').isIn(['Common', 'Rare', 'Epic', 'Legendary']).withMessage('Invalid type'),
     validate
 ];
 
