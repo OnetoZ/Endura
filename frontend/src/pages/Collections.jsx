@@ -56,7 +56,7 @@ const Collections = () => {
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
-                    className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16 [perspective:2000px]"
+                    className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-12 lg:gap-16 [perspective:2000px]"
                 >
                     {physicalProducts.map((product) => (
                         <PhysicalProductCard key={product._id || product.id} product={product} />

@@ -3,7 +3,7 @@
  * Catches all errors forwarded via next(err)
  */
 const errorHandler = (err, req, res, next) => {
-    let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    let statusCode = res.statusCode === 200 ? (err.status || err.statusCode || 500) : res.statusCode;
     let message = err.message;
 
     // Mongoose CastError (invalid ObjectId)

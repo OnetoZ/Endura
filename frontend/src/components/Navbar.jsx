@@ -12,7 +12,6 @@ const Navbar = React.forwardRef((props, ref) => {
     const [visible, setVisible] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [time, setTime] = useState(new Date());
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -44,16 +43,7 @@ const Navbar = React.forwardRef((props, ref) => {
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        if (isMenuOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isMenuOpen]);
+
 
     const istTime = time.toLocaleTimeString('en-US', {
         hour12: false,
@@ -61,6 +51,7 @@ const Navbar = React.forwardRef((props, ref) => {
     });
 
     return (
+        <React.Fragment>
         <nav
             ref={ref}
             style={props.style}
@@ -85,7 +76,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                 <img
                                     src="/logo.png"
                                     alt="ENDURA"
-                                    className="h-8 md:h-8 object-contain brightness-150 transition-all duration-500 group-hover:brightness-200 group-hover:drop-shadow-[0_0_20px_rgba(147,112,219,0.6)]"
+                                    className="h-5 md:h-8 object-contain brightness-150 transition-all duration-500 group-hover:brightness-200 group-hover:drop-shadow-[0_0_20px_rgba(147,112,219,0.6)]"
                                 />
                                 {/* Animated Corner Brackets */}
                                 <div className="absolute -top-1 -left-1 w-3 h-3 border-l border-t border-primary/40 group-hover:border-primary transition-all duration-300" />
@@ -236,7 +227,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                 )}
                             </div>
                         ) : (
-                            <Link to="/auth" className="relative group overflow-hidden">
+                            <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.8] origin-right">
                                 {/* Animated Background */}
                                 <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite]" />
                                 <div className="absolute inset-0 bg-black/80 group-hover:bg-black/60 transition-all duration-300" />
@@ -245,8 +236,8 @@ const Navbar = React.forwardRef((props, ref) => {
                                 <div className="absolute inset-0 border border-primary/60 group-hover:border-accent transition-all duration-300" />
 
                                 {/* Content */}
-                                <div className="relative z-10 px-8 py-3 flex items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
+                                <div className="relative z-10 px-5 md:px-8 py-2 md:py-3 flex items-center gap-1 md:gap-2">
+                                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-white">
                                         Login
                                     </span>
                                     <svg className="w-3 h-3 text-accent group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,106 +247,6 @@ const Navbar = React.forwardRef((props, ref) => {
                             </Link>
                         )}
 
-                        {/* MOBILE MENU TOGGLE - 3 Dots */}
-                        <div className="md:hidden flex items-center">
-                            <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="p-2.5 border border-white/10 glass hover:border-primary/50 transition-all duration-300 group"
-                            >
-                                <div className="flex flex-col gap-1">
-                                    <div className={`w-1 h-1 bg-white/70 group-hover:bg-primary rounded-full transition-all duration-300 ${isMenuOpen ? 'scale-125' : ''}`} />
-                                    <div className={`w-1 h-1 bg-white/70 group-hover:bg-primary rounded-full transition-all duration-300 ${isMenuOpen ? 'scale-125' : ''}`} />
-                                    <div className={`w-1 h-1 bg-white/70 group-hover:bg-primary rounded-full transition-all duration-300 ${isMenuOpen ? 'scale-125' : ''}`} />
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* MOBILE MENU DRAWER */}
-                <div className={`md:hidden fixed inset-0 z-40 transition-all duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <div className="absolute inset-0 bg-black/95 blur-extreme" onClick={() => setIsMenuOpen(false)} />
-                    <div className={`absolute top-0 right-0 h-screen w-64 glass border-l border-white/10 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        {/* CLOSE BUTTON */}
-                        <button
-                            onClick={() => setIsMenuOpen(false)}
-                            className="absolute top-6 right-6 p-2 border border-white/10 hover:border-primary/50 transition-all text-white/50 hover:text-white"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <div className="p-8 space-y-8 pt-24">
-                            <div className="space-y-4">
-                                <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500 mb-6">Navigation_Nodes</p>
-                                {[
-                                    { to: '/', label: 'Home' },
-                                    { to: '/cult', label: 'The Cult' },
-                                    { to: '/collections', label: 'Collections' },
-                                    ...(currentUser ? [{ to: '/vault', label: 'The Vault', accent: true }] : [])
-                                ].map((link, idx) => (
-                                    <Link
-                                        key={idx}
-                                        to={link.to}
-                                        onClick={(e) => {
-                                            if (link.to === '/') handleLogoClick(e);
-                                            setIsMenuOpen(false);
-                                        }}
-                                        className="block text-2xl font-oswald font-bold uppercase tracking-tighter hover:text-primary transition-colors"
-                                    >
-                                        <span className={`text-[12px] font-black uppercase tracking-[0.3em] transition-all duration-300 ${link.accent ? 'text-accent' : 'text-white/70 group-hover:text-primary'}`}>
-                                            {link.label}
-                                        </span>
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {currentUser && (
-                                <div className="pt-8 border-t border-white/5 space-y-4">
-                                    <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500">System_Access</p>
-                                    <Link
-                                        to={currentUser.role === 'admin' ? '/admin' : '/dashboard'}
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="block"
-                                    >
-                                        <span className="text-[12px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-primary transition-all">
-                                            {currentUser.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
-                                        </span>
-                                    </Link>
-                                    <button
-                                        onClick={() => { logout(); navigate('/auth'); setIsMenuOpen(false); }}
-                                        className="block text-[12px] font-black uppercase tracking-[0.3em] text-red-500/70 hover:text-red-400 transition-all"
-                                    >
-                                        Logout
-                                    </button>
-                                </div>
-                            )}
-
-                            {!currentUser && (
-                                <div className="pt-8 border-t border-white/5">
-                                    <Link
-                                        to="/auth"
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="block"
-                                    >
-                                        <span className="text-[12px] font-black uppercase tracking-[0.3em] text-accent hover:text-white transition-all">
-                                            Initialize Auth
-                                        </span>
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Technical Metadata Decoration */}
-                        <div className="absolute bottom-8 left-8">
-                            <p className="text-[8px] font-black uppercase tracking-widest text-white/10 uppercase mb-1 font-mono">Endura_Mobile_OS_v1.0</p>
-                            <div className="flex gap-1.5">
-                                <div className="w-1 h-1 bg-primary/20 rounded-full" />
-                                <div className="w-1 h-1 bg-primary/20 rounded-full" />
-                                <div className="w-1 h-1 bg-primary/20 rounded-full" />
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -376,6 +267,39 @@ const Navbar = React.forwardRef((props, ref) => {
                 }
             `}</style>
         </nav>
+
+        {/* MOBILE BOTTOM NAVIGATION */}
+        <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 glass bg-black/80 border-t border-white/10 transition-all duration-500 pb-safe ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'}`}>
+            <div className="flex justify-around items-center h-16 px-1">
+                {[
+                    { to: '/', label: 'HOME', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+                    { to: '/cult', label: 'CULT', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+                    { to: '/collections', label: 'GEAR', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
+                    ...(currentUser ? [
+                        { to: '/vault', label: 'VAULT', accent: true, icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+                        { to: currentUser.role === 'admin' ? '/admin' : '/dashboard', label: 'DASH', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' }
+                    ] : [])
+                ].map((link, idx) => {
+                    const isActive = location.pathname === link.to;
+                    return (
+                        <Link
+                            key={idx}
+                            to={link.to}
+                            onClick={link.to === '/' ? handleLogoClick : undefined}
+                            className="flex flex-col items-center justify-center w-full h-full gap-1 group"
+                        >
+                            <svg className={`w-5 h-5 transition-all duration-300 ${isActive ? (link.accent ? 'text-accent' : 'text-primary') : 'text-white/40 group-hover:text-white/80'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive ? "2" : "1.5"} d={link.icon} />
+                            </svg>
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? (link.accent ? 'text-accent' : 'text-primary') : 'text-white/40 group-hover:text-white/80'}`}>
+                                {link.label}
+                            </span>
+                        </Link>
+                    );
+                })}
+            </div>
+        </div>
+        </React.Fragment>
     );
 });
 
