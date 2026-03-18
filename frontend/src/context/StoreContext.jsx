@@ -8,7 +8,10 @@ const StoreContext = createContext(undefined);
 export const AppProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(() => {
+        const saved = localStorage.getItem('endura_cart');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [orders, setOrders] = useState([]);
     const [vaultItems, setVaultItems] = useState([]);
     const [users, setUsers] = useState([]);
@@ -76,8 +79,21 @@ export const AppProvider = ({ children }) => {
 
     const loadCart = async () => {
         try {
+            const { getImageUrl } = await import('../services/api');
             const data = await cartService.getCart();
-            setCart(data.items || []);
+            // Map backend structure (product object) to frontend expected flat structure
+            const mappedItems = (data.items || []).map(item => ({
+                id: item.product._id || item.product.id,
+                _id: item.product._id || item.product.id,
+                name: item.product.name,
+                price: item.product.price,
+                // Backend uses 'images' array. [0] is the front image.
+                image: getImageUrl(item.product.images?.[0] || item.product.frontImage || item.product.image),
+                category: item.product.category,
+                quantity: item.quantity
+            }));
+            setCart(mappedItems);
+            localStorage.setItem('endura_cart', JSON.stringify(mappedItems));
         } catch (error) {
             console.error('Failed to load cart:', error);
         }
@@ -118,24 +134,53 @@ export const AppProvider = ({ children }) => {
         localStorage.removeItem('userInfo');
     };
 
-    const addToCart = (product) => {
+    const addToCart = async (product) => {
+        const { getImageUrl } = await import('../services/api');
+        // Optimistic local update
+        const productWithImage = {
+            ...product,
+            image: getImageUrl(product.images?.[0] || product.image || product.frontImage),
+            id: product.id || product._id
+        };
+        
         setCart(prev => {
-            const existing = prev.find(item => item.id === product.id);
+            const existing = prev.find(item => item.id === productWithImage.id);
+            let nextCart;
             if (existing) {
-                return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+                nextCart = prev.map(item => item.id === productWithImage.id ? { ...item, quantity: item.quantity + 1 } : item);
+            } else {
+                nextCart = [...prev, { ...productWithImage, quantity: 1 }];
             }
-            const newCart = [...prev, { ...product, quantity: 1 }];
-            localStorage.setItem('endura_cart', JSON.stringify(newCart));
-            return newCart;
+            localStorage.setItem('endura_cart', JSON.stringify(nextCart));
+            return nextCart;
         });
+
+        // Backend sync if logged in
+        if (currentUser) {
+            try {
+                await cartService.addToCart(productWithImage.id, 1);
+            } catch (error) {
+                console.error('Failed to sync addToCart to backend:', error);
+            }
+        }
     };
 
-    const removeFromCart = (productId) => {
+    const removeFromCart = async (productId) => {
         setCart(prev => {
             const newCart = prev.filter(item => item.id !== productId);
             localStorage.setItem('endura_cart', JSON.stringify(newCart));
             return newCart;
         });
+
+        if (currentUser) {
+            try {
+                // Assuming updateCart with 0 quantity or specific remove endpoint
+                await cartService.updateCart(productId, 0);
+                await loadCart(); // Re-sync
+            } catch (error) {
+                console.error('Failed to sync removeFromCart to backend:', error);
+            }
+        }
     };
 
     const updateCartQuantity = (productId, delta) => {

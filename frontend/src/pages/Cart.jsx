@@ -23,7 +23,11 @@ const Cart = () => {
     const gridRef = useRef(null);
 
     // Derived Logic
-    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const subtotal = cart.reduce((acc, item) => {
+        const price = item.price || item.product?.price || 0;
+        const qty = item.quantity || 0;
+        return acc + (price * qty);
+    }, 0);
     const shipping = 0;
     const taxes = Math.floor(subtotal * 0.05);
     const total = subtotal + shipping + taxes;
@@ -175,8 +179,8 @@ const Cart = () => {
                             <AnimatePresence mode='popLayout'>
                                 {filteredItems.map(item => (
                                     <CollectionCard
-                                        key={item.id}
-                                        item={item}
+                                        key={item._id || item.id}
+                                        item={{ ...item, image: item.image || item.frontImage }}
                                         type="physical"
                                         onRemove={removeFromCart}
                                         onUpdateQuantity={(id, delta) => updateCartQuantity(id, delta)}

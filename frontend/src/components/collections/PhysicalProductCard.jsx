@@ -121,7 +121,7 @@ const PhysicalProductCard = ({ product }) => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="w-full h-full object-cover transition-all duration-1000 grayscale-[0.4] group-hover:grayscale-0 group-hover:contrast-[1.1]"
+                            className="w-full h-full object-contain p-8 md:p-12 transition-all duration-1000 grayscale-[0.4] group-hover:grayscale-0 group-hover:contrast-[1.1]"
                         />
                     </AnimatePresence>
                     {/* Subtle Overlay Glow */}
@@ -165,19 +165,19 @@ const PhysicalProductCard = ({ product }) => {
             </motion.div>
 
             {/* Product Meta Data */}
-            <div className="mt-8 flex justify-between items-start px-2 meta-reveal">
-                <div className="flex flex-col gap-2">
-                    <p className="text-[9px] text-[#d4af37]/60 font-black uppercase tracking-[0.5em]">{product.category}</p>
-                    <h3 className="text-2xl font-oswald font-bold text-white uppercase tracking-tight group-hover:text-[#d4af37] transition-colors duration-500">
+            <div className="mt-4 md:mt-8 flex justify-between items-start px-1 md:px-2 meta-reveal">
+                <div className="flex flex-col gap-1 md:gap-2">
+                    <p className="text-[7px] md:text-[9px] text-[#d4af37]/60 font-black uppercase tracking-[0.3em] md:tracking-[0.5em]">{product.category}</p>
+                    <h3 className="text-sm md:text-2xl font-oswald font-bold text-white uppercase tracking-tight group-hover:text-[#d4af37] transition-colors duration-500 line-clamp-1">
                         {product.name}
                     </h3>
                 </div>
                 <div className="text-right">
-                    <div className="flex items-center gap-2 justify-end mb-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse"></div>
-                        <p className="text-2xl font-bold text-white tracking-tighter">₹{product.price}</p>
+                    <div className="flex items-center gap-1 md:gap-2 justify-end mb-1">
+                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#d4af37] animate-pulse"></div>
+                        <p className="text-sm md:text-2xl font-bold text-white tracking-tighter">₹{product.price}</p>
                     </div>
-                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em]">Batch_001 // LTD_EDTN</p>
+                    <p className="hidden md:block text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em]">Batch_001 // LTD_EDTN</p>
                 </div>
             </div>
         </motion.div>

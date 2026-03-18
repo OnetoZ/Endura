@@ -1,8 +1,9 @@
-
 import React, { useRef, useState, forwardRef } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, ref) => {
+    const navigate = useNavigate();
     const cardRef = useRef(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isHovered, setIsHovered] = useState(false);
@@ -178,7 +179,8 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={handleMouseLeave}
-            className="group relative h-[500px] w-full"
+            onClick={() => navigate(`/product/${item._id || item.id}`)}
+            className="group relative h-[500px] w-full cursor-pointer"
         >
             {/* Luxury Expansion Frame */}
             <div className="luxury-border" />
@@ -194,9 +196,20 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
             >
                 {/* Floating Particles */}
                 <div className="particle-container">
-                    {[1, 2, 3, 4, 5].map(p => (
+                    {item._id && [1, 2, 3, 4, 5].map(p => (
                         <div
-                            key={p}
+                            key={`${item._id}-particle-${p}`}
+                            className="particle"
+                            style={{
+                                left: `${p * 20}%`,
+                                animationDelay: `${p * 0.4}s`,
+                                background: 'var(--accent)'
+                            }}
+                        />
+                    ))}
+                    {!item._id && [1, 2, 3, 4, 5].map(p => (
+                        <div
+                            key={`${item.id}-particle-${p}`}
                             className="particle"
                             style={{
                                 left: `${p * 20}%`,
@@ -253,18 +266,20 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                         </div>
                     </div>
 
-                    {/* Refined Luxury Controls */}
-                    <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <div 
+                        className="flex items-center justify-between pt-6 border-t border-white/5"
+                        onClick={(e) => e.stopPropagation()} // Prevent navigation when clicking controls
+                    >
                         <div className="flex items-center gap-6">
                             <button
-                                onClick={() => onUpdateQuantity(item.id, -1)}
+                                onClick={() => onUpdateQuantity(item._id || item.id, -1)}
                                 className="text-gray-600 hover:text-accent transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M20 12H4" /></svg>
                             </button>
                             <span className="font-heading text-sm text-white/80">{item.quantity}</span>
                             <button
-                                onClick={() => onUpdateQuantity(item.id, 1)}
+                                onClick={() => onUpdateQuantity(item._id || item.id, 1)}
                                 className="text-gray-600 hover:text-accent transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 4v16m8-8H4" /></svg>
@@ -272,7 +287,10 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                         </div>
 
                         <button
-                            onClick={() => onRemove(item.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onRemove(item._id || item.id);
+                            }}
                             className="group/remove flex items-center gap-2"
                         >
                             <span className="text-[9px] font-heading text-gray-600 group-hover/remove:text-red-500/80 uppercase tracking-[0.4em] transition-all">De-Manifest</span>
