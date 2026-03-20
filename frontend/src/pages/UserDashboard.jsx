@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Package, MapPin, Phone, User, Mail, Save, Image as ImageIcon } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
-import { authService, productService } from '../services/api';
+import { authService, productService, orderService, getImageUrl } from '../services/api';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
@@ -22,12 +22,12 @@ const UserDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
 
-    // Fetch user orders
+    // Fetch user orders from backend
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const response = await authService.getUserOrders();
-                setOrders(response.data || []);
+                const data = await orderService.getMyOrders();
+                setOrders(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Failed to fetch orders:', error);
                 setOrders([]);
@@ -82,16 +82,23 @@ const UserDashboard = () => {
 
     if (!currentUser) return null;
 
-    // Digital Twins from Orders
-    const digitalTwins = React.useMemo(() => {
+    // Collected items from orders (Digital Twins + physical purchases) with edition numbers
+    const collectedItems = React.useMemo(() => {
         const items = [];
         const addedIds = new Set();
         orders.forEach(order => {
             order.items?.forEach(orderItem => {
                 const product = products?.find(p => p._id === orderItem.product || p.id === orderItem.product || p.name === orderItem.name);
-                if (product && (product.images?.[2] || product.digitalTwinImage) && !addedIds.has(product._id || product.id)) {
-                    addedIds.add(product._id || product.id);
-                    items.push(product);
+                const itemId = product?._id || product?.id || orderItem.product;
+                if (product && !addedIds.has(itemId)) {
+                    addedIds.add(itemId);
+                    items.push({
+                        ...product,
+                        editionNumber: orderItem.editionNumber || null,
+                        totalStock: (product.stock || 0) + (product.sold || 0),
+                        hasDigitalTwin: !!(product.images?.[2] || product.digitalTwinImage),
+                        orderedAt: order.createdAt,
+                    });
                 }
             });
         });
@@ -222,12 +229,19 @@ const UserDashboard = () => {
                     className="text-center mb-16"
                 >
                     {userData.avatar ? (
-                        <div className="mx-auto w-24 h-24 mb-6 rounded-sm border border-primary/40 p-1 opacity-80 hover:opacity-100 transition-opacity">
-                            <img src={userData.avatar} alt="Profile" className="w-full h-full object-cover grayscale opacity-80 mix-blend-screen" />
+                        <div className="mx-auto w-24 h-24 mb-6 rounded-full border-2 border-primary/40 p-1 overflow-hidden hover:border-primary transition-colors">
+                            <img
+                                src={userData.avatar}
+                                alt="Profile"
+                                className="w-full h-full object-cover rounded-full"
+                                referrerPolicy="no-referrer"
+                                crossOrigin="anonymous"
+                                onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<div class="w-full h-full rounded-full bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center"><span class="text-2xl text-primary font-black">${userData.name.charAt(0)}</span></div>`; }}
+                            />
                         </div>
                     ) : (
-                        <div className="mx-auto w-16 h-16 mb-6 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center">
-                            <span className="text-2xl text-primary font-black">{userData.name.charAt(0)}</span>
+                        <div className="mx-auto w-20 h-20 mb-6 rounded-full border-2 border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center">
+                            <span className="text-3xl text-primary font-black">{userData.name.charAt(0)}</span>
                         </div>
                     )}
 
@@ -354,40 +368,7 @@ const UserDashboard = () => {
                                     <p className="text-sm font-mono text-white/80">{userData.email}</p>
                                 </div>
 
-                                <div>
-                                    <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1 flex items-center gap-2">
-                                        <User className="w-3 h-3" /> AVATAR URL
-                                    </p>
 
-                                    {avatarMode ? (
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <input
-                                                type="text"
-                                                value={newAvatar}
-                                                onChange={(e) => setNewAvatar(e.target.value)}
-                                                placeholder="https://..."
-                                                className="w-full bg-white/5 border border-white/10 px-3 py-2 focus:border-primary outline-none text-xs font-mono"
-                                            />
-                                            <button
-                                                onClick={handleSaveProfile}
-                                                disabled={isSaving}
-                                                className="p-2 bg-primary/20 border border-primary/50 text-white hover:bg-primary/40 transition-colors"
-                                            >
-                                                <Save className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between mt-1">
-                                            <p className="text-sm font-mono text-white/80 truncate max-w-[220px]">{userData.avatar || 'Not set'}</p>
-                                            <button
-                                                onClick={() => { setAvatarMode(true); setNameMode(false); setPhoneMode(false); }}
-                                                className="text-[10px] font-mono text-primary uppercase tracking-widest hover:text-accent"
-                                            >
-                                                [ REDEFINE ]
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
 
                                 <div>
                                     <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1 flex items-center gap-2">
@@ -510,14 +491,14 @@ const UserDashboard = () => {
                                                                 {order.items?.map((item, i) => (
                                                                     <div key={i} className="flex justify-between text-sm">
                                                                         <span className="text-gray-300">• {item.name}</span>
-                                                                        <span className="text-gray-400">Qty: {item.quantity} × ${item.price}</span>
+                                                                        <span className="text-gray-400">Qty: {item.quantity} × ₹{item.price}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         </div>
                                                         <div>
                                                             <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Total Amount</p>
-                                                            <p className="text-sm font-mono text-primary">${order.totalAmount}</p>
+                                                            <p className="text-sm font-mono text-primary">₹{order.totalAmount}</p>
                                                         </div>
                                                         <div>
                                                             <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Status</p>
@@ -618,35 +599,48 @@ const UserDashboard = () => {
                             </div>
                         </motion.div>
 
-                        {/* Collection: Digital Twins & Vault Assets */}
+                        {/* MY COLLECTION — All Collectables in One Place */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 1.2 }}
-                            className="space-y-8"
                         >
-                            {/* DIGITAL TWINS */}
                             <div className="glass p-8 border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                                <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-[#d4af37] flex items-center gap-3">
+                                <h2 className="text-xl font-heading uppercase tracking-widest mb-2 text-[#d4af37] flex items-center gap-3">
                                     <ImageIcon className="w-5 h-5" />
-                                    DIGITAL TWINS
+                                    MY COLLECTION
                                 </h2>
+                                <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-8">
+                                    Digital Twins • Vault Cards • Collected Assets
+                                </p>
 
-                                {digitalTwins.length === 0 ? (
-                                    <div className="text-center py-10 border border-white/10 bg-white/[0.02]">
+                                {collectedItems.length === 0 && vaultAssets.length === 0 ? (
+                                    <div className="text-center py-12 border border-white/10 bg-white/[0.02]">
+                                        <Lock className="w-8 h-8 text-gray-600 mx-auto mb-4" />
                                         <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-loose">
-                                            No digital twins collected yet.
-                                            <span className="text-gray-600 block mt-2">Purchase physical assets to unlock their digital counterparts.</span>
+                                            No collectables yet.
+                                            <span className="text-gray-600 block mt-2">Purchase products to collect digital twins, or visit the Vault to unlock rare assets.</span>
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                        {digitalTwins.map((item, idx) => (
-                                            <div key={idx} className="relative group overflow-hidden border border-white/20 bg-black hover:border-[#d4af37] transition-colors">
+                                        {/* Digital Twins from purchases */}
+                                        {collectedItems.filter(item => item.hasDigitalTwin).map((item, idx) => (
+                                            <div key={`twin-${idx}`} className="relative group overflow-hidden border border-white/20 bg-black hover:border-[#d4af37] transition-colors">
                                                 <div className="absolute inset-0 bg-[#d4af37]/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                
+                                                {/* Edition Badge */}
+                                                {item.editionNumber && (
+                                                    <div className="absolute top-3 right-3 z-20 bg-black/80 border border-[#d4af37]/50 px-2 py-1">
+                                                        <span className="text-[8px] font-mono text-[#d4af37] uppercase tracking-widest">
+                                                            #{item.editionNumber}{item.totalStock ? ` / ${item.totalStock}` : ''}
+                                                        </span>
+                                                    </div>
+                                                )}
+
                                                 <div className="aspect-square relative p-4 flex items-center justify-center">
                                                     <img
-                                                        src={item.images?.[2] || item.digitalTwinImage}
+                                                        src={getImageUrl(item.images?.[2] || item.digitalTwinImage)}
                                                         alt={`${item.name} Digital Twin`}
                                                         className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-700 relative z-10"
                                                     />
@@ -655,38 +649,26 @@ const UserDashboard = () => {
                                                     <h3 className="text-[10px] font-black uppercase text-white truncate mb-1" title={item.name}>
                                                         {item.name}
                                                     </h3>
-                                                    <p className="text-[#d4af37] text-[9px] uppercase tracking-widest font-bold">
-                                                        Twin Asset
-                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-[#d4af37] text-[8px] uppercase tracking-widest font-bold">
+                                                            Digital Twin
+                                                        </p>
+                                                        <p className="text-[8px] font-mono text-gray-500">
+                                                            {item.editionNumber ? `Card #${item.editionNumber}` : ''}
+                                                            {item.totalStock ? ` of ${item.totalStock}` : ''}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* VAULT ASSETS */}
-                            <div className="glass p-8 border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                                <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-accent flex items-center gap-3">
-                                    <Lock className="w-5 h-5" />
-                                    VAULT ASSETS
-                                </h2>
-
-                                {vaultAssets.length === 0 ? (
-                                    <div className="text-center py-10 border border-white/10 bg-white/[0.02]">
-                                        <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-loose">
-                                            No vault assets unlocked yet.
-                                            <span className="text-gray-600 block mt-2">Visit the Vault to decrypt and collect rare assets.</span>
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                        {/* Vault Assets */}
                                         {vaultAssets.map((item, idx) => (
-                                            <div key={idx} className="relative group overflow-hidden border border-white/20 bg-black hover:border-accent transition-colors">
+                                            <div key={`vault-${idx}`} className="relative group overflow-hidden border border-white/20 bg-black hover:border-accent transition-colors">
                                                 <div className="absolute inset-0 bg-accent/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                 <div className="aspect-square relative p-4 flex items-center justify-center bg-white/[0.02]">
                                                     <img
-                                                        src={item.image || item.images?.[0]}
+                                                        src={getImageUrl(item.image || item.images?.[0])}
                                                         alt={`${item.name} Vault Asset`}
                                                         className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 relative z-10 p-2"
                                                     />
@@ -695,8 +677,8 @@ const UserDashboard = () => {
                                                     <h3 className="text-[10px] font-black uppercase text-white truncate mb-1" title={item.name}>
                                                         {item.name}
                                                     </h3>
-                                                    <p className="text-accent text-[9px] uppercase tracking-widest font-bold">
-                                                        {item.tier || 'Archived'} Tier
+                                                    <p className="text-accent text-[8px] uppercase tracking-widest font-bold">
+                                                        Vault Card • {item.tier || 'Archived'}
                                                     </p>
                                                 </div>
                                             </div>

@@ -48,10 +48,18 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const isAuthRoute = error.config?.url?.includes('/auth/login') ||
+                            error.config?.url?.includes('/auth/register') ||
+                            error.config?.url?.includes('/auth/admin-check') ||
+                            error.config?.url?.includes('/auth/admin-verify-2fa') ||
+                            error.config?.url?.includes('/auth/google-verify-2fa');
+                            
+        if (error.response?.status === 401 && !isAuthRoute) {
             // Token expired or invalid
             localStorage.removeItem('userInfo');
-            window.location.href = '/auth';
+            if (window.location.pathname !== '/auth') {
+                window.location.href = '/auth';
+            }
         }
         return Promise.reject(error);
     }
@@ -151,6 +159,21 @@ export const productService = {
     },
     deleteVaultCard: async (id) => {
         const response = await api.delete(`/vault/cards/${id}`);
+        return response.data;
+    },
+};
+
+export const orderService = {
+    placeOrder: async (orderData) => {
+        const response = await api.post('/orders', orderData);
+        return response.data;
+    },
+    getMyOrders: async () => {
+        const response = await api.get('/orders/myorders');
+        return response.data;
+    },
+    getOrderById: async (id) => {
+        const response = await api.get(`/orders/${id}`);
         return response.data;
     },
 };
