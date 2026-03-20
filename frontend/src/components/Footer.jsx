@@ -59,8 +59,8 @@ const Footer = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] font-black tracking-widest text-gray-600 uppercase">
-                <p>© 2026 ENDURA_NETWORK_PROTOCOL // ALL_DATA_SECURED</p>
+            <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] md:font-black tracking-widest md:text-gray-600 uppercase relative z-50">
+                <p className="font-medium text-white/90 md:font-inherit md:text-inherit">© 2026 ENDURA_NETWORK_PROTOCOL // ALL_DATA_SECURED</p>
                 <div className="flex space-x-8 mt-6 md:mt-0 font-bold">
                 </div>
             </div>

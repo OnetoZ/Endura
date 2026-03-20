@@ -116,7 +116,7 @@ const VaultCard = ({
 
     return (
         <div
-            className="relative w-full h-[350px] [perspective:1000px] group cursor-pointer"
+            className="relative w-full max-w-[280px] md:max-w-none mx-auto h-[300px] md:h-[350px] [perspective:1000px] group cursor-pointer"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -494,8 +494,8 @@ const Vault = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-12 text-[10px] font-mono tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
-                            <div className="flex gap-12">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 text-[8px] md:text-[10px] font-mono tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
+                            <div className="flex items-center justify-center md:justify-start gap-3 md:gap-12 flex-nowrap w-full md:w-auto">
                                 <div className="flex items-center gap-3">
                                     <span className="text-white">Credits:</span>
                                     <span className="text-accent text-[12px]"><Counter value={credits} /></span>

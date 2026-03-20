@@ -314,7 +314,7 @@ const Auth = () => {
         return (
             <button
                 onClick={handleSocialClick}
-                className="w-full py-5 flex items-center justify-center gap-4 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] group relative overflow-hidden"
+                className="w-full py-4 md:py-5 flex items-center justify-center gap-4 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] group relative overflow-hidden"
             >
                 {/* Glossy Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -352,15 +352,15 @@ const Auth = () => {
                 <div className="flex mb-8 border-b border-white/10">
                     <button
                         onClick={() => { setAuthType('user'); setStep(1); }}
-                        className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all ${authType === 'user' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
+                        className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap ${authType === 'user' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
                     >
-                        Endura_User_Login
+                        User_Login
                     </button>
                     <button
                         onClick={() => { setAuthType('admin'); setStep(1); }}
-                        className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all ${authType === 'admin' ? 'text-accent border-b-2 border-accent' : 'text-gray-500 hover:text-white'}`}
+                        className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap ${authType === 'admin' ? 'text-accent border-b-2 border-accent' : 'text-gray-500 hover:text-white'}`}
                     >
-                        Endura_Admin_Login
+                        Admin_Login
                     </button>
                 </div>
 
@@ -446,7 +446,7 @@ const Auth = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-4 md:py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? 'Processing...' : (isLogin ? 'Synchronize' : 'Initialize Profile')}
                                 </button>
@@ -484,7 +484,7 @@ const Auth = () => {
                                             onChange={handleInputChange}
                                         />
                                     </div>
-                                    <button type="submit" className="w-full py-5 bg-accent text-black font-black uppercase tracking-widest text-xs hover:bg-accent-dark transition-all">
+                                    <button type="submit" className="w-full py-4 md:py-5 bg-accent text-black font-black uppercase tracking-widest text-xs hover:bg-accent-dark transition-all">
                                         Verify Admin Access
                                     </button>
                                 </>

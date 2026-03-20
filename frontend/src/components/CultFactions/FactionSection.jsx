@@ -145,8 +145,14 @@ const FactionSection = ({
                     <div className="h-[2px] w-16 mb-6 inline-block" style={{ background: themeColor }} />
                     <p
                         ref={descRef}
-                        className="font-light text-sm tracking-[0.15em] uppercase leading-relaxed"
-                        style={{ color: 'rgba(255,255,255,0.55)', opacity: 0 }}
+                        className="text-sm tracking-[0.2em] md:tracking-[0.18em] uppercase leading-relaxed"
+                        style={{ 
+                            fontWeight: 550,
+                            color: 'rgba(255,255,255,0.88)', 
+                            opacity: 0,
+                            WebkitFontSmoothing: 'antialiased',
+                            MozOsxFontSmoothing: 'grayscale'
+                        }}
                     >
                         {description}
                     </p>
