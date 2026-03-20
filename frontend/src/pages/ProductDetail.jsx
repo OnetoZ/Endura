@@ -119,7 +119,7 @@ const ProductDetail = () => {
                     {/* Data Intel */}
                     <div className="reveal active" style={{ transitionDelay: '200ms' }}>
                         <p className="text-primary font-bold uppercase tracking-[0.5em] text-xs mb-4">{product.category} // {product.type}</p>
-                        <h1 className="text-6xl md:text-8xl font-oswald font-bold uppercase mb-8 leading-none tracking-tighter">
+                        <h1 className="text-3xl md:text-5xl font-oswald font-bold uppercase mb-8 leading-none tracking-tighter">
                             {product.name}
                         </h1>
 

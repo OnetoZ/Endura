@@ -163,7 +163,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                             </div>
                                             <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
                                                 {currentUser.avatar ? (
-                                                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" referrerPolicy="no-referrer" />
                                                 ) : (
                                                     <span className="text-[11px] text-primary font-black">{(currentUser.username || currentUser.name || 'A').charAt(0).toUpperCase()}</span>
                                                 )}
@@ -199,7 +199,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                             </div>
                                             <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
                                                 {currentUser.avatar ? (
-                                                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" referrerPolicy="no-referrer" />
                                                 ) : (
                                                     <span className="text-[11px] text-primary font-black">{(currentUser.username || currentUser.name || 'E').charAt(0).toUpperCase()}</span>
                                                 )}

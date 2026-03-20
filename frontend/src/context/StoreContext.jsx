@@ -202,35 +202,20 @@ export const AppProvider = ({ children }) => {
         localStorage.removeItem('endura_cart');
     };
 
-    const placeOrder = (creditsToUse) => {
-        if (!currentUser) return;
-        const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-        const total = subtotal - creditsToUse;
-        const creditsEarned = Math.floor(total * 0.1);
-
-        const newOrder = {
-            id: `ORD-${Date.now()}`,
-            userId: currentUser.id,
-            items: [...cart],
-            total,
-            status: 'processing',
-            trackingStatus: 'Scanning Dimension...',
-            creditsEarned,
-            creditsUsed: creditsToUse,
-            createdAt: new Date().toISOString(),
-        };
-
-        const updatedOrders = [newOrder, ...orders];
-        setOrders(updatedOrders);
-
-        // Update user credits
-        const updatedUser = {
-            ...currentUser,
-            credits: currentUser.credits - creditsToUse + creditsEarned
-        };
-        setCurrentUser(updatedUser);
-        localStorage.setItem('endura_user', JSON.stringify(updatedUser));
-        clearCart();
+    const placeOrder = async (orderPayload) => {
+        if (!currentUser) return null;
+        try {
+            const { orderService } = await import('../services/api');
+            const order = await orderService.placeOrder(orderPayload);
+            setOrders(prev => [order, ...prev]);
+            // Clear cart after successful order
+            setCart([]);
+            localStorage.removeItem('endura_cart');
+            return order;
+        } catch (error) {
+            console.error('Failed to place order:', error);
+            throw error.response?.data?.message || error.message || 'Failed to place order';
+        }
     };
 
     const unlockVaultItem = (id, code) => {
