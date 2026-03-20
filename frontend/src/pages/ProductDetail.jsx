@@ -96,18 +96,18 @@ const ProductDetail = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="absolute bottom-8 right-8 z-30 pointer-events-none">
-                            <div className="glass p-4 border-white/10">
-                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1">Status</p>
-                                <div className="flex items-center gap-2">
+                        <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-30 pointer-events-none">
+                            <div className="glass p-4 border-white/10 relative min-w-max">
+                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1 whitespace-nowrap">Status</p>
+                                <div className="flex items-center gap-3 whitespace-nowrap">
                                     {product.stock > 0 ? (
                                         <>
-                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
                                             <span className="text-[10px] font-black text-white uppercase tracking-widest">In Stock ({product.stock})</span>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
                                             <span className="text-[10px] font-black text-white uppercase tracking-widest">Out of Stock</span>
                                         </>
                                     )}
@@ -150,7 +150,7 @@ const ProductDetail = () => {
                                     for (let i = 0; i < quantity; i++) addToCart(product);
                                     navigate('/cart');
                                 }}
-                                className="flex-grow py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
+                                className="flex-grow py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
                             >
                                 Initiate Protocol (Add to Cart)
                             </button>
@@ -172,13 +172,13 @@ const ProductDetail = () => {
                             <div className="p-8 text-gray-400 text-sm leading-relaxed min-h-[150px]">
                                 {activeTab === 'Specs' && (
                                     <ul className="space-y-4">
-                                        <li className="flex justify-between border-b border-white/5 pb-2">
-                                            <span className="uppercase text-[10px] font-bold tracking-widest">Weight</span>
-                                            <span className="text-white font-mono">350GSM</span>
+                                        <li className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-3 sm:pb-2 gap-1 sm:gap-0">
+                                            <span className="uppercase text-[10px] font-bold tracking-widest text-gray-500">Weight</span>
+                                            <span className="text-white font-mono text-sm sm:text-base break-words">350GSM</span>
                                         </li>
-                                        <li className="flex justify-between border-b border-white/5 pb-2">
-                                            <span className="uppercase text-[10px] font-bold tracking-widest">Composition</span>
-                                            <span className="text-white font-mono">100% Endura-Tech Fiber</span>
+                                        <li className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-3 sm:pb-2 gap-1 sm:gap-0">
+                                            <span className="uppercase text-[10px] font-bold tracking-widest text-gray-500">Composition</span>
+                                            <span className="text-white font-mono text-sm sm:text-base break-words">100% Endura-Tech Fiber</span>
                                         </li>
                                     </ul>
                                 )}
