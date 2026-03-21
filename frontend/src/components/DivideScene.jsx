@@ -115,23 +115,23 @@ const DivideScene = () => {
                 <div className="divide-button">
                     <Link
                         to="/collections"
-                        className="group relative inline-flex items-center gap-6 px-12 py-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 transition-all duration-700 overflow-hidden"
+                        className="group relative inline-flex items-center gap-3 sm:gap-6 px-6 py-2.5 sm:px-12 sm:py-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 transition-all duration-700 overflow-hidden"
                     >
                         {/* Interactive Background */}
                         <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-700" />
                         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-primary/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left" />
 
                         {/* Button Content */}
-                        <div className="relative z-10 flex items-center gap-4">
-                            <span className="text-[11px] font-black uppercase tracking-[0.6em] text-white/80 group-hover:text-white transition-colors duration-500">
+                        <div className="relative z-10 flex items-center gap-2 sm:gap-4">
+                            <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.3em] sm:tracking-[0.6em] text-white/80 group-hover:text-white transition-colors duration-500">
                                 EXPLORE_COLLECTIONS
                             </span>
-                            <div className="relative w-2 h-2 border border-primary/50 rotate-45 group-hover:bg-primary group-hover:shadow-[0_0_10px_#A855F7] transition-all duration-500" />
+                            <div className="relative w-1.5 h-1.5 sm:w-2 sm:h-2 border border-primary/50 rotate-45 group-hover:bg-primary group-hover:shadow-[0_0_10px_#A855F7] transition-all duration-500" />
                         </div>
 
                         {/* Corner Accents */}
-                        <div className="absolute top-0 left-0 w-2 h-2 border-l border-t border-white/20 group-hover:border-primary transition-colors" />
-                        <div className="absolute bottom-0 right-0 w-2 h-2 border-r border-b border-white/20 group-hover:border-primary transition-colors" />
+                        <div className="absolute top-0 left-0 w-1.5 h-1.5 sm:w-2 sm:h-2 border-l border-t border-white/20 group-hover:border-primary transition-colors" />
+                        <div className="absolute bottom-0 right-0 w-1.5 h-1.5 sm:w-2 sm:h-2 border-r border-b border-white/20 group-hover:border-primary transition-colors" />
                     </Link>
                 </div>
 

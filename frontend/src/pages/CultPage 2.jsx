@@ -105,7 +105,7 @@ const CultPage = () => {
                 <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'linear-gradient(rgba(147,112,219,0.4) 1px, transparent 1px), linear-gradient(to right, rgba(147,112,219,0.4) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
                 <div className="relative z-10 space-y-8">
-                    <span className="font-mono text-[10px] tracking-[1.5em] text-primary uppercase animate-pulse">
+                    <span className="block w-full text-center font-mono text-[10px] tracking-[0.05em] md:tracking-[1.5em] text-primary uppercase animate-pulse">
                         // IDENTITY_SELECTION_PROTOCOL
                     </span>
                     <h1 className="text-7xl md:text-[11rem] font-heading tracking-tight uppercase leading-none">

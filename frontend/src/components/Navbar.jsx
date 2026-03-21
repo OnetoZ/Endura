@@ -136,15 +136,15 @@ const Navbar = React.forwardRef((props, ref) => {
                     <div className="flex items-center gap-6">
                         {/* Cart Icon */}
                         <Link to="/cart" className="relative group">
-                            <div className="relative p-2.5 border border-white/10 hover:border-primary/50 transition-all duration-300 flex items-center gap-2">
-                                <svg className="w-5 h-5 text-white/70 group-hover:text-primary transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="relative px-3 py-1.5 md:p-2.5 border border-white/10 hover:border-primary/50 transition-all duration-300 flex items-center gap-1.5 md:gap-2">
+                                <svg className="w-4 h-4 md:w-5 md:h-5 text-white/70 group-hover:text-primary transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                 </svg>
-                                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white/70 group-hover:text-primary transition-all duration-300">
+                                <span className="text-[9px] md:text-[10px] font-black tracking-[0.2em] uppercase text-white/70 group-hover:text-primary transition-all duration-300">
                                     CART
                                 </span>
                                 {cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-accent text-black text-[8px] w-4 h-4 flex items-center justify-center rounded-full font-black">
+                                    <span className="absolute -top-1 -right-1 bg-accent text-black text-[7px] md:text-[8px] w-3.5 h-3.5 md:w-4 md:h-4 flex items-center justify-center rounded-full font-black">
                                         {cartCount}
                                     </span>
                                 )}
