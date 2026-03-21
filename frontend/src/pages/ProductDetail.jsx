@@ -145,12 +145,12 @@ const ProductDetail = () => {
                                 >+</button>
                             </div>
 
-                            <button
+                                <button
                                 onClick={() => {
                                     for (let i = 0; i < quantity; i++) addToCart(product);
                                     navigate('/cart');
                                 }}
-                                className="flex-grow py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
+                                className="flex-grow whitespace-nowrap py-2.5 sm:py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
                             >
                                 Initiate Protocol (Add to Cart)
                             </button>
