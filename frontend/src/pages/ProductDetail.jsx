@@ -159,7 +159,7 @@ const ProductDetail = () => {
                         {/* Tabs */}
                         <div className="border border-white/5 overflow-hidden">
                             <div className="flex border-b border-white/5 bg-white/5">
-                                {['Specs', 'Digital Mirror', 'Shipping'].map(tab => (
+                                {['Specs'].map(tab => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -182,12 +182,12 @@ const ProductDetail = () => {
                                         </li>
                                     </ul>
                                 )}
-                                {activeTab === 'Digital Mirror' && (
+                                {/* {activeTab === 'Digital Mirror' && (
                                     <p>This item includes a 1:1 digital twin skin. Upon purchase, a sync code will be delivered to your operator node (vault). Compatible with major meta-dimension protocols.</p>
                                 )}
                                 {activeTab === 'Shipping' && (
                                     <p>Global quantum logistics enabled. Real-time tracking through the operator dashboard. Est. delivery: 3-5 standard temporal cycles.</p>
-                                )}
+                                )} */}
                             </div>
                         </div>
                     </div>
