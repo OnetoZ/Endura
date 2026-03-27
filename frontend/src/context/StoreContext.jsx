@@ -218,6 +218,32 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    const placeRazorpayOrder = async (orderPayload) => {
+        if (!currentUser) return null;
+        try {
+            const { orderService } = await import('../services/api');
+            const response = await orderService.createRazorpayOrder(orderPayload);
+            return response;
+        } catch (error) {
+            console.error('Failed to create Razorpay order:', error);
+            throw error.response?.data?.message || error.message || 'Failed to create Razorpay order';
+        }
+    };
+
+    const verifyRazorpayPayment = async (verifyData) => {
+        try {
+            const { orderService } = await import('../services/api');
+            const response = await orderService.verifyPayment(verifyData);
+            // Clear cart after successful verification
+            setCart([]);
+            localStorage.removeItem('endura_cart');
+            return response;
+        } catch (error) {
+            console.error('Failed to verify payment:', error);
+            throw error.response?.data?.message || error.message || 'Payment verification failed';
+        }
+    };
+
     const unlockVaultItem = (id, code) => {
         const item = vaultItems.find(i => i.id === id);
         if (item && item.code === code) {
@@ -236,6 +262,7 @@ export const AppProvider = ({ children }) => {
         <StoreContext.Provider value={{
             products, currentUser, cart, orders, vaultItems, users,
             login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
+            placeRazorpayOrder, verifyRazorpayPayment,
             addProduct, removeProduct, unlockVaultItem
         }}>
             {children}

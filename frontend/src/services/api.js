@@ -172,8 +172,20 @@ export const orderService = {
         const response = await api.get('/orders/myorders');
         return response.data;
     },
+    getAllOrders: async () => {
+        const response = await api.get('/orders');
+        return response.data;
+    },
     getOrderById: async (id) => {
         const response = await api.get(`/orders/${id}`);
+        return response.data;
+    },
+    createRazorpayOrder: async (orderData) => {
+        const response = await api.post('/payment/create-order', orderData);
+        return response.data;
+    },
+    verifyPayment: async (paymentData) => {
+        const response = await api.post('/payment/verify', paymentData);
         return response.data;
     },
 };
