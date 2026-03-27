@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ReactLenis, useLenis } from 'lenis/react';
 import { AppProvider } from './context/StoreContext';
@@ -15,6 +15,8 @@ import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
 import Vault from './pages/Vault';
 import CollectedPage from './pages/CollectedPage';
+import OrderSuccess from './pages/OrderSuccess';
+import OrderFailed from './pages/OrderFailed';
 import Footer from './components/Footer';
 import Collections from './pages/Collections';
 import SmoothScroll from './components/SmoothScroll';
@@ -111,6 +113,8 @@ function AppLayout() {
           } />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/order-failed" element={<OrderFailed />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/admin/*" element={
             currentUser && currentUser.role === 'admin' ? <AdminDashboard /> : <Navigate to="/auth" replace />

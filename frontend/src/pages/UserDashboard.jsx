@@ -198,6 +198,8 @@ const UserDashboard = () => {
             case "Delivered": return "text-green-500";
             case "Shipped": return "text-blue-500";
             case "Processing": return "text-yellow-500";
+            case "Confirmed": return "text-primary";
+            case "paid": return "text-green-500";
             default: return "text-gray-500";
         }
     };

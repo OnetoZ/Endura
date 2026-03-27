@@ -13,7 +13,7 @@ import CartSummary from '../components/collections/CartSummary';
 import '../components/collections/collections.css';
 
 const Cart = () => {
-    const { cart, removeFromCart, updateCartQuantity, clearCart, placeOrder, currentUser } = useStore();
+    const { cart, removeFromCart, updateCartQuantity, clearCart, placeOrder, placeRazorpayOrder, verifyRazorpayPayment, currentUser } = useStore();
     const navigate = useNavigate();
 
     // Steps: 1=Review, 2=Address, 3=Confirm, 4=Success
@@ -108,39 +108,89 @@ const Cart = () => {
 
         try {
             const shippingAddr = getSelectedAddress();
+            const orderItems = filteredItems.map(item => ({
+                product: item._id || item.id,
+                name: item.name,
+                image: item.image || '',
+                quantity: item.quantity,
+                price: item.price,
+            }));
 
-            const orderData = {
-                orderItems: filteredItems.map(item => ({
-                    product: item._id || item.id,
-                    name: item.name,
-                    image: item.image || '',
-                    quantity: item.quantity,
-                    price: item.price,
-                })),
-                shippingAddress: {
-                    fullName: shippingAddr.fullName,
-                    address: shippingAddr.address,
-                    city: shippingAddr.city,
-                    postalCode: shippingAddr.postalCode,
-                    country: shippingAddr.country || 'India',
-                    phone: shippingAddr.phone || currentUser?.phone || '',
-                },
-                paymentMethod: 'Cash on Delivery',
-                itemsPrice: subtotal,
-                shippingPrice: shipping,
-                taxPrice: taxes,
-                totalAmount: finalTotal,
+            const shippingData = {
+                fullName: shippingAddr.fullName,
+                address: shippingAddr.address,
+                city: shippingAddr.city,
+                postalCode: shippingAddr.postalCode,
+                country: shippingAddr.country || 'India',
+                phone: shippingAddr.phone || currentUser?.phone || '',
             };
 
-            const order = await placeOrder(orderData);
-            setPlacedOrder(order);
-            setStep(4);
-            toast.success('Order placed successfully!');
+            // Call backend to create Razorpay order
+            const rzpOrder = await placeRazorpayOrder({
+                orderItems,
+                shippingAddress: shippingData
+            });
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
+                amount: rzpOrder.amount,
+                currency: rzpOrder.currency,
+                name: 'Endura',
+                description: 'Complete your purchase',
+                order_id: rzpOrder.order_id,
+                handler: async (response) => {
+                    try {
+                        setIsCheckingOut(true);
+                        const verifyData = {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            db_order_id: rzpOrder.db_order_id
+                        };
+                        
+                        await verifyRazorpayPayment(verifyData);
+                        toast.success('Payment successful!');
+                        navigate('/order-success', { 
+                            state: { 
+                                orderId: rzpOrder.db_order_id,
+                                amount: rzpOrder.amount / 100 
+                            } 
+                        });
+                    } catch (err) {
+                        console.error('Verification error:', err);
+                        toast.error('Payment verification failed');
+                        navigate('/order-failed', { state: { message: err.message } });
+                    } finally {
+                        setIsCheckingOut(false);
+                    }
+                },
+                prefill: {
+                    name: shippingData.fullName,
+                    email: currentUser?.email,
+                    contact: shippingData.phone
+                },
+                theme: {
+                    color: '#000000'
+                },
+                modal: {
+                    ondismiss: () => {
+                        setIsCheckingOut(false);
+                    }
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                console.error('Payment failed:', response.error);
+                alert('Payment failed. Please try again.');
+                navigate('/order-failed', { state: { message: response.error.description } });
+            });
+            rzp.open();
+
         } catch (err) {
-            console.error('Order error:', err);
-            setOrderError(typeof err === 'string' ? err : err?.message || 'Failed to place order. Please try again.');
-            toast.error('Failed to place order');
-        } finally {
+            console.error('Razorpay Error:', err);
+            setOrderError(err?.message || 'Failed to initialize payment.');
+            toast.error('Payment failed to start');
             setIsCheckingOut(false);
         }
     };
@@ -194,7 +244,7 @@ const Cart = () => {
                     <h2 className="text-4xl font-heading uppercase mb-6 text-white tracking-widest">Order Confirmed</h2>
                     <p className="text-gray-400 font-body text-sm mb-4 leading-relaxed">
                         Your order has been placed successfully and is now being processed. <br />
-                        Payment Mode: <span className="text-accent font-bold">Cash on Delivery</span>
+                        Payment Mode: <span className="text-accent font-bold">ONLINE (RAZORPAY)</span>
                     </p>
                     {placedOrder && (
                         <div className="mb-8 space-y-2">
@@ -560,12 +610,12 @@ const Cart = () => {
                                 <div className="mb-8 p-5 bg-white/[0.02] border border-white/5">
                                     <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-3">Payment Method</p>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                                        <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                                         </div>
-                                        <span className="text-sm font-bold text-green-400">Cash on Delivery</span>
+                                        <span className="text-sm font-bold text-white uppercase tracking-widest">Secure Online Payment (Razorpay)</span>
                                     </div>
-                                    <p className="text-[10px] text-gray-500 mt-2 ml-8">Pay when your order is delivered to your doorstep</p>
+                                    <p className="text-[10px] text-gray-500 mt-2 ml-8 italic">Pay securely via Cards, UPI, Netbanking, or Wallets.</p>
                                 </div>
 
                                 {/* Price Breakdown */}
@@ -607,9 +657,9 @@ const Cart = () => {
                                     <button
                                         onClick={confirmOrder}
                                         disabled={isCheckingOut}
-                                        className="flex-[1.5] py-4 bg-accent text-black font-heading font-black uppercase tracking-widest text-xs hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-[1.5] py-4 bg-primary text-white font-heading font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isCheckingOut ? 'PROCESSING...' : 'PLACE ORDER — COD'}
+                                        {isCheckingOut ? 'PROCESSING...' : `PAY ₹${finalTotal}`}
                                     </button>
                                 </div>
                             </div>

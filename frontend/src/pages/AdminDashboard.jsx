@@ -55,7 +55,7 @@ const AdminDashboard = () => {
             try {
                 const [productsData, ordersData, usersData, userData, cardsData] = await Promise.all([
                     productService.getProducts(),
-                    userService.getUserOrders(),
+                    (await import('../services/api')).orderService.getAllOrders(),
                     userService.getUsers(),
                     userService.getCurrentUser(),
                     productService.getVaultCards(),
@@ -600,6 +600,7 @@ const AdminDashboard = () => {
                                         onChange={(e) => setOrderFilter(e.target.value)}
                                     >
                                         <option value="All">All Statuses</option>
+                                        <option value="Confirmed">Confirmed</option>
                                         <option value="Processing">Processing</option>
                                         <option value="Shipped">Shipped</option>
                                         <option value="Delivered">Delivered</option>
@@ -627,22 +628,26 @@ const AdminDashboard = () => {
                                             </tr>
                                         ) : (
                                             orders.filter(o => orderFilter === 'All' || o.status === orderFilter).map(o => (
-                                                <tr key={o.id} className="group hover:bg-white/5 transition-all">
-                                                    <td className="py-6 font-mono text-xs text-gray-500">{o.id}</td>
-                                                    <td className="py-6 uppercase font-bold text-xs">{o.userId}</td>
+                                                <tr key={o._id || o.id} className="group hover:bg-white/5 transition-all">
+                                                    <td className="py-6 font-mono text-xs text-gray-500">#{(o._id || o.id || '').slice(-6)}</td>
+                                                    <td className="py-6 uppercase font-bold text-xs">
+                                                        {o.user?.username || 'Unknown'} <br/>
+                                                        <span className="text-[8px] text-gray-500 font-normal lowercase">{o.user?.email}</span>
+                                                    </td>
                                                     <td className="py-6">
                                                         {o.items?.map((item, i) => (
                                                             <p key={i} className="text-[10px] text-gray-400 uppercase font-black">{item.name} x{item.quantity}</p>
                                                         ))}
+                                                        <p className="text-[10px] text-accent mt-1 font-mono">₹{o.totalAmount}</p>
                                                     </td>
                                                     <td className="py-6">
-                                                        <span className="font-mono text-[10px] bg-accent/10 px-2 py-1 text-accent border border-accent/20">
-                                                            {o.status === 'paid' ? 'PENDING_GENERATION' : 'LOCKED'}
+                                                        <span className={`font-mono text-[10px] px-2 py-1 border ${o.paymentStatus === 'paid' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
+                                                            {o.paymentMethod}: {o.paymentStatus?.toUpperCase() || 'PENDING'}
                                                         </span>
                                                     </td>
                                                     <td className="py-6">
                                                         <div className="flex items-center gap-2">
-                                                            <div className={`w-1.5 h-1.5 rounded-full ${o.status === 'paid' ? 'bg-primary' : 'bg-yellow-500'}`}></div>
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${o.status === 'Confirmed' || o.status === 'Delivered' ? 'bg-primary' : 'bg-yellow-500'}`}></div>
                                                             <span className="text-[9px] font-black uppercase tracking-widest">{o.status}</span>
                                                         </div>
                                                     </td>
