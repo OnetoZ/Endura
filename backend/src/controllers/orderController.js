@@ -63,7 +63,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
         user: req.user._id,
         items: orderItems,
         shippingAddress,
-        paymentMethod: paymentMethod || 'Cash on Delivery',
+        paymentMethod: paymentMethod || 'ONLINE',
         itemsPrice: itemsPrice || 0,
         shippingPrice: shippingPrice || 0,
         taxPrice: taxPrice || 0,
