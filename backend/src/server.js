@@ -21,23 +21,33 @@ if (isProduction) {
 }
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
+const envConfiguredOrigins = [
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  ...(process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()),
+].filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([
+  ...envConfiguredOrigins,
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5177',
-  'https://endura-2.onrender.com', // Your Render URL
-  'https://endura-xi.vercel.app',   // Your Vercel frontend URL
-];
+  'https://www.wearendura.com/',
+]));
+
+console.log('✅ CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g. mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.error(`❌ CORS blocked origin: ${origin}`);
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // ── Body Parsers ──────────────────────────────────────────────────────────────

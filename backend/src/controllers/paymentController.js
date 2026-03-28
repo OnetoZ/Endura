@@ -4,7 +4,7 @@ const Product = require('../models/Product');
 const Payment = require('../models/Payment');
 const Cart = require('../models/Cart');
 const VaultItem = require('../models/VaultItem');
-const razorpayInstance = require('../utils/razorpay');
+const { razorpayInstance, razorpayKeyId } = require('../utils/razorpay');
 const asyncHandler = require('../utils/asyncHandler');
 
 // Helper: generate vault items after payment
@@ -133,6 +133,13 @@ const createOrder = asyncHandler(async (req, res) => {
         receipt: `receipt_${Date.now()}_${req.user._id}`,
     };
 
+    console.log('[payment/create-order] Creating Razorpay order', {
+        userId: req.user?._id?.toString?.() || null,
+        amountInPaise,
+        currency: options.currency,
+        receipt: options.receipt,
+    });
+
     const razorpayOrder = await razorpayInstance.orders.create(options);
 
     if (!razorpayOrder) {
@@ -156,9 +163,12 @@ const createOrder = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
+        orderId: razorpayOrder.id,
         order_id: razorpayOrder.id,
         amount: razorpayOrder.amount, // in paise
         currency: razorpayOrder.currency,
+        keyId: razorpayKeyId,
+        dbOrderId: order._id,
         db_order_id: order._id,
     });
 
@@ -176,9 +186,27 @@ const createOrder = asyncHandler(async (req, res) => {
  */
 const verifyPayment = asyncHandler(async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, db_order_id } = req.body;
+    const userId = req.user?._id?.toString?.() || null;
+
+    console.log('[payment/verify] Incoming verification request', {
+        userId,
+        hasOrderId: Boolean(razorpay_order_id),
+        hasPaymentId: Boolean(razorpay_payment_id),
+        hasSignature: Boolean(razorpay_signature),
+        dbOrderId: db_order_id || null,
+    });
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        res.status(400);
+        throw new Error('Missing required fields: razorpay_order_id, razorpay_payment_id, razorpay_signature');
+    }
 
     const order = await Order.findById(db_order_id);
     if (!order) {
+        console.error('[payment/verify] Rejected: DB order not found', {
+            userId,
+            dbOrderId: db_order_id || null,
+        });
         res.status(404);
         throw new Error('Order not found');
     }
@@ -189,6 +217,11 @@ const verifyPayment = asyncHandler(async (req, res) => {
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
         .update(body.toString())
         .digest('hex');
+
+    console.log('[payment/verify] Generated signature for comparison', {
+        userId,
+        dbOrderId: db_order_id || null,
+    });
 
     if (expectedSignature === razorpay_signature) {
         // Valid payment
@@ -224,11 +257,29 @@ const verifyPayment = asyncHandler(async (req, res) => {
         // Auto-generate vault items
         await generateVaultItems(order);
 
-        res.status(200).json({ success: true, message: 'Payment verified successfully' });
+        console.log('[payment/verify] Payment verified successfully', {
+            userId,
+            dbOrderId: db_order_id || null,
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Payment verified successfully',
+            dbOrderId: order._id,
+        });
     } else {
         // Invalid payment signature
         order.paymentStatus = 'failed';
         await order.save();
+
+        console.error('[payment/verify] Signature mismatch', {
+            userId,
+            dbOrderId: db_order_id || null,
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+        });
 
         res.status(400);
         throw new Error('Invalid payment signature');

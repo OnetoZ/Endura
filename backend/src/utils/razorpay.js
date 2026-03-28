@@ -1,18 +1,21 @@
 const Razorpay = require('razorpay');
+const missingEnvVars = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET']
+  .filter((key) => !process.env[key] || process.env[key].trim().length === 0);
 
-let razorpayInstance = null;
-
-try {
-  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    razorpayInstance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-  } else {
-    console.warn('⚠️ Razorpay credentials not found in environment variables. Payments will not work.');
-  }
-} catch (error) {
-  console.error('Failed to initialize Razorpay:', error.message);
+if (missingEnvVars.length > 0) {
+  throw new Error(
+    `[Razorpay] Missing required environment variables: ${missingEnvVars.join(', ')}`
+  );
 }
 
-module.exports = razorpayInstance;
+const razorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+console.log('[Razorpay] Instance initialized successfully');
+
+module.exports = {
+  razorpayInstance,
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+};
