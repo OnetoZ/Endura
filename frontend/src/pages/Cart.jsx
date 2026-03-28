@@ -33,8 +33,16 @@ const Cart = () => {
     // Grid Reference for morphing animations
     const gridRef = useRef(null);
 
+    const isDigitalCartItem = (item) => {
+        return item.category?.toLowerCase().includes('digital') ||
+            item.name?.toLowerCase().includes('nft') ||
+            item.isDigital;
+    };
+
+    const checkoutItems = cart;
+
     // Derived Logic
-    const subtotal = cart.reduce((acc, item) => {
+    const subtotal = checkoutItems.reduce((acc, item) => {
         const price = item.price || item.product?.price || 0;
         const qty = item.quantity || 0;
         return acc + (price * qty);
@@ -46,14 +54,6 @@ const Cart = () => {
     const availableCredits = currentUser?.credits || 0;
     const creditDiscount = useCredits ? Math.min(total, availableCredits) : 0;
     const finalTotal = total - creditDiscount;
-
-    // Filtered Items - Show only physical products
-    const filteredItems = cart.filter(item => {
-        const isDigital = item.category?.toLowerCase().includes('digital') ||
-            item.name?.toLowerCase().includes('nft') ||
-            item.isDigital;
-        return !isDigital;
-    });
 
     const userAddresses = currentUser?.addresses || [];
 
@@ -70,6 +70,10 @@ const Cart = () => {
     const handleCheckout = () => {
         if (!currentUser) {
             navigate('/auth');
+            return;
+        }
+        if (checkoutItems.length === 0) {
+            setOrderError('Your cart is empty. Add at least one item before starting Razorpay checkout.');
             return;
         }
         setOrderError('');
@@ -107,8 +111,12 @@ const Cart = () => {
         setOrderError('');
 
         try {
+            if (checkoutItems.length === 0) {
+                throw new Error('Your cart is empty. Add at least one item before creating a Razorpay order.');
+            }
+
             const shippingAddr = getSelectedAddress();
-            const orderItems = filteredItems.map(item => ({
+            const orderItems = checkoutItems.map(item => ({
                 product: item._id || item.id,
                 name: item.name,
                 image: item.image || '',
@@ -188,9 +196,10 @@ const Cart = () => {
             rzp.open();
 
         } catch (err) {
-            console.error('Razorpay Error:', err);
-            setOrderError(err?.message || 'Failed to initialize payment.');
-            toast.error('Payment failed to start');
+            const message = err?.response?.data?.message || err?.message || 'Failed to initialize payment.';
+            console.error('Razorpay Error:', err?.response?.data || err);
+            setOrderError(message);
+            toast.error(message);
             setIsCheckingOut(false);
         }
     };
@@ -334,13 +343,13 @@ const Cart = () => {
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-mono text-gray-600 uppercase tracking-[0.4em] mb-1">IDENTITY_PROTOCOL</span>
                                         <span className="text-xl font-heading text-white tracking-widest uppercase">
-                                            physical <span className="text-accent/60">LAYER</span>
+                                            checkout <span className="text-accent/60">LAYER</span>
                                         </span>
                                     </div>
                                     <div className="h-12 w-[1px] bg-white/10 hidden md:block" />
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-mono text-gray-600 uppercase tracking-[0.4em] mb-1">ASSET_REGISTER</span>
-                                        <span className="text-xl font-heading text-white tracking-widest uppercase">{filteredItems.length} DETECTED</span>
+                                        <span className="text-xl font-heading text-white tracking-widest uppercase">{checkoutItems.length} DETECTED</span>
                                     </div>
                                 </div>
 
@@ -363,11 +372,11 @@ const Cart = () => {
                                         style={{ perspective: "2000px" }}
                                     >
                                         <AnimatePresence mode='popLayout'>
-                                            {filteredItems.map(item => (
+                                            {checkoutItems.map(item => (
                                                 <CollectionCard
                                                     key={item._id || item.id}
                                                     item={{ ...item, image: item.image || item.frontImage }}
-                                                    type="physical"
+                                                    type={isDigitalCartItem(item) ? 'digital' : 'physical'}
                                                     onRemove={removeFromCart}
                                                     onUpdateQuantity={(id, delta) => updateCartQuantity(id, delta)}
                                                 />
@@ -566,9 +575,9 @@ const Cart = () => {
 
                                 {/* Order Items */}
                                 <div className="mb-8">
-                                    <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-4">Items ({filteredItems.length})</p>
+                                    <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-4">Items ({checkoutItems.length})</p>
                                     <div className="space-y-3">
-                                        {filteredItems.map(item => (
+                                        {checkoutItems.map(item => (
                                             <div key={item._id || item.id} className="flex items-center gap-4 p-4 bg-white/[0.02] border border-white/5">
                                                 {item.image && (
                                                     <img src={item.image} alt={item.name} className="w-12 h-12 object-cover border border-white/10" />
