@@ -29,13 +29,27 @@ const generateVaultItems = async (order) => {
  */
 const createOrder = asyncHandler(async (req, res) => {
     const { orderItems, shippingAddress } = req.body;
+    const bodyKeys = Object.keys(req.body || {});
+
+    console.log('[payment/create-order] Incoming request', {
+        userId: req.user?._id?.toString?.() || null,
+        bodyKeys,
+        orderItemsCount: Array.isArray(orderItems) ? orderItems.length : null,
+        hasShippingAddress: Boolean(shippingAddress),
+        shippingAddressFields: shippingAddress ? Object.keys(shippingAddress) : [],
+    });
 
     if (!orderItems || orderItems.length === 0) {
+        console.warn('[payment/create-order] Rejected: no order items provided', {
+            userId: req.user?._id?.toString?.() || null,
+            bodyKeys,
+        });
         res.status(400);
         throw new Error('No order items provided');
     }
 
     if (!razorpayInstance) {
+        console.error('[payment/create-order] Razorpay is not configured');
         res.status(500);
         throw new Error('Razorpay is not configured');
     }
@@ -47,10 +61,19 @@ const createOrder = asyncHandler(async (req, res) => {
     for (const item of orderItems) {
         const product = await Product.findById(item.product);
         if (!product) {
+            console.warn('[payment/create-order] Rejected: product not found', {
+                productId: item.product,
+            });
             res.status(404);
             throw new Error(`Product not found: ${item.product}`);
         }
         if (product.stock < item.quantity) {
+            console.warn('[payment/create-order] Rejected: insufficient stock', {
+                productId: item.product,
+                productName: product.name,
+                requestedQuantity: item.quantity,
+                availableStock: product.stock,
+            });
             res.status(400);
             throw new Error(`Insufficient stock for: ${product.name}`);
         }
@@ -78,6 +101,7 @@ const createOrder = asyncHandler(async (req, res) => {
     const razorpayOrder = await razorpayInstance.orders.create(options);
 
     if (!razorpayOrder) {
+        console.error('[payment/create-order] Razorpay order creation failed with empty response');
         res.status(500);
         throw new Error('Failed to create Razorpay order');
     }
@@ -101,6 +125,13 @@ const createOrder = asyncHandler(async (req, res) => {
         amount: razorpayOrder.amount, // in paise
         currency: razorpayOrder.currency,
         db_order_id: order._id,
+    });
+
+    console.log('[payment/create-order] Order created successfully', {
+        userId: req.user?._id?.toString?.() || null,
+        dbOrderId: order._id.toString(),
+        razorpayOrderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
     });
 });
 
