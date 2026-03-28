@@ -1,6 +1,24 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const resolveApiBaseUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL?.trim();
+    if (envUrl) {
+        return envUrl.replace(/\/$/, '');
+    }
+
+    if (typeof window !== 'undefined') {
+        const { hostname } = window.location;
+        const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+
+        if (!isLocalHost) {
+            return 'https://endura-2.onrender.com/api';
+        }
+    }
+
+    return 'http://localhost:5001/api';
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export const getImageUrl = (path) => {
     if (!path) return '';
