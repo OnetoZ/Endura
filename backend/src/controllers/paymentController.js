@@ -127,20 +127,26 @@ const createOrder = asyncHandler(async (req, res) => {
     // Razorpay amount is in paise
     const amountInPaise = Math.round(calculatedTotal * 100);
 
+    // Limit receipt to 40 characters (rcpt_ + Date.now() + 6 chars of user ID is ~25 chars)
+    const receiptId = `rcpt_${Date.now()}_${req.user._id.toString().slice(-6)}`;
+
     const options = {
         amount: amountInPaise,
         currency: 'INR',
-        receipt: `receipt_${Date.now()}_${req.user._id}`,
+        receipt: receiptId.slice(0, 40),
     };
 
-    console.log('[payment/create-order] Creating Razorpay order', {
-        userId: req.user?._id?.toString?.() || null,
-        amountInPaise,
-        currency: options.currency,
-        receipt: options.receipt,
-    });
-
-    const razorpayOrder = await razorpayInstance.orders.create(options);
+    let razorpayOrder;
+    try {
+        razorpayOrder = await razorpayInstance.orders.create(options);
+    } catch (razorpayError) {
+        console.error('[payment/create-order] Razorpay creation failed', {
+            error: razorpayError,
+            options
+        });
+        res.status(razorpayError.statusCode || 400);
+        throw new Error(razorpayError.error?.description || razorpayError.message || 'Failed to create Razorpay order');
+    }
 
     if (!razorpayOrder) {
         console.error('[payment/create-order] Razorpay order creation failed with empty response');
@@ -154,6 +160,9 @@ const createOrder = asyncHandler(async (req, res) => {
         items: itemsForDB,
         shippingAddress,
         paymentMethod: 'ONLINE',
+        itemsPrice: calculatedTotal,
+        shippingPrice: 0,
+        taxPrice: 0, // already included in calculatedTotal in this logic, but if taxes are separate, we should specify.
         totalAmount: calculatedTotal,
         currency: 'INR',
         razorpayOrderId: razorpayOrder.id,
