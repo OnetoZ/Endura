@@ -6,6 +6,7 @@ import { useStore } from '../context/StoreContext';
 import { gsap } from 'gsap';
 import { toast } from 'react-hot-toast';
 import { MapPin, Package, ChevronRight, AlertTriangle, CheckCircle, Plus } from 'lucide-react';
+import { handlePayment } from '../utils/payment';
 
 // Components
 import CollectionCard from '../components/collections/CollectionCard';
@@ -133,67 +134,50 @@ const Cart = () => {
                 phone: shippingAddr.phone || currentUser?.phone || '',
             };
 
-            // Call backend to create Razorpay order
-            const rzpOrder = await placeRazorpayOrder({
-                orderItems,
-                shippingAddress: shippingData
+            console.log('[Cart] Starting payment flow with payload:', {
+                orderItemsCount: orderItems.length,
+                shippingData,
             });
 
-            const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
-                amount: rzpOrder.amount,
-                currency: rzpOrder.currency,
-                name: 'Endura',
-                description: 'Complete your purchase',
-                order_id: rzpOrder.order_id,
-                handler: async (response) => {
-                    try {
-                        setIsCheckingOut(true);
-                        const verifyData = {
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            db_order_id: rzpOrder.db_order_id
-                        };
-                        
-                        await verifyRazorpayPayment(verifyData);
-                        toast.success('Payment successful!');
-                        navigate('/order-success', { 
-                            state: { 
-                                orderId: rzpOrder.db_order_id,
-                                amount: rzpOrder.amount / 100 
-                            } 
-                        });
-                    } catch (err) {
-                        console.error('Verification error:', err);
-                        toast.error('Payment verification failed');
-                        navigate('/order-failed', { state: { message: err.message } });
-                    } finally {
-                        setIsCheckingOut(false);
-                    }
-                },
-                prefill: {
+            await handlePayment({
+                createOrder: () => placeRazorpayOrder({
+                    orderItems,
+                    shippingAddress: shippingData,
+                }),
+                verifyPayment: (verifyPayload) => verifyRazorpayPayment(verifyPayload),
+                customer: {
                     name: shippingData.fullName,
                     email: currentUser?.email,
-                    contact: shippingData.phone
+                    contact: shippingData.phone,
                 },
-                theme: {
-                    color: '#000000'
+                onSuccess: ({ orderResponse }) => {
+                    const dbOrderId = orderResponse?.dbOrderId || orderResponse?.db_order_id;
+                    const paidAmount = Number(orderResponse?.amount || 0) / 100;
+                    toast.success('Payment successful!');
+                    navigate('/order-success', {
+                        state: {
+                            orderId: dbOrderId,
+                            amount: paidAmount,
+                        },
+                    });
+                    setIsCheckingOut(false);
                 },
-                modal: {
-                    ondismiss: () => {
-                        setIsCheckingOut(false);
-                    }
-                }
-            };
+                onFailure: ({ stage, error }) => {
+                    const message = error?.response?.data?.message ||
+                        error?.description ||
+                        error?.message ||
+                        'Payment failed';
 
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response) {
-                console.error('Payment failed:', response.error);
-                alert('Payment failed. Please try again.');
-                navigate('/order-failed', { state: { message: response.error.description } });
+                    console.error(`[Cart] Payment failed at stage: ${stage}`, error);
+                    setOrderError(message);
+                    toast.error(message);
+                    navigate('/order-failed', { state: { message } });
+                    setIsCheckingOut(false);
+                },
+                onDismiss: () => {
+                    setIsCheckingOut(false);
+                },
             });
-            rzp.open();
 
         } catch (err) {
             const message = err?.response?.data?.message || err?.message || 'Failed to initialize payment.';
