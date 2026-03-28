@@ -92,6 +92,7 @@ app.use('/api/wishlist', require('./routes/wishlistRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/vault', require('./routes/vaultRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // Serve uploads folder statically
 const path = require('path');

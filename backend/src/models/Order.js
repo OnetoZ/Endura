@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        default: 'Cash on Delivery',
+        default: 'ONLINE',
     },
     paymentResult: {
         id: { type: String },
@@ -40,11 +40,22 @@ const orderSchema = new mongoose.Schema({
     shippingPrice: { type: Number, required: true, default: 0 },
     taxPrice: { type: Number, required: true, default: 0 },
     totalAmount: { type: Number, required: true },
+    currency: { type: String, default: 'INR' },
     isPaid: { type: Boolean, default: false },
     paidAt: { type: Date },
     isDelivered: { type: Boolean, default: false },
     deliveredAt: { type: Date },
     trackingId: { type: String },
+    
+    // Razorpay Integration Fields
+    razorpayOrderId: { type: String },
+    razorpayPaymentId: { type: String },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'failed'],
+        default: 'pending'
+    },
+    
     status: {
         type: String,
         enum: ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
