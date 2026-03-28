@@ -39,13 +39,48 @@ const createOrder = asyncHandler(async (req, res) => {
         shippingAddressFields: shippingAddress ? Object.keys(shippingAddress) : [],
     });
 
-    if (!orderItems || orderItems.length === 0) {
-        console.warn('[payment/create-order] Rejected: no order items provided', {
+    if (!req.user || !req.user._id) {
+        console.error('[payment/create-order] Rejected: missing authenticated user in request');
+        res.status(401);
+        throw new Error('Authentication required to create order');
+    }
+
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+        console.error('[payment/create-order] Rejected: no order items provided', {
             userId: req.user?._id?.toString?.() || null,
             bodyKeys,
         });
         res.status(400);
         throw new Error('No order items provided');
+    }
+
+    const invalidItemIndex = orderItems.findIndex(
+        (item) => !item || !item.product || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0
+    );
+    if (invalidItemIndex !== -1) {
+        console.error('[payment/create-order] Rejected: invalid order item payload', {
+            userId: req.user?._id?.toString?.() || null,
+            invalidItemIndex,
+            invalidItem: orderItems[invalidItemIndex],
+        });
+        res.status(400);
+        throw new Error(`Invalid order item at index ${invalidItemIndex}. Each item must include product and quantity > 0`);
+    }
+
+    const requiredAddressFields = ['fullName', 'address', 'city', 'postalCode', 'country'];
+    const missingAddressFields = requiredAddressFields.filter((field) => {
+        const value = shippingAddress?.[field];
+        return typeof value !== 'string' || value.trim().length === 0;
+    });
+
+    if (missingAddressFields.length > 0) {
+        console.error('[payment/create-order] Rejected: missing required shipping address fields', {
+            userId: req.user?._id?.toString?.() || null,
+            missingAddressFields,
+            receivedShippingAddress: shippingAddress || null,
+        });
+        res.status(400);
+        throw new Error(`Missing required shipping address fields: ${missingAddressFields.join(', ')}`);
     }
 
     if (!razorpayInstance) {
@@ -61,14 +96,14 @@ const createOrder = asyncHandler(async (req, res) => {
     for (const item of orderItems) {
         const product = await Product.findById(item.product);
         if (!product) {
-            console.warn('[payment/create-order] Rejected: product not found', {
+            console.error('[payment/create-order] Rejected: product not found', {
                 productId: item.product,
             });
             res.status(404);
             throw new Error(`Product not found: ${item.product}`);
         }
         if (product.stock < item.quantity) {
-            console.warn('[payment/create-order] Rejected: insufficient stock', {
+            console.error('[payment/create-order] Rejected: insufficient stock', {
                 productId: item.product,
                 productName: product.name,
                 requestedQuantity: item.quantity,

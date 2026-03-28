@@ -199,7 +199,19 @@ export const orderService = {
         return response.data;
     },
     createRazorpayOrder: async (orderData) => {
-        const response = await api.post('/payment/create-order', orderData);
+        const normalizedOrderItems = Array.isArray(orderData?.orderItems)
+            ? orderData.orderItems.map((item) => ({
+                product: item?.product || item?._id || item?.id,
+                quantity: Number(item?.quantity || 0),
+            }))
+            : [];
+
+        const payload = {
+            orderItems: normalizedOrderItems,
+            shippingAddress: orderData?.shippingAddress || {},
+        };
+
+        const response = await api.post('/payment/create-order', payload);
         return response.data;
     },
     verifyPayment: async (paymentData) => {
