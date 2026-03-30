@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://wearendura.com/sitemap.xml
+
+# Disallow admin paths
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /onboarding/
