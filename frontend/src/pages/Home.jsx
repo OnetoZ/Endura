@@ -27,6 +27,12 @@ const Home = () => {
 
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">
+            <SEO 
+                title="Cinematic Streetwear & Digital Collectibles"
+                description="Endura is a premium streetwear brand based in Bangalore, India. Discover oversized hoodies, techwear, and digital vault collectibles for the Gen Z urban audience."
+                canonical="/"
+                image="https://wearendura.com/logo.png"
+            />
             {/* SCENE 1: System Boot / Hero Identity */}
             <SystemBootHero />
 

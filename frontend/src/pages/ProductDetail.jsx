@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
+import SEO from '../components/SEO';
+
 const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -19,9 +21,33 @@ const ProductDetail = () => {
         if (found) setProduct(found);
     }, [id, products]);
 
+    const productSchema = product ? {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.name,
+        "image": product.images?.[0] || product.image,
+        "description": product.description,
+        "brand": {
+            "@type": "Brand",
+            "name": "ENDURA"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": `https://wearendura.com/product/${id}`,
+            "priceCurrency": "INR",
+            "price": product.price,
+            "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+        }
+    } : null;
+
     if (!product && collectedItem) return (
         <div className="min-h-screen bg-black pt-32 pb-20 px-6 text-white">
+            <SEO 
+                title={`${collectedItem.name} | View Collected Asset`}
+                description={`Viewing ${collectedItem.name} from the Endura Digital Vault. Cinematic streetwear asset ownership.`}
+            />
             <div className="container mx-auto max-w-5xl">
+
                 <Link to="/collected" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -65,6 +91,13 @@ const ProductDetail = () => {
 
     return (
         <div className="min-h-screen bg-black pt-32 pb-20 px-6">
+            <SEO 
+                title={product.name}
+                description={product.description}
+                canonical={`/product/${id}`}
+                image={product.images?.[0] || product.image}
+                schema={productSchema}
+            />
             <div className="container mx-auto max-w-7xl">
                 <Link to="/collections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -89,6 +89,8 @@ const EnduraLogoSection = () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+import SEO from '../components/SEO';
+
 const CultPage = () => {
     const pageRef = useRef();
 
@@ -98,6 +100,11 @@ const CultPage = () => {
 
     return (
         <div ref={pageRef} className="bg-black text-white min-h-screen">
+            <SEO 
+                title="The Cult | Brand Story & Factions"
+                description="Explore the five factions of Endura. Masters of shadow luxury, industrial pressure, and digital legacy. Choose your alignment in the Endura network."
+                canonical="/cult"
+            />
             {/* HERO HEADER */}
             <section className="h-screen flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(147,112,219,0.12)_0%,transparent_70%)]" />
