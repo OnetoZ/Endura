@@ -40,8 +40,8 @@ const Home = () => {
             {/* SCENE 2: THE DOPPEL PIECE (Product Philosophy) */}
             <DoppelPieceScene />
 
-            {/* SCENE 3: THE DIVIDE (Reality vs Digital) */}
-            <DivideScene />
+            {/* SCENE 3: THE DIVIDE (Reality vs Digital) (Door animation - commented out per request) */}
+            {/* <DivideScene /> */}
 
             {/* SCENE 4: IMPACT STATEMENT (Emotional Hook) */}
             {/* <ImpactStatement /> */}

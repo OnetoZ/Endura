@@ -103,16 +103,23 @@ const Navbar = React.forwardRef((props, ref) => {
                     <div className="hidden md:flex items-center gap-1">
                         {[
                             { to: '/', label: 'Home', accent: false },
-                            { to: '/cult', label: 'The Cult', accent: false },
+                            { to: '#', label: 'Factions', accent: false, locked: true },
                             { to: '/collections', label: 'collections', accent: false },
                             ...(currentUser ? [{ to: '/vault', label: 'The Vault', accent: true }] : [])
                         ].map((link, idx) => (
                             <Link
                                 key={idx}
                                 to={link.to}
-                                onClick={link.to === '/' ? handleLogoClick : undefined}
-                                className={`relative px-6 py-3 group overflow-hidden ${link.accent ? 'text-accent' : 'text-white/70'}`}
+                                onClick={link.locked ? (e) => e.preventDefault() : (link.to === '/' ? handleLogoClick : undefined)}
+                                className={`relative px-6 py-3 group overflow-hidden ${link.accent ? 'text-accent' : 'text-white/70'} ${link.locked ? 'cursor-not-allowed opacity-50' : ''}`}
                             >
+                                {link.locked && (
+                                    <div className="absolute top-1 right-2">
+                                        <svg className="w-2 h-2 text-white/40" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                                        </svg>
+                                    </div>
+                                )}
                                 {/* Hover Background */}
                                 <div className={`absolute inset-0 ${link.accent ? 'bg-accent/10' : 'bg-primary/5'} translate-y-full group-hover:translate-y-0 transition-transform duration-300`} />
 
@@ -227,21 +234,20 @@ const Navbar = React.forwardRef((props, ref) => {
                                 )}
                             </div>
                         ) : (
-                            <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.8] origin-right">
-                                {/* Animated Background */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite]" />
-                                <div className="absolute inset-0 bg-black/80 group-hover:bg-black/60 transition-all duration-300" />
-
-                                {/* Border Frame */}
-                                <div className="absolute inset-0 border border-primary/60 group-hover:border-accent transition-all duration-300" />
-
+                            <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.8] origin-right transition-all duration-500 hover:scale-105 active:scale-95">
+                                {/* Gold Gradient Background */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#fee08b] via-[#d4af37] to-[#b8860b] animate-shimmer" />
+                                
+                                {/* Shimmer Overlay */}
+                                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
+                                
                                 {/* Content */}
-                                <div className="relative z-10 px-5 md:px-8 py-2 md:py-3 flex items-center gap-1 md:gap-2">
-                                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-white">
+                                <div className="relative z-10 px-6 md:px-10 py-2 md:py-3 flex items-center gap-1 md:gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black">
                                         Login
                                     </span>
-                                    <svg className="w-3 h-3 text-accent group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                    <svg className="w-3.5 h-3.5 text-black group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                                     </svg>
                                 </div>
                             </Link>
@@ -273,7 +279,7 @@ const Navbar = React.forwardRef((props, ref) => {
             <div className="flex justify-around items-center h-16 px-1">
                 {[
                     { to: '/', label: 'HOME', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-                    { to: '/cult', label: 'CULT', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+                    { to: '#', label: 'FACTIONS', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', locked: true },
                     { to: '/collections', label: 'GEAR', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
                     ...(currentUser ? [
                         { to: '/vault', label: 'VAULT', accent: true, icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
@@ -285,8 +291,8 @@ const Navbar = React.forwardRef((props, ref) => {
                         <Link
                             key={idx}
                             to={link.to}
-                            onClick={link.to === '/' ? handleLogoClick : undefined}
-                            className="flex flex-col items-center justify-center w-full h-full gap-1 group"
+                            onClick={link.locked ? (e) => e.preventDefault() : (link.to === '/' ? handleLogoClick : undefined)}
+                            className={`flex flex-col items-center justify-center w-full h-full gap-1 group ${link.locked ? 'opacity-20 grayscale' : ''}`}
                         >
                             <svg className={`w-5 h-5 transition-all duration-300 ${isActive ? (link.accent ? 'text-accent' : 'text-primary') : 'text-white/40 group-hover:text-white/80'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive ? "2" : "1.5"} d={link.icon} />

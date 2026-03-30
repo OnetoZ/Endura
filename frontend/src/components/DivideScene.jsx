@@ -96,7 +96,7 @@ const DivideScene = () => {
                     className="w-[200%] h-full translate-x-[-50%] bg-cover bg-center"
                     style={{ backgroundImage: 'url(/vision.png)' }}
                 />
-                <div className="absolute inset-0 bg-primary/30 backdrop-blur-[4px]" />
+                <div className="absolute inset-0 bg-green-500/10 backdrop-blur-[4px]" />
                 <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-transparent to-black" />
                 <div className="absolute top-12 right-12 text-right">
                     <span className="text-[9px] text-accent font-mono tracking-[0.5em] uppercase">// ENERGY_PULSE_99</span>
