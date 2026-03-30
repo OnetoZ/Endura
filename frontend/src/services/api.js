@@ -15,7 +15,7 @@ const resolveApiBaseUrl = () => {
         }
     }
 
-    return 'http://localhost:5001/api';
+    return 'http://127.0.0.1:5001/api';
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
