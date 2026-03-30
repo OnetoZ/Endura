@@ -32,10 +32,10 @@ const DoppelPieceScene = () => {
         tl.fromTo(".doppel-text-1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.8");
 
         // 2. Digital Twin emerges - SHARPER
-        tl.to(solidPieceRef.current, { x: -80, filter: 'grayscale(1) contrast(1.2)', duration: 1.5 });
+        tl.to(solidPieceRef.current, { x: -80, filter: 'contrast(1.1)', duration: 1.5 });
         tl.fromTo(digitalPieceRef.current,
-            { opacity: 0, scale: 0.9, x: -80, filter: 'hue-rotate(90deg) brightness(2) contrast(1.5)' },
-            { opacity: 0.8, scale: 1, x: 80, duration: 1.5 },
+            { opacity: 0, scale: 0.9, x: -80, filter: 'brightness(1.5)' },
+            { opacity: 1, scale: 1, x: 80, duration: 1.5 },
             "-=1.5"
         );
 
@@ -48,7 +48,7 @@ const DoppelPieceScene = () => {
 
         // 3. Both align and merge
         tl.to(solidPieceRef.current, { x: 0, duration: 1.5 });
-        tl.to(digitalPieceRef.current, { x: 0, opacity: 0.5, scale: 1.05, filter: 'hue-rotate(0deg) brightness(1.5) contrast(1.2)', duration: 1.5 }, "-=1.5");
+        tl.to(digitalPieceRef.current, { x: 0, opacity: 0.9, scale: 1.05, filter: 'brightness(1.2)', duration: 1.5 }, "-=1.5");
 
         // Final collapse
         tl.to([solidPieceRef.current, digitalPieceRef.current, ".doppel-text"], {
@@ -74,19 +74,58 @@ const DoppelPieceScene = () => {
                     {/* IRL Piece */}
                     <img
                         ref={solidPieceRef}
-                        src="/factions/veil.jpg"
+                        src="/plain_shirt_model.png"
                         alt="IRL Piece"
-                        className="absolute w-full h-full object-cover border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] grayscale contrast-125"
+                        className="absolute w-full h-full object-cover border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] rounded-md"
                     />
 
-                    {/* Digital Piece Layer */}
-                    <img
+                    {/* Digital Piece Layer (Wrapper for image + logo) */}
+                    <div
                         ref={digitalPieceRef}
-                        src="/factions/veil.jpg"
-                        alt="Digital Twin"
-                        className="absolute w-full h-full object-cover mix-blend-screen opacity-0"
-                        style={{ filter: 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.6))' }}
-                    />
+                        className="absolute w-full h-full opacity-0 rounded-md overflow-hidden shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+                    >
+                        <img
+                            src="/plain_shirt_model.png"
+                            alt="Digital Twin"
+                            className="w-full h-full object-cover"
+                        />
+                        {/* The Overlay ENDURA Logo */}
+                        <div className="absolute top-[38%] left-[50%] -translate-x-[50%] flex items-center justify-center pointer-events-none mix-blend-multiply opacity-95">
+                            <span 
+                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
+                                style={{
+                                    background: "linear-gradient(to right, #e21ced, #6e02d6)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent"
+                                }}
+                            >
+                                EN
+                            </span>
+                            <span 
+                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)] relative flex items-center justify-center"
+                                style={{
+                                    background: "linear-gradient(to right, #cf16db, #7500d1)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                    marginLeft: '-2px',
+                                    marginRight: '-5px'
+                                }}
+                            >
+                                D
+                                <div className="absolute h-[140%] w-[3px] bg-gradient-to-b from-[#e21ced] to-[#6e02d6] drop-shadow-md z-10" />
+                            </span>
+                            <span 
+                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
+                                style={{
+                                    background: "linear-gradient(to right, #7500d1, #a81cff)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent"
+                                }}
+                            >
+                                URA
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="text-center space-y-6">

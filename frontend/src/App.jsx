@@ -49,9 +49,7 @@ function AppLayout() {
   const lenis = useLenis();
 
   // Only play intro on a fresh session (new tab). Reloads skip it.
-  const [introDone, setIntroDone] = useState(() => {
-    return sessionStorage.getItem('introDone') === '1';
-  });
+  const [introDone, setIntroDone] = useState(true); // Forced true to skip intro animation per request
 
   const handleIntroComplete = () => {
     sessionStorage.setItem('introDone', '1');
@@ -88,7 +86,8 @@ function AppLayout() {
       <main key={location.pathname} className="flex-grow">
         <Routes>
           <Route path="/" element={
-            introDone ? <Home /> : <IntroAnimation onComplete={handleIntroComplete} />
+            /* introDone ? <Home /> : <IntroAnimation onComplete={handleIntroComplete} /> */
+            <Home />
           } />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/cult" element={<CultPage />} />

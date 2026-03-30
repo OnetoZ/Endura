@@ -116,7 +116,8 @@ const SystemBootHero = () => {
             <div className="absolute bottom-0 left-0 w-32 h-32 md:w-64 md:h-64 border-l-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-32 h-32 md:w-64 md:h-64 border-r-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
 
-            {/* Status indicators - Shifted down to clear fixed navbar */}
+            {/* Status indicators removed per request */}
+            {/* 
             <div className="absolute top-20 left-6 right-6 md:top-32 md:left-12 md:right-12 flex flex-col md:flex-row items-start md:items-start justify-between gap-4 z-20 pointer-events-none">
                 <div className={`transition-all duration-1000 ${bootStage >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
                     <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 border border-accent/20 backdrop-blur-sm">
@@ -134,6 +135,7 @@ const SystemBootHero = () => {
                     </div>
                 </div>
             </div>
+            */}
 
             {/* Main Content */}
             <div ref={contentRef} className="relative z-20 text-center flex flex-col items-center px-6">
@@ -159,21 +161,24 @@ const SystemBootHero = () => {
 
                 <div className={`transition-all duration-1000 delay-200 ${bootStage >= 5 ? 'opacity-100' : 'opacity-0'}`}>
                     <h2 className="text-lg md:text-3xl font-oswald uppercase tracking-[0.4em] text-white mb-6">
-                        ASCEND TO <span className="text-primary system-text-glow">PERFECTION.</span>
+                        WE EXIST <span className="text-primary system-text-glow">TWICE.</span>
                     </h2>
                     <p className="text-[10px] md:text-xs text-gray-400 font-light tracking-[0.6em] uppercase mb-12">
-                        Physical form <span className="text-primary mx-2">//</span> Digital Soul
+                        PHYSICAL <span className="text-primary mx-2">X</span> DIGITAL
                     </p>
                 </div>
 
                 <div className={`transition-all duration-1000 delay-400 ${bootStage >= 5 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                    <Link to={currentUser ? "/collections" : "/auth"} className="group relative inline-block">
-                        <div className="absolute inset-0 bg-primary/20 group-hover:bg-primary/40 transition-all duration-500" />
-                        <div className="absolute inset-0 border border-primary/60 group-hover:border-accent transition-all duration-500" />
-                        <div className="relative z-10 px-10 py-4 flex items-center gap-3 overflow-hidden">
-                            <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-0 bg-primary/10 transition-transform duration-500" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white">
-                                {currentUser ? "Explore_Archive" : "Initialize_Login"}
+                    <Link to="/collections" className="group relative inline-block overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95">
+                        {/* Gold Gradient Background */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#fee08b] via-[#d4af37] to-[#b8860b] animate-shimmer opacity-80 group-hover:opacity-100 transition-opacity" />
+                        
+                        {/* Shimmer Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        
+                        <div className="relative z-10 px-12 py-4 flex items-center gap-3">
+                            <span className="text-[11px] font-black uppercase tracking-[0.6em] text-black drop-shadow-sm font-heading">
+                                COLLECTIONS
                             </span>
                         </div>
                     </Link>
@@ -189,12 +194,14 @@ const SystemBootHero = () => {
                         <span className="font-mono text-[8px] text-accent/60 tracking-[0.2em]">ENCRYPTION_ACTIVE</span>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* 
                         <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map((i) => (
                                 <div key={i} className="w-1 h-3 bg-accent/30" style={{ animation: `pulse ${i * 0.3}s ease-in-out infinite alternate` }} />
                             ))}
                         </div>
                         <span className="font-mono text-[8px] text-white/40 tracking-[0.2em] ml-2">SIGNAL_ESTABLISHED</span>
+                        */}
                     </div>
                 </div>
             </div>
