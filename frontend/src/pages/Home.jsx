@@ -10,6 +10,7 @@ import DoppelPieceScene from '../components/DoppelPieceScene';
 gsap.registerPlugin(ScrollTrigger);
 
 import { useGSAP } from '@gsap/react';
+import SEO from '../components/SEO';
 
 const Home = () => {
     const mainRef = useRef();
