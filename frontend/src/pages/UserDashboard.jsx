@@ -251,7 +251,7 @@ const UserDashboard = () => {
                         {userData.name}
                     </h1>
                     <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.4em]">
-                        NODE: {userData.userId} // CREDITS: {userData.credits}
+                        NODE: {userData.userId}
                     </p>
                 </motion.div>
 
@@ -259,33 +259,6 @@ const UserDashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                     {/* Left Column - 30-35% */}
                     <div className="lg:col-span-1 space-y-8">
-                        {/* Credit Balance Card */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="glass p-8 border border-white/5 hover:border-primary/30 transition-all duration-300"
-                        >
-                            <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-gray-400">
-                                CREDIT BALANCE
-                            </h2>
-                            <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary mb-4">
-                                {userData.credits}
-                            </div>
-                            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">
-                                Available for redemption
-                            </p>
-                            {/* Progress Bar */}
-                            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                                <motion.div
-                                    className="h-full bg-gradient-to-r from-accent to-primary"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "70%" }}
-                                    transition={{ duration: 1, delay: 0.5 }}
-                                />
-                            </div>
-                        </motion.div>
-
                         {/* Rank Status Card */}
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}

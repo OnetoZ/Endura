@@ -341,6 +341,7 @@ const Vault = () => {
     const [vaultReady, setVaultReady] = useState(false);
     const [exiting, setExiting] = useState(false);
     const [isVaultActive, setIsVaultActive] = useState(false);
+    const [isAccessUnlocked, setIsAccessUnlocked] = useState(sessionStorage.getItem('vault_unlocked') === 'true');
     const [bursts, setBursts] = useState([]);
 
     // Unlock Modal State
@@ -393,7 +394,15 @@ const Vault = () => {
         const isSecretCode = unlockCode.toUpperCase() === 'ENDURA-LEVEL1';
 
         if (unlockCode.toUpperCase() === 'ENDURA-LEVEL1' || /^\d+$/.test(unlockCode)) {
-            setRitualId(targetItem.id); setIsModalOpen(false);
+            if (isModalOpen) {
+                // If it was the modal for a specific item
+                setRitualId(targetItem.id); 
+                setIsModalOpen(false);
+            } else {
+                // If it was the main access code section
+                setIsAccessUnlocked(true);
+                sessionStorage.setItem('vault_unlocked', 'true');
+            }
             toast.success('DECRYPTION SUCCESSFUL', { style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' } });
         } else {
             toast.error('ACCESS DENIED', {
@@ -440,6 +449,7 @@ const Vault = () => {
         return rows;
     }, [vaultItems, collectionFilter, unlockedIds]);
 
+    /* 
     useEffect(() => {
         if (!loadingDone) return;
 
@@ -463,6 +473,7 @@ const Vault = () => {
 
         return () => ctx.revert();
     }, [loadingDone]);
+    */
 
     return (
         <>
@@ -496,10 +507,6 @@ const Vault = () => {
 
                         <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 text-[8px] md:text-[10px] font-mono tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
                             <div className="flex items-center justify-center md:justify-start gap-3 md:gap-12 flex-nowrap w-full md:w-auto">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-white">Credits:</span>
-                                    <span className="text-accent text-[12px]"><Counter value={credits} /></span>
-                                </div>
                                 <div className="flex items-center gap-3">
                                     <span className="text-white/20">Silver:</span>
                                     <span><Counter value={stats.common} /></span>
@@ -542,24 +549,58 @@ const Vault = () => {
                     </div>
                 </header>
 
-                <main className="relative z-10 max-w-[1200px] mx-auto px-6 pb-48">
-                    <div className="flex flex-col gap-24">
-                        {chunkedItems.map((row, idx) => (
-                            <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-                                {row.map(item => (
-                                    <div key={item.id} className="vault-card-reveal">
-                                        <VaultCard
-                                            item={item}
-                                            isUnlocked={unlockedIds.includes(item.id)}
-                                            onUnlockRequest={handleUnlockRequest}
-                                            vaultReady={vaultReady}
-                                        />
-                                    </div>
-                                ))}
+                {!isAccessUnlocked ? (
+                    <div className="min-h-screen flex items-center justify-center -translate-y-24">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            className="glass p-12 max-w-lg w-full border-white/10 text-center space-y-10 rounded-2xl"
+                        >
+                            <div className="space-y-3">
+                                <h3 className="text-3xl font-heading font-black tracking-[0.2em] text-[#d4af37]">ENTER ACCESS CODE</h3>
+                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Archived Asset Security clearance required</p>
                             </div>
-                        ))}
+                            <div className="relative group">
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder="ACCESS CODE"
+                                    className="w-full bg-black/50 border border-white/10 p-6 text-center font-mono text-lg tracking-[0.4em] text-white outline-none focus:border-accent/40 transition-all uppercase"
+                                    value={unlockCode}
+                                    onChange={(e) => setUnlockCode(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
+                                />
+                                <div className="absolute bottom-0 left-0 h-[1px] bg-accent/40 w-0 group-focus-within:w-full transition-all duration-700" />
+                            </div>
+                            <button 
+                                onClick={handleVerifyCode} 
+                                className="w-full py-5 bg-accent text-black font-heading font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all shadow-[0_0_40px_rgba(212,175,55,0.15)] active:scale-[0.98]"
+                            >
+                                Verify clearance
+                            </button>
+                        </motion.div>
                     </div>
-                </main>
+                ) : (
+                    <main className="relative z-10 max-w-[1200px] mx-auto px-6 pb-48">
+                        <div className="flex flex-col gap-24">
+                            {chunkedItems.map((row, idx) => (
+                                <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+                                    {row.map(item => (
+                                        <div key={item.id} className="vault-card-reveal">
+                                            <VaultCard
+                                                item={item}
+                                                isUnlocked={unlockedIds.includes(item.id)}
+                                                onUnlockRequest={handleUnlockRequest}
+                                                vaultReady={vaultReady}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </main>
+                )}
 
                 {bursts.map(b => (
                     <CoinBurst key={b.id} x={b.x} y={b.y} onComplete={() => setBursts(p => p.filter(i => i.id !== b.id))} />

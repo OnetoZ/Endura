@@ -79,17 +79,6 @@ const VaultHUD = ({ credits, itemsUnlocked }) => {
                 {/* Right Side: Credit & Items */}
                 <div className="flex gap-6">
                     <div className="bg-black/60 backdrop-blur-2xl border border-white/10 p-5 rounded-2xl flex items-center gap-8 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-                        {/* Credit Section */}
-                        <div className="text-right">
-                            <p className="text-[10px] font-mono text-accent/40 uppercase tracking-[0.4em] mb-1">Credit_Excellence</p>
-                            <div className="flex items-center gap-3 justify-end">
-                                <Zap className="w-5 h-5 text-accent fill-accent" />
-                                <AnimatedCounter value={credits} />
-                            </div>
-                        </div>
-
-                        <div className="w-px h-12 bg-white/5" />
-
                         {/* Items Section */}
                         <div className="text-right">
                             <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.4em] mb-1">Archive_Sync</p>

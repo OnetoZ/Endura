@@ -20,7 +20,7 @@ const CollectionHero = ({ images }) => {
                 ease: "power4.out"
             });
 
-            // Cinematic collapse on scroll
+            /* Cinematic collapse on scroll
             gsap.to(sectionRef.current, {
                 scrollTrigger: {
                     trigger: sectionRef.current,
@@ -35,6 +35,7 @@ const CollectionHero = ({ images }) => {
                 filter: "blur(10px)",
                 y: -100
             });
+            */
         }, sectionRef);
 
         return () => ctx.revert();
