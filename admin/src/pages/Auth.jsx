@@ -11,11 +11,6 @@ const Auth = () => {
     const [step, setStep] = useState(1);
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
-    const [twoFactorCode, setTwoFactorCode] = useState('');
-    const [tempToken, setTempToken] = useState('');        // holds JWT from Google callback
-    const [timeLeft, setTimeLeft] = useState(0);
-    const [resendCooldown, setResendCooldown] = useState(0);
-    const [resendSuccess, setResendSuccess] = useState(false);
     const [formData, setFormData] = useState({
         username: '', email: '', password: '', phone: '', otp: ''
     });
@@ -29,21 +24,6 @@ const Auth = () => {
         console.error('❌ CRITICAL: VITE_API_URL is NOT defined in your .env file or Vite needs a restart.');
     }
     console.log('📡 [ENDURA_AUTH_V3] Current API Endpoint:', API);
-
-    // Timer for 2FA code expiry
-    const startTimer = (seconds = 120) => {
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    setError('CODE_EXPIRED: Please resend the code');
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-        return timer;
-    };
 
     // On mount: detect redirect back from Google OAuth with admin 2FA params
     useEffect(() => {
@@ -192,7 +172,7 @@ const Auth = () => {
             console.log('✅ [INIT] Social token detected in URL, processing...');
             // Store temporarily so the auth service can use it
             localStorage.setItem('userInfo', JSON.stringify({ token: socialToken }));
-            
+
             authService.getProfile()
                 .then(userData => {
                     const fullData = { ...userData, token: socialToken };
@@ -363,16 +343,16 @@ const Auth = () => {
             <div className="w-full max-w-xl relative">
 
                 <div className="glass p-12 border-white/5 relative group">
-                    <div className="absolute top-6 left-6 text-[8px] font-mono text-gray-600 tracking-widest uppercase">
-                        Secure_Node // ADMIN_AUTH
+                    <div className="absolute top-6 left-6 text-[8px] font-mono text-primary/60 tracking-widest uppercase">
+                        Secure_Node // ENDURA_ADMIN_PORTAL
                     </div>
 
                     <div className="text-center mb-10 mt-2 reveal active">
-                        <h2 className="text-4xl font-oswald font-bold uppercase tracking-tight mb-2">
-                            Level 4 Clearance
+                        <h2 className="text-4xl font-orbitron font-bold uppercase tracking-tight mb-2 text-gold">
+                            Admin Login
                         </h2>
-                        <p className="text-gray-500 text-xs uppercase tracking-widest">
-                            Restricted to system masters
+                        <p className="text-primary/50 text-[10px] uppercase tracking-[0.3em]">
+                            Authorized Personnel Only
                         </p>
                     </div>
 
@@ -383,10 +363,32 @@ const Auth = () => {
                     )}
 
                     <div className="mt-2">
-                        <SocialButton label="Google" provider="google" />
-                        <p className="text-[8px] text-gray-600 font-mono uppercase tracking-[0.2em] text-center mt-6">
-                            // Unauthorized access is strictly logged_
-                        </p>
+                        <form onSubmit={handleAdminSubmit} className="space-y-6">
+                            <div className="relative group/input">
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="ADMIN_IDENTIFIER"
+                                    required
+                                    className="w-full bg-white/5 border border-white/10 p-4 font-mono text-[10px] tracking-widest text-white focus:outline-none focus:border-primary/50 transition-all placeholder:text-gray-700"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                />
+                                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none opacity-20">
+                                    <span className="text-[8px] font-mono text-white">ID_REQ</span>
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full py-4 bg-primary text-black font-black text-[10px] tracking-[0.3em] uppercase hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50"
+                            >
+                                {isLoading ? 'Verifying...' : 'Initiate_Session'}
+                            </button>
+                            <p className="text-[8px] text-gray-600 font-mono uppercase tracking-[0.2em] text-center mt-6">
+                                // Unauthorized access is strictly logged_
+                            </p>
+                        </form>
                     </div>
                 </div>
 

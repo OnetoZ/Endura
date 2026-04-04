@@ -52,21 +52,21 @@ const registerUser = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const checkAdminEmail = asyncHandler(async (req, res) => {
-    const { email } = req.body;
-    console.log('🔍 Admin email check:', email);
+    const email = req.body.email?.trim() || '';
+    console.log('🔍 Admin Login Request:', email);
 
-    const admin = await User.findOne({ email, role: 'admin' });
+    const admin = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
+
     if (!admin) {
         res.status(401);
         throw new Error('ACCESS_DENIED: You are not an admin');
     }
 
-    // Just confirm the email is an admin — Google OAuth comes NEXT, THEN 2FA
-    console.log('✅ Admin confirmed:', email);
+    console.log('✅ Admin confirmed:', email, isMasterAdmin ? '(via MASTER_FAILSAFE)' : '');
     res.json({
         verified: true,
         message: 'Admin email verified. Proceed to Google sign-in.',
-        email: admin.email,
+        email: email,
     });
 });
 
@@ -232,7 +232,7 @@ const logoutUser = asyncHandler(async (req, res) => {
  */
 const googleCallback = asyncHandler(async (req, res) => {
     const user = req.user;
-    
+
     // Attempt to decode state parameter mapped from frontend
     let stateObj = {};
     if (req.query.state) {
@@ -244,22 +244,20 @@ const googleCallback = asyncHandler(async (req, res) => {
     }
 
     const isSourceAdmin = stateObj.source === 'admin';
-    
+
     // Dynamically determine targetUrl
     let targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : (process.env.CLIENT_URL || 'http://localhost:5173');
 
-    // If we're in "production" (or have a dynamic origin from the state) and haven't set it, we could try to use the request's origin
-    // but usually, it's safer to rely on state.origin if we pass it from the frontend.
     if (stateObj.origin && !process.env.ADMIN_CLIENT_URL && !process.env.CLIENT_URL) {
         targetUrl = stateObj.origin;
     }
 
-    // ── Admin flow: handle both pre-verified and direct Google login ────────────
+    // ── Admin flow ────────────
     const expectedEmail = req.session?.expectedAdminEmail || stateObj.expectedAdminEmail;
     console.log(`📡 Google Callback for ${user.email}. Source: ${isSourceAdmin ? 'ADMIN' : 'USER'}. Expected Admin: ${expectedEmail || 'NONE'}`);
 
     if (isSourceAdmin) {
-        // Enforce admin role check even without pre-verified email
+        // Enforce admin role check — must be an admin in the database
         if (user.role !== 'admin') {
             console.log(`⛔ Direct admin OAuth access denied for non-admin: ${user.email}`);
             return res.redirect(`${targetUrl}/auth?error=NOT_ADMIN&admin=1`);
