@@ -142,6 +142,7 @@ const Navbar = React.forwardRef((props, ref) => {
                         {/* RIGHT: Cart + User Actions */}
                         <div className="flex items-center gap-6">
                             {/* Cart Icon */}
+                            
                             <Link to="/cart" className="relative group">
                                 <div className="relative px-3 py-1.5 md:p-2.5 border border-white/10 hover:border-primary/50 transition-all duration-300 flex items-center gap-1.5 md:gap-2">
                                     <svg className="w-4 h-4 md:w-5 md:h-5 text-white/70 group-hover:text-primary transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,6 +253,7 @@ const Navbar = React.forwardRef((props, ref) => {
                     ].map((link, idx) => {
                         const isActive = location.pathname === link.to;
                         return (
+
                             <Link
                                 key={idx}
                                 to={link.to}
