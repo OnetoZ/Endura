@@ -65,6 +65,9 @@ router.get('/google', (req, res, next) => {
         stateObj.source = 'admin';
     }
 
+    // Capture requester origin for dynamic callback redirect (failsafe)
+    stateObj.origin = req.query.origin || req.headers.referer?.split('?')[0].replace(/\/$/, '');
+
     if (Object.keys(stateObj).length > 0) {
         options.state = Buffer.from(JSON.stringify(stateObj)).toString('base64');
     }

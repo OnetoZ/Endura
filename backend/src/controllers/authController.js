@@ -244,7 +244,15 @@ const googleCallback = asyncHandler(async (req, res) => {
     }
 
     const isSourceAdmin = stateObj.source === 'admin';
-    const targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : process.env.CLIENT_URL;
+    
+    // Dynamically determine targetUrl
+    let targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : (process.env.CLIENT_URL || 'http://localhost:5173');
+
+    // If we're in "production" (or have a dynamic origin from the state) and haven't set it, we could try to use the request's origin
+    // but usually, it's safer to rely on state.origin if we pass it from the frontend.
+    if (stateObj.origin && !process.env.ADMIN_CLIENT_URL && !process.env.CLIENT_URL) {
+        targetUrl = stateObj.origin;
+    }
 
     // ── Admin flow: handle both pre-verified and direct Google login ────────────
     const expectedEmail = req.session?.expectedAdminEmail || stateObj.expectedAdminEmail;
