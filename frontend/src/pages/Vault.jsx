@@ -122,8 +122,11 @@ const VaultCard = ({
         >
             <motion.div
                 className="relative w-full h-full duration-700 [transform-style:preserve-3d]"
-                animate={{ rotateY: isUnlocked ? 1080 + 180 : 0 }}
-                transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
+                animate={{ 
+                    rotateY: isUnlocked ? 180 : 0,
+                    scale: isHovered ? 1.05 : 1
+                }}
+                transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
             >
                 {/* Front Side: Pure Image Card */}
                 <div
@@ -490,19 +493,13 @@ const Vault = () => {
 
                 <header className="relative z-10 pt-16 pb-12">
                     <div className="max-w-[1600px] mx-auto px-12">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="w-[160px]" />
-                            <h1 ref={headingRef} className="text-4xl md:text-6xl font-heading font-black tracking-[0.2em] text-white opacity-0 translate-y-4">
+                        <div className="flex flex-col items-center justify-center mb-8">
+                            <h1 ref={headingRef} className="text-4xl md:text-6xl font-heading font-black tracking-[0.2em] text-white opacity-0 translate-y-4 text-center">
                                 THE <span
                                     className={`vault-word-reveal cursor-pointer transition-all ${isVaultActive ? 'active' : ''}`}
                                     onClick={() => setIsVaultActive(!isVaultActive)}
                                 >VAULT</span>
                             </h1>
-                            <div className="w-[160px] flex justify-end">
-                                {/* <button onClick={handleGoCollected} disabled={exiting} className="px-6 py-3 border border-white/10 text-[10px] font-mono tracking-widest uppercase text-white/40 hover:text-white hover:border-white/50 transition-all active:scale-95">
-                                    Collected Items
-                                </button> */}
-                            </div>
                         </div>
 
                         <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 text-[8px] md:text-[10px] font-mono tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
@@ -549,40 +546,52 @@ const Vault = () => {
                     </div>
                 </header>
 
-                {!isAccessUnlocked ? (
-                    <div className="min-h-screen flex items-center justify-center -translate-y-24">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            className="glass p-12 max-w-lg w-full border-white/10 text-center space-y-10 rounded-2xl"
-                        >
-                            <div className="space-y-3">
-                                <h3 className="text-3xl font-heading font-black tracking-[0.2em] text-[#d4af37]">ENTER ACCESS CODE</h3>
-                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Archived Asset Security clearance required</p>
-                            </div>
-                            <div className="relative group">
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    placeholder="ACCESS CODE"
-                                    className="w-full bg-black/50 border border-white/10 p-6 text-center font-mono text-lg tracking-[0.4em] text-white outline-none focus:border-accent/40 transition-all uppercase"
-                                    value={unlockCode}
-                                    onChange={(e) => setUnlockCode(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
-                                />
-                                <div className="absolute bottom-0 left-0 h-[1px] bg-accent/40 w-0 group-focus-within:w-full transition-all duration-700" />
-                            </div>
-                            <button 
-                                onClick={handleVerifyCode} 
-                                className="w-full py-5 bg-accent text-black font-heading font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all shadow-[0_0_40px_rgba(212,175,55,0.15)] active:scale-[0.98]"
+                <AnimatePresence>
+                    {!isAccessUnlocked && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl bg-black/40">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.5, y: 50 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.5, y: 50 }}
+                                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                                className="glass p-12 max-w-lg w-full border-white/10 text-center space-y-10 rounded-2xl relative"
                             >
-                                Verify clearance
-                            </button>
-                        </motion.div>
-                    </div>
-                ) : (
-                    <main className="relative z-10 max-w-[1200px] mx-auto px-6 pb-48">
+                                <div className="space-y-3">
+                                    <h3 className="text-3xl font-heading font-black tracking-[0.2em] text-[#d4af37]">ENTER ACCESS CODE</h3>
+                                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Archived Asset Security clearance required</p>
+                                </div>
+                                <div className="relative group">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        placeholder="ACCESS CODE"
+                                        className="w-full bg-black/50 border border-white/10 p-6 text-center font-mono text-lg tracking-[0.4em] text-white outline-none focus:border-accent/40 transition-all uppercase"
+                                        value={unlockCode}
+                                        onChange={(e) => setUnlockCode(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
+                                    />
+                                    <div className="absolute bottom-0 left-0 h-[1px] bg-accent/40 w-0 group-focus-within:w-full transition-all duration-700" />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button 
+                                        onClick={() => navigate('/')} 
+                                        className="flex-1 py-4 border border-white/10 text-[10px] font-mono tracking-widest uppercase text-white/40 hover:text-white transition-all"
+                                    >
+                                        Abort
+                                    </button>
+                                    <button 
+                                        onClick={handleVerifyCode} 
+                                        className="flex-[2] py-4 bg-accent text-black font-heading font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all active:scale-[0.98]"
+                                    >
+                                        Verify clearance
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                <main className={`relative z-10 max-w-[1200px] mx-auto px-6 pb-48 transition-all duration-1000 ${!isAccessUnlocked ? 'blur-md pointer-events-none' : ''}`}>
                         <div className="flex flex-col gap-24">
                             {chunkedItems.map((row, idx) => (
                                 <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
@@ -600,7 +609,6 @@ const Vault = () => {
                             ))}
                         </div>
                     </main>
-                )}
 
                 {bursts.map(b => (
                     <CoinBurst key={b.id} x={b.x} y={b.y} onComplete={() => setBursts(p => p.filter(i => i.id !== b.id))} />
@@ -608,14 +616,64 @@ const Vault = () => {
 
                 <AnimatePresence>
                     {ritualId && (
-                        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-none">
-                            <motion.div initial={{ rotateY: 0 }} animate={{ rotateY: 360 }} transition={{ duration: 1.6, ease: "easeInOut" }} className="w-[280px]" onAnimationComplete={() => {
-                                const it = targetItem; if (!it) return; const nU = [...unlockedIds, it.id]; const nS = { ...stats, [(it.tier || 'common').toLowerCase()]: (stats[(it.tier || 'common').toLowerCase()] || 0) + 1 };
-                                setUnlockedIds(nU); setStats(nS); updatePersistence(nU, credits + 1, nS);
-                                if (it._source === 'db') collectItem(it.id).then(d => { setCongratsData(d); setCredits(d.newScore); setShowCongrats(true); setRitualId(null); }).catch(() => { setShowCongrats(true); setRitualId(null); });
-                                else { setCredits(credits + 1); setRewardUnlockItem(it); setRitualId(null); }
-                            }}>
-                                <VaultCard item={vaultItems.find(it => it.id === ritualId)} isUnlocked={false} onUnlockRequest={() => { }} vaultReady={true} />
+                        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-xl">
+                            {/* Subway Surfers style reveal: Pop and Glow */}
+                            <motion.div 
+                                initial={{ scale: 0, rotate: -10, opacity: 0 }} 
+                                animate={{ scale: [0, 1.2, 1], rotate: 0, opacity: 1 }} 
+                                transition={{ 
+                                    duration: 0.8, 
+                                    ease: [0.34, 1.56, 0.64, 1], // Custom spring-like easing
+                                }} 
+                                className="w-[320px] relative"
+                                onAnimationComplete={() => {
+                                    const it = targetItem; 
+                                    if (!it) return; 
+                                    const nU = [...unlockedIds, it.id]; 
+                                    const nS = { ...stats, [(it.tier || 'common').toLowerCase()]: (stats[(it.tier || 'common').toLowerCase()] || 0) + 1 };
+                                    setUnlockedIds(nU); 
+                                    setStats(nS); 
+                                    updatePersistence(nU, credits + 1, nS);
+                                    
+                                    setTimeout(() => {
+                                        if (it._source === 'db') {
+                                            productService.collectVaultCard(it.id)
+                                                .then(d => { 
+                                                    setCongratsData(d); 
+                                                    setCredits(d.newScore); 
+                                                    setShowCongrats(true); 
+                                                    setRitualId(null); 
+                                                })
+                                                .catch(() => { 
+                                                    setShowCongrats(true); 
+                                                    setRitualId(null); 
+                                                });
+                                        } else { 
+                                            setCredits(credits + 1); 
+                                            setRewardUnlockItem(it); 
+                                            setRitualId(null); 
+                                        }
+                                    }, 1000);
+                                }}
+                            >
+                                {/* Glow Effect Behind */}
+                                <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full animate-pulse" />
+                                
+                                <VaultCard 
+                                    item={vaultItems.find(it => it.id === ritualId)} 
+                                    isUnlocked={true} 
+                                    onUnlockRequest={() => { }} 
+                                    vaultReady={true} 
+                                />
+                                
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 }}
+                                    className="absolute -bottom-20 left-0 right-0 text-center"
+                                >
+                                    <h2 className="text-2xl font-heading font-black text-accent tracking-[0.5em] animate-pulse">UNLOCKED</h2>
+                                </motion.div>
                             </motion.div>
                         </div>
                     )}
