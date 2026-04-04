@@ -49,19 +49,32 @@ router.delete('/address/:id', protect, deleteAddress);
 // Step 1: Redirect to Google (optionally with login_hint to skip account picker)
 router.get('/google', (req, res, next) => {
     const options = { scope: ['profile', 'email'] };
+    const stateObj = {};
+
     if (req.query.login_hint) {
         options.login_hint = req.query.login_hint;
         // Persist the expected admin email so the callback can enforce it
         req.session.expectedAdminEmail = req.query.login_hint;
+        stateObj.expectedAdminEmail = req.query.login_hint;
+    } else {
+        // Regular user OAuth — clear any stale admin expectation
+        delete req.session.expectedAdminEmail;
+    }
 
+    if (req.query.source === 'admin') {
+        stateObj.source = 'admin';
+    }
+
+    if (Object.keys(stateObj).length > 0) {
+        options.state = Buffer.from(JSON.stringify(stateObj)).toString('base64');
+    }
+
+    if (req.query.login_hint) {
         // Ensure the session is saved to the store before redirecting to Google
         return req.session.save((err) => {
             if (err) return next(err);
             passport.authenticate('google', options)(req, res, next);
         });
-    } else {
-        // Regular user OAuth — clear any stale admin expectation
-        delete req.session.expectedAdminEmail;
     }
     passport.authenticate('google', options)(req, res, next);
 });

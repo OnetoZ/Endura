@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 import { useStore } from '../context/StoreContext';
-import { productService } from '../services/api';
+import { productService, getImageUrl } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
 import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
@@ -220,7 +220,7 @@ const DressItem = ({
                     }}
                 >
                     <img
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         className="w-full h-full object-contain block transition-transform duration-700"
                         style={{
@@ -532,15 +532,6 @@ const Vault = () => {
                                     <option value="Collected">Decrypted</option>
                                     <option value="Not Collected">Encrypted</option>
                                 </select>
-
-                                <div className="pl-6 border-l border-white/5">
-                                    <button
-                                        onClick={handleResetVault}
-                                        className="text-[8px] font-mono text-white/10 hover:text-white/50 transition-colors uppercase tracking-[0.3em] border border-white/5 px-3 py-2"
-                                    >
-                                        Reset_Vault
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>

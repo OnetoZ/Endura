@@ -25,12 +25,10 @@ const AuthSuccess = () => {
                         return;
                     }
 
-                    if (userData.role === 'admin') {
-                        navigate('/admin');
-                    } else if (!userData.phone) {
+                    if (!userData.phone) {
                         navigate('/onboarding');
                     } else {
-                        navigate('/home');
+                        navigate('/dashboard');
                     }
                 })
                 .catch(err => {

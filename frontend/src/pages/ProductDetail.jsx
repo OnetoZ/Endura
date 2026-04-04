@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 import SEO from '../components/SEO';
+import { getImageUrl } from '../services/api';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -25,7 +26,7 @@ const ProductDetail = () => {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": product.name,
-        "image": product.images?.[0] || product.image,
+        "image": getImageUrl(product.images?.[0] || product.image),
         "description": product.description,
         "brand": {
             "@type": "Brand",
@@ -95,7 +96,7 @@ const ProductDetail = () => {
                 title={product.name}
                 description={product.description}
                 canonical={`/product/${id}`}
-                image={product.images?.[0] || product.image}
+                image={getImageUrl(product.images?.[0] || product.image)}
                 schema={productSchema}
             />
             <div className="container mx-auto max-w-7xl">
@@ -112,7 +113,7 @@ const ProductDetail = () => {
                         <div className="absolute inset-0 bg-primary/10 blur-[100px] -z-10 group-hover:bg-primary/20 transition-all"></div>
                         <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden relative">
                             <img
-                                src={allImages[currentImageIndex]}
+                                src={getImageUrl(allImages[currentImageIndex])}
                                 className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 scale-105 group-hover:scale-100"
                                 alt={`${product.name} - view ${currentImageIndex + 1}`}
                             />
@@ -239,7 +240,7 @@ const ProductDetail = () => {
                                 <div className="absolute bottom-4 right-4 w-12 h-12 border-b border-r border-[#d4af37] z-20"></div>
 
                                 <img
-                                    src={product.images?.[2] || product.digitalTwinImage}
+                                    src={getImageUrl(product.images?.[2] || product.digitalTwinImage)}
                                     alt={`${product.name} Digital Twin`}
                                     className="w-full h-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-[2000ms] shadow-2xl z-10 relative block"
                                 />

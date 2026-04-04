@@ -25,6 +25,7 @@ passport.use(
                     // Link Google account to existing email account
                     user.googleId = profile.id;
                     user.avatar = user.avatar || profile.photos[0]?.value;
+                    user.isVerified = true;
                     await user.save();
                     return done(null, user);
                 }

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { getImageUrl } from '../services/api';
 
 const Shop = () => {
     const { products, addToCart } = useStore();
@@ -50,7 +51,7 @@ const Shop = () => {
                             {/* Image Container */}
                             <div className="relative aspect-[3/4] overflow-hidden bg-neutral-900 border border-white/5 group-hover:border-primary/30 transition-all duration-500">
                                 <img
-                                    src={product.image}
+                                    src={getImageUrl(product.image)}
                                     className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105"
                                     alt={product.name}
                                 />

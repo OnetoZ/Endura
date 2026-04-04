@@ -9,7 +9,6 @@ import CultPage from './pages/CultPage';
 import Auth from './pages/Auth';
 import AuthSuccess from './pages/AuthSuccess';
 import Cart from './pages/Cart';
-import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
@@ -115,9 +114,6 @@ function AppLayout() {
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/order-failed" element={<OrderFailed />} />
           <Route path="/dashboard" element={<UserDashboard />} />
-          <Route path="/admin/*" element={
-            currentUser && currentUser.role === 'admin' ? <AdminDashboard /> : <Navigate to="/auth" replace />
-          } />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

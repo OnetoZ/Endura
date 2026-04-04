@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('User already exists with this email');
     }
 
-    const user = await User.create({ username, email, password, phone });
+    const user = await User.create({ username, email, password, phone, isVerified: true });
     res.status(201).json(userResponse(user));
 });
 
@@ -232,40 +232,52 @@ const logoutUser = asyncHandler(async (req, res) => {
  */
 const googleCallback = asyncHandler(async (req, res) => {
     const user = req.user;
-
-    // ── Admin flow: enforce the expected email set before the OAuth redirect ────
-    const expectedEmail = req.session?.expectedAdminEmail;
-    console.log(`📡 Google Callback for ${user.email}. Expected Admin: ${expectedEmail || 'NONE'}`);
-
-    if (expectedEmail) {
-        // Always clear the session flag, regardless of outcome
-        delete req.session.expectedAdminEmail;
-        req.session.save(); // Cleanup session
-
-        // Reject if the signed-in Google account doesn't match the admin email
-        if (user.email.toLowerCase() !== expectedEmail.toLowerCase()) {
-            console.log(`⛔ Admin OAuth email mismatch: expected ${expectedEmail}, got ${user.email}`);
-            return res.redirect(
-                `${process.env.CLIENT_URL}/auth?error=EMAIL_MISMATCH&admin=1&expected=${encodeURIComponent(expectedEmail)}`
-            );
+    
+    // Attempt to decode state parameter mapped from frontend
+    let stateObj = {};
+    if (req.query.state) {
+        try {
+            stateObj = JSON.parse(Buffer.from(req.query.state, 'base64').toString('ascii'));
+        } catch (e) {
+            console.error('Failed to parse OAuth state', e);
         }
+    }
 
-        // Confirm the matched account actually has the admin role
+    const isSourceAdmin = stateObj.source === 'admin';
+    const targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : process.env.CLIENT_URL;
+
+    // ── Admin flow: handle both pre-verified and direct Google login ────────────
+    const expectedEmail = req.session?.expectedAdminEmail || stateObj.expectedAdminEmail;
+    console.log(`📡 Google Callback for ${user.email}. Source: ${isSourceAdmin ? 'ADMIN' : 'USER'}. Expected Admin: ${expectedEmail || 'NONE'}`);
+
+    if (isSourceAdmin) {
+        // Enforce admin role check even without pre-verified email
         if (user.role !== 'admin') {
-            console.log(`⛔ Email matched but not admin role: ${user.email}`);
-            return res.redirect(`${process.env.CLIENT_URL}/auth?error=NOT_ADMIN&admin=1`);
+            console.log(`⛔ Direct admin OAuth access denied for non-admin: ${user.email}`);
+            return res.redirect(`${targetUrl}/auth?error=NOT_ADMIN&admin=1`);
         }
 
-        // ✅ All checks passed — bypass 2FA and login directly
-        const admin = await User.findById(user._id);
+        if (expectedEmail) {
+            // Cleanup session if it was a pre-verified flow
+            delete req.session.expectedAdminEmail;
+            req.session.save();
 
-        console.log('✅ Admin Google OAuth complete. Logging in directly:', admin.email);
+            // Reject if the signed-in Google account doesn't match the specific admin email
+            if (user.email.toLowerCase() !== expectedEmail.toLowerCase()) {
+                console.log(`⛔ Admin OAuth email mismatch: expected ${expectedEmail}, got ${user.email}`);
+                return res.redirect(
+                    `${targetUrl}/auth?error=EMAIL_MISMATCH&admin=1&expected=${encodeURIComponent(expectedEmail)}`
+                );
+            }
+        }
 
-        const token = generateToken(admin._id);
+        // ✅ Admin verified — login directly
+        console.log('✅ Admin Google OAuth complete. Logging in directly:', user.email);
+        const token = generateToken(user._id);
 
-        return res.redirect(
-            `${process.env.CLIENT_URL}/auth?token=${token}`
-        );
+        // For admin portal, we can redirect to /auth with token or /auth/success
+        // Let's use the same success page if it exists in admin portal
+        return res.redirect(`${targetUrl}/auth/success?token=${token}`);
     }
 
     // ── Regular user flow ──────────────────────────────────────────────────────
@@ -275,11 +287,11 @@ const googleCallback = asyncHandler(async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '10m' }
         );
-        return res.redirect(`${process.env.CLIENT_URL}/auth/2fa?tempToken=${tempToken}&email=${user.email}`);
+        return res.redirect(`${targetUrl}/auth/2fa?tempToken=${tempToken}&email=${user.email}`);
     }
 
     const token = generateToken(user._id);
-    res.redirect(`${process.env.CLIENT_URL}/auth/success?token=${token}`);
+    res.redirect(`${targetUrl}/auth/success?token=${token}`);
 });
 
 // ─── Google OAuth 2FA Verification ─────────────────────────────────────────────
@@ -305,6 +317,12 @@ const verifyGoogleTwoFactor = asyncHandler(async (req, res) => {
         if (!user) {
             res.status(401);
             throw new Error('User not found');
+        }
+
+        // Check if user is still active
+        if (user.status !== 'active') {
+            res.status(403);
+            throw new Error('Account suspended or inactive');
         }
 
         // Verify 2FA code

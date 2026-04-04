@@ -3,6 +3,8 @@ import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 
+import { getImageUrl } from '../../services/api';
+
 /**
  * PhysicalProductCard Component
  * Implements a premium fashion-first motion design with:
@@ -115,7 +117,7 @@ const PhysicalProductCard = ({ product }) => {
                     <AnimatePresence mode="wait">
                         <motion.img
                             key={currentImageIndex}
-                            src={images[currentImageIndex]}
+                            src={getImageUrl(images[currentImageIndex])}
                             alt={product.name}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}

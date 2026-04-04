@@ -71,8 +71,6 @@ const UserDashboard = () => {
     useEffect(() => {
         if (!currentUser) {
             navigate('/auth');
-        } else if (currentUser.role === 'admin') {
-            navigate('/admin');
         } else {
             setNewName(currentUser.username || '');
             setNewAvatar(currentUser.avatar || '');

@@ -1,0 +1,1068 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================
+   PREMIUM CINEMATIC TYPOGRAPHY SYSTEM
+   =================================== */
+
+/* 
+  Font Hierarchy:
+  - Orbitron: Headings, Titles, Logos (Sci-Fi Luxury)
+  - Space Grotesk: Body Text, Navigation (Modern Premium)
+  - JetBrains Mono: Code, System Text, Technical Data (Precision)
+*/
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #d4af37;
+  /* Gold */
+  --primary-light: #fee08b;
+  --accent: #d4af37;
+  --accent-dark: #b8860b;
+  --glass: rgba(10, 10, 10, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --gold-glow: rgba(212, 175, 55, 0.25);
+  --cinematic-tracking: 0.5em;
+
+  /* Font Families */
+  --font-heading: 'Orbitron', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Font Family Utilities */
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Typography Styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.cinematic-text {
+  font-family: var(--font-heading);
+  letter-spacing: var(--cinematic-tracking);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.restricted-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  opacity: 0.6;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+}
+
+/* Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Glassmorphism */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--glass-border);
+}
+
+.blur-extreme {
+  backdrop-filter: blur(100px) saturate(150%);
+  -webkit-backdrop-filter: blur(100px) saturate(150%);
+}
+
+.glass-gold {
+  background: rgba(212, 175, 55, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Gold Gradient Text */
+.text-gold {
+  background: linear-gradient(to bottom, #fee08b, #d97706);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Gold Glow */
+.gold-glow {
+  box-shadow: 0 0 40px var(--gold-glow);
+}
+
+/* Cinematic Shimmer */
+.shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(212, 175, 55, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 4s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Floating Animation */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(0.5deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animate-float {
+  animation: float 10s ease-in-out infinite;
+}
+
+/* Breathing Glow Animation */
+@keyframes breathing-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+    opacity: 0.6;
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+    opacity: 0.9;
+  }
+}
+
+.animate-breathing-glow {
+  animation: breathing-glow 4s ease-in-out infinite;
+}
+
+
+/* Energy Line Scan Animation */
+@keyframes scan-vertical {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-scan-vertical {
+  animation: scan-vertical 8s linear infinite;
+}
+
+/* ===================================
+   CINEMATIC SYSTEM BOOT EFFECTS
+   =================================== */
+
+/* Film Grain Overlay */
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+  animation: grain 0.3s steps(3) infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes grain {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  10% {
+    transform: translate(-5%, -5%);
+  }
+
+  20% {
+    transform: translate(-10%, 5%);
+  }
+
+  30% {
+    transform: translate(5%, -10%);
+  }
+
+  40% {
+    transform: translate(-5%, 15%);
+  }
+
+  50% {
+    transform: translate(-10%, 5%);
+  }
+
+  60% {
+    transform: translate(15%, 0);
+  }
+
+  70% {
+    transform: translate(0, 10%);
+  }
+
+  80% {
+    transform: translate(-15%, 0);
+  }
+
+  90% {
+    transform: translate(10%, 5%);
+  }
+}
+
+/* Scanlines Effect */
+.scanlines {
+  background: repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px);
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+/* Glitch In Animation (for title characters) */
+@keyframes glitch-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px) skewX(-10deg);
+    filter: blur(4px);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateX(5px) skewX(5deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) skewX(0);
+    filter: blur(0);
+  }
+}
+
+.animate-glitch-in {
+  animation: glitch-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+/* Flicker Once (for restricted access warning) */
+@keyframes flicker-once {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  10% {
+    opacity: 0.3;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 0.5;
+  }
+
+  40% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+
+  60% {
+    opacity: 1;
+  }
+}
+
+.flicker-once {
+  animation: flicker-once 0.6s ease-in-out;
+}
+
+/* Radial Gradient Utility */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* Typing Cursor Effect */
+@keyframes blink-cursor {
+
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.typing-cursor::after {
+  content: '▮';
+  animation: blink-cursor 1s infinite;
+  margin-left: 2px;
+}
+
+/* System Boot Text Glow */
+.system-text-glow {
+  text-shadow:
+    0 0 10px rgba(109, 40, 217, 0.5),
+    0 0 20px rgba(109, 40, 217, 0.3),
+    0 0 30px rgba(109, 40, 217, 0.1);
+}
+
+/* Glitch Effect (continuous) */
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-2px, 2px);
+  }
+
+  40% {
+    transform: translate(-2px, -2px);
+  }
+
+  60% {
+    transform: translate(2px, 2px);
+  }
+
+  80% {
+    transform: translate(2px, -2px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+.glitch-hover:hover {
+  animation: glitch 0.3s infinite;
+}
+
+/* CRT Screen Curve Effect */
+.crt-screen {
+  animation: crt-flicker 0.15s infinite;
+}
+
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.97;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.97;
+  }
+}
+
+/* Status Indicator Pulse */
+@keyframes status-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 5px currentColor;
+  }
+
+  50% {
+    opacity: 0.5;
+    box-shadow: 0 0 10px currentColor;
+  }
+}
+
+/* ===================================
+   AAA GAMING UI & INTERACTION SYSTEM
+   =================================== */
+
+/* Mechanical Loot-Shake */
+@keyframes mechanical-unlock {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  10% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  20% {
+    transform: scale(1.05) rotate(1deg);
+  }
+
+  30% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  40% {
+    transform: scale(1.05) rotate(1deg);
+  }
+
+  50% {
+    transform: scale(1.1) rotate(0deg);
+    filter: brightness(1.5) blur(2px);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-mechanical-unlock {
+  animation: mechanical-unlock 1s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+/* Energy Burst */
+@keyframes energy-burst {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+    filter: blur(0px);
+  }
+
+  100% {
+    transform: scale(4);
+    opacity: 0;
+    filter: blur(20px);
+  }
+}
+
+.energy-burst {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Static Noise Overlay */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Horizontal Scanner */
+@keyframes scan-horizontal {
+  0% {
+    transform: translateX(-100%)
+  }
+
+  100% {
+    transform: translateX(100%)
+  }
+}
+
+.scanner-line {
+  height: 100%;
+  width: 50px;
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
+  animation: scan-horizontal 3s linear infinite;
+}
+
+/* Floating Particle Container */
+.particles-container {
+  perspective: 1000px;
+}
+
+/* Rotating Circuit Background */
+@keyframes rotate-circuit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-rotate-circuit {
+  animation: rotate-circuit 120s linear infinite;
+}
+
+/* Neon Interaction Border */
+.neon-border {
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5), inset 0 0 5px rgba(124, 58, 237, 0.2);
+}
+
+.neon-border-gold {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
+/* Sequential Entrance Logic (Tailwind doesn't handle dynamic nth-child delay well without specific config) */
+.entrance-item {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.entrance-ready .entrance-item {
+  animation: entrance-slide-up 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes entrance-slide-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* terminal flickering */
+@keyframes terminal-flicker {
+  0% {
+    opacity: 0.9;
+  }
+
+  5% {
+    opacity: 0.5;
+  }
+
+  10% {
+    opacity: 0.9;
+  }
+
+  15% {
+    opacity: 0.8;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  35% {
+    opacity: 0.4;
+  }
+
+  40% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.terminal-flicker {
+  animation: terminal-flicker 4s infinite linear alternate-reverse;
+}
+
+/* ===================================
+   VAULT LOADING SCREEN
+   =================================== */
+
+.vault-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  overflow: hidden;
+}
+
+/* ── Floating gold particles ── */
+.vault-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #d4af37 0%, rgba(212, 175, 55, 0.3) 60%, transparent 100%);
+  pointer-events: none;
+  animation: vault-particle-drift linear infinite;
+}
+
+@keyframes vault-particle-drift {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(1);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateY(-60px) translateX(20px) scale(1.2);
+    opacity: 0.6;
+  }
+
+  90% {
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: translateY(-120px) translateX(-10px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* ── Loader center ── */
+.vault-loader-center {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Outer glow ── */
+.vault-ring-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Outer ring ── */
+.vault-ring-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  box-shadow:
+    0 0 12px rgba(212, 175, 55, 0.25),
+    inset 0 0 8px rgba(212, 175, 55, 0.08);
+}
+
+/* ── Tick marks on outer ring ── */
+.vault-ring-tick {
+  position: absolute;
+  width: 6px;
+  height: 1.5px;
+  background: #d4af37;
+  border-radius: 1px;
+}
+
+.vault-ring-tick--top {
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.vault-ring-tick--right {
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.vault-ring-tick--bottom {
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.vault-ring-tick--left {
+  left: -1px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* ── Inner ring ── */
+.vault-ring-inner {
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  border: 1px dashed rgba(212, 175, 55, 0.28);
+}
+
+/* ── Dots on inner ring ── */
+.vault-ring-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.7);
+}
+
+.vault-ring-dot--1 {
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.vault-ring-dot--2 {
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.vault-ring-dot--3 {
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── Center emblem ── */
+.vault-ring-emblem {
+  position: relative;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+.vault-ring-emblem-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #d4af37;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+}
+
+/* ── Loading text ── */
+.vault-loading-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.vault-loading-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #d4af37;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+  min-width: 220px;
+  text-align: center;
+}
+
+.vault-loading-sublabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===================================
+   VAULT CARD ANIMATIONS
+   =================================== */
+
+/* Card shake (error) */
+@keyframes vault-card-shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  15% {
+    transform: translateX(-5px);
+  }
+
+  30% {
+    transform: translateX(5px);
+  }
+
+  45% {
+    transform: translateX(-4px);
+  }
+
+  60% {
+    transform: translateX(4px);
+  }
+
+  75% {
+    transform: translateX(-2px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.vault-card-shake {
+  animation: vault-card-shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+/* Gold unlock pulse */
+@keyframes vault-gold-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 20px rgba(212, 175, 55, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+
+.vault-gold-pulse {
+  animation: vault-gold-pulse 0.6s ease-out;
+}
+
+.vault-word-reveal {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+  /* Outlined text border */
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  display: inline-block;
+}
+
+.vault-word-reveal:hover,
+.vault-word-reveal.active {
+  color: #D4AF37 !important;
+  -webkit-text-stroke: 1px rgba(212, 175, 55, 0.2);
+  text-shadow:
+    0 0 20px rgba(212, 175, 55, 0.6),
+    0 0 40px rgba(212, 175, 55, 0.3);
+}
+
+/* ===================================
+   HUD FRAME SYSTEM
+   =================================== */
+
+.hud-outer-frame {
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+  background: #8A6B12;
+  /* Dark Gold Border accent */
+  padding: 1px;
+}
+
+.hud-inner-frame {
+  background: #111111;
+  position: relative;
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  /* Muted Gold Inner Border */
+}
+
+.hud-corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-corner::before,
+.hud-corner::after {
+  content: '';
+  position: absolute;
+  background: #C9A227;
+  /* Muted Gold */
+}
+
+/* Embroidery Style: Right angles without curves */
+.hud-corner.top-left {
+  top: -1px;
+  left: -1px;
+}
+
+.hud-corner.top-left::before {
+  top: 0;
+  left: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.top-left::after {
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 25px;
+}
+
+.hud-corner.top-right {
+  top: -1px;
+  right: -1px;
+}
+
+.hud-corner.top-right::before {
+  top: 0;
+  right: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.top-right::after {
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 25px;
+}
+
+.hud-corner.bottom-left {
+  bottom: -1px;
+  left: -1px;
+}
+
+.hud-corner.bottom-left::before {
+  bottom: 0;
+  left: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.bottom-left::after {
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 25px;
+}
+
+.hud-corner.bottom-right {
+  bottom: -1px;
+  right: -1px;
+}
+
+.hud-corner.bottom-right::before {
+  bottom: 0;
+  right: 0;
+  width: 25px;
+  height: 1px;
+}
+
+.hud-corner.bottom-right::after {
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  height: 25px;
+}
+
+/* Keep it sharp */
+.hud-outer-frame,
+.hud-inner-frame,
+.hud-corner,
+.hud-corner::before,
+.hud-corner::after {
+  border-radius: 0 !important;
+}
+
+/* Final override for HUD sharpness */
+.hud-outer-frame,
+.hud-outer-frame *,
+.hud-inner-frame,
+.hud-inner-frame *,
+.hud-corner,
+.hud-corner::before,
+.hud-corner::after {
+  border-radius: 0 !important;
+}
