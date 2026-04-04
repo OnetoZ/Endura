@@ -150,14 +150,26 @@ function Banner(props) {
 }
 
 export const ThreeScene = ({ images = [] }) => {
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1024);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="w-full h-full">
       <Canvas camera={{ position: [0, 0, 100], fov: 15 }} dpr={[1, 2]}>
         <Suspense fallback={null}>
           <fog attach="fog" args={['#000', 5, 15]} />
-          <ScrollControls pages={4}>
+          <ScrollControls pages={isMobile ? 0.5 : 4} damping={0.2}>
             <Rig rotation={[0, 0, 0.1]}>
-              <Carousel images={images} radius={3.5} count={16} />
+              <Carousel 
+                images={images} 
+                radius={isMobile ? 2.5 : 3.5} 
+                count={isMobile ? 8 : 16} 
+              />
             </Rig>
             <Banner position={[0, -0.6, 0]} />
           </ScrollControls>
