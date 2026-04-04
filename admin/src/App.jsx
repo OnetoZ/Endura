@@ -1,0 +1,102 @@
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ReactLenis, useLenis } from 'lenis/react';
+import { AppProvider } from './context/StoreContext';
+import Navbar from './components/Navbar';
+import Auth from './pages/Auth';
+import AuthSuccess from './pages/AuthSuccess';
+import AdminDashboard from './pages/AdminDashboard';
+import Footer from './components/Footer';
+import SmoothScroll from './components/SmoothScroll';
+import { useStore } from './context/StoreContext';
+// These must be inside BrowserRouter to use useLocation,
+// so they are defined here but rendered inside the Router tree.
+
+// Resets scroll to top on every route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const lenis = useLenis();
+
+  useEffect(() => {
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    }
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname, lenis]);
+  return null;
+}
+
+function AppLayout() {
+  const location = useLocation();
+  const { currentUser } = useStore();
+  const lenis = useLenis();
+
+  // Only play intro on a fresh session (new tab). Reloads skip it.
+  const [introDone, setIntroDone] = useState(true); // Forced true to skip intro animation per request
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem('introDone', '1');
+    setIntroDone(true);
+  };
+
+  // Force scroll to top when intro finishes
+  useEffect(() => {
+    if (introDone) {
+      if (lenis) {
+        lenis.scrollTo(0, { immediate: true });
+      }
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      // Also refresh GSAP ScrollTriggers
+      import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+        ScrollTrigger.refresh();
+      });
+    }
+  }, [introDone, lenis]);
+
+  const hideLayoutRoutes = ['/', '/onboarding'];
+  // Show navbar/footer on root '/' ONLY if intro is done
+  const isIntroPage = location.pathname === '/' && !introDone;
+  const showNavbar = !hideLayoutRoutes.includes(location.pathname) || (location.pathname === '/' && introDone);
+  const showFooter = showNavbar;
+
+  return (
+    <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
+      <ScrollToTop />
+      {showNavbar && <Navbar />}
+      <main key={location.pathname} className="flex-grow">
+        <Routes>
+          <Route path="/auth" element={
+            currentUser ? <Navigate to="/" replace /> : <Auth />
+          } />
+          <Route path="/auth/success" element={<AuthSuccess />} />
+          <Route path="/*" element={
+            currentUser && currentUser.role === 'admin' ? <AdminDashboard /> : <Navigate to="/auth" replace />
+          } />
+        </Routes>
+      </main>
+      {showFooter && <Footer />}
+    </div>
+  );
+}
+
+import { HelmetProvider } from 'react-helmet-async';
+
+export default function App() {
+  return (
+    <HelmetProvider>
+      <AppProvider>
+        <SmoothScroll>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <AppLayout />
+          </BrowserRouter>
+        </SmoothScroll>
+      </AppProvider>
+    </HelmetProvider>
+  );
+}
+

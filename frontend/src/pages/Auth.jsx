@@ -23,7 +23,7 @@ const Auth = () => {
     const { login, register, loginWithToken } = useStore();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const API = import.meta.env.VITE_API_URL;
+    const API = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
     if (!API) {
         console.error('❌ CRITICAL: VITE_API_URL is NOT defined in your .env file or Vite needs a restart.');
     }
@@ -87,9 +87,8 @@ const Auth = () => {
                 loginWithToken(e.data.userData);
                 toast.dismiss('auth_wait');
                 toast.success('IDENTITY_SYNCHRONIZED');
-                if (e.data.userData.role === 'admin') navigate('/admin');
-                else if (!e.data.userData.phone) navigate('/onboarding');
-                else navigate('/home');
+                if (!e.data.userData.phone) navigate('/onboarding');
+                else navigate('/dashboard');
             } else if (e.data?.type === 'AUTH_FINAL_ERROR') {
                 console.log('📩 [PARENT] Received final error signal');
                 setError(`AUTH_FAILED: ${e.data.error.toUpperCase()}`);
@@ -306,13 +305,15 @@ const Auth = () => {
     };
 
     const SocialButton = ({ label, provider }) => {
-        const handleSocialClick = () => {
+        const handleSocialClick = (e) => {
+            e.preventDefault();
             const authUrl = `${API}/auth/${provider}`;
             window.location.href = authUrl;
         };
 
         return (
             <button
+                type="button"
                 onClick={handleSocialClick}
                 className="w-full py-4 md:py-5 flex items-center justify-center gap-4 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] group relative overflow-hidden"
             >
@@ -349,20 +350,7 @@ const Auth = () => {
             <div className="absolute bottom-1/4 -right-24 w-96 h-96 bg-accent/10 blur-[150px] rounded-full"></div>
 
             <div className="w-full max-w-xl relative">
-                <div className="flex mb-8 border-b border-white/10">
-                    <button
-                        onClick={() => { setAuthType('user'); setStep(1); }}
-                        className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap ${authType === 'user' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
-                    >
-                        User_Login
-                    </button>
-                    <button
-                        onClick={() => { setAuthType('admin'); setStep(1); }}
-                        className={`flex-1 pb-4 text-[10px] font-black uppercase tracking-[0.4em] transition-all whitespace-nowrap ${authType === 'admin' ? 'text-accent border-b-2 border-accent' : 'text-gray-500 hover:text-white'}`}
-                    >
-                        Admin_Login
-                    </button>
-                </div>
+                {/* Admin login has been moved to the specialized admin portal */}
 
                 <div className="glass p-12 border-white/5 relative group">
                     <div className="absolute top-6 left-6 text-[8px] font-mono text-gray-600 tracking-widest uppercase">
@@ -384,192 +372,12 @@ const Auth = () => {
                         </div>
                     )}
 
-                    {authType === 'user' ? (
+                    {authType === 'user' && (
                         <div>
-                            <form onSubmit={handleUserSubmit} className="space-y-6">
-                                {!isLogin && (
-                                    <div>
-                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">User Name</label>
-                                        <input
-                                            type="text"
-                                            name="username"
-                                            required
-                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
-                                            placeholder="GHOST_UNIT_01"
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                )}
-                                {!isLogin && (
-                                    <div>
-                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Mobile Number</label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
-                                            placeholder="+91 XXXXXXXXXX"
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                )}
-                                <div>
-                                    <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">User ID (Email)</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        required
-                                        className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-primary outline-none transition-all text-sm tracking-widest"
-                                        placeholder="SYNC_MAIL@ENDURA.IO"
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Security Key</label>
-                                    <div className="relative">
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            name="password"
-                                            required
-                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 pr-12 focus:border-primary outline-none transition-all text-sm tracking-widest"
-                                            placeholder="••••••••"
-                                            onChange={handleInputChange}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full py-4 md:py-5 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-primary-light transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? 'Processing...' : (isLogin ? 'Synchronize' : 'Initialize Profile')}
-                                </button>
-                            </form>
-
-                            <div className="mt-8 flex items-center justify-between">
-                                <span className="h-px bg-white/10 flex-grow"></span>
-                                <span className="px-6 text-[8px] text-gray-600 font-bold uppercase tracking-widest">or </span>
-                                <span className="h-px bg-white/10 flex-grow"></span>
-                            </div>
-
-                            <div className="mt-8">
+                            <div className="mt-2">
                                 <SocialButton label="Google" provider="google" />
                             </div>
-
-                            <button
-                                onClick={() => setIsLogin(!isLogin)}
-                                className="w-full mt-6 text-[10px] text-gray-500 hover:text-primary transition-colors font-bold uppercase tracking-widest"
-                            >
-                                {isLogin ? 'Create New Account' : 'Back to Login'}
-                            </button>
                         </div>
-                    ) : (
-                        <form onSubmit={handleAdminSubmit} className="space-y-6">
-                            {step === 1 && (
-                                <>
-                                    <div>
-                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-accent mb-2">Admin Email ID</label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            required
-                                            className="w-full bg-white/5 border border-white/10 px-6 py-4 focus:border-accent outline-none transition-all text-sm tracking-widest text-white"
-                                            placeholder="Enter Admin Email"
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <button type="submit" className="w-full py-4 md:py-5 bg-accent text-black font-black uppercase tracking-widest text-xs hover:bg-accent-dark transition-all">
-                                        Verify Admin Access
-                                    </button>
-                                </>
-                            )}
-                            {step === 2 && (
-                                <>
-                                    <div className="text-center mb-6">
-                                        <p className="text-[10px] text-accent font-bold uppercase tracking-widest mb-2">2FA Verification Required</p>
-                                        <p className="text-[8px] text-gray-400">A 6-digit code has been sent to your email</p>
-                                        {timeLeft > 0 && (
-                                            <div className="mt-4">
-                                                <p className="text-[12px] text-white font-mono">
-                                                    Code expires in: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                                                </p>
-                                                <div className="w-full bg-white/10 rounded-full h-2 mt-2">
-                                                    <div
-                                                        className="bg-accent h-2 rounded-full transition-all duration-1000"
-                                                        style={{ width: `${(timeLeft / 600) * 100}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {timeLeft === 0 && (
-                                            <p className="text-[10px] text-red-400 mt-4">Code expired. Please try again.</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-accent mb-2">2FA Code</label>
-                                        <input
-                                            type="text"
-                                            value={twoFactorCode}
-                                            onChange={(e) => setTwoFactorCode(e.target.value)}
-                                            maxLength={6}
-                                            className="w-full bg-white/5 border border-accent/20 px-6 py-4 focus:border-accent outline-none transition-all text-center text-2xl tracking-[1em] font-mono"
-                                            placeholder="000000"
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading || timeLeft === 0}
-                                        className="w-full py-5 bg-accent text-black font-black uppercase tracking-widest text-xs hover:bg-accent-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isLoading ? 'Verifying...' : 'Verify & Login with Google'}
-                                    </button>
-                                    <div className="mt-4 flex flex-col items-center gap-3">
-                                        {/* Resend Code */}
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={handleResendCode}
-                                                disabled={resendCooldown > 0 || isLoading}
-                                                className={`text-[9px] font-black uppercase tracking-widest transition-all border px-4 py-2 ${resendCooldown > 0 || isLoading
-                                                    ? 'border-white/10 text-gray-600 cursor-not-allowed'
-                                                    : 'border-accent/40 text-accent hover:bg-accent/10'
-                                                    }`}
-                                            >
-                                                {resendCooldown > 0
-                                                    ? `Resend in ${resendCooldown}s`
-                                                    : isLoading ? 'Sending...' : '↺ Resend Code'}
-                                            </button>
-                                            {resendSuccess && (
-                                                <span className="text-[9px] text-green-400 font-bold uppercase tracking-widest animate-pulse">
-                                                    ✓ Sent!
-                                                </span>
-                                            )}
-                                        </div>
-                                        {/* Back to Login */}
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setStep(1);
-                                                setTempToken('');
-                                                setTimeLeft(0);
-                                                setResendCooldown(0);
-                                                setResendSuccess(false);
-                                                window.history.replaceState({}, '', '/auth');
-                                            }}
-                                            className="text-[8px] text-gray-500 hover:text-accent transition-colors uppercase tracking-widest"
-                                        >
-                                            Back to Login
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </form>
                     )}
                 </div>
 

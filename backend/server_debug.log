@@ -1,0 +1,11 @@
+[dotenv@17.2.3] injecting env (8) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+✅ CORS allowed origins: [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5177',
+  'https://www.wearendura.com/'
+]
+[Razorpay] Instance initialized successfully
+✅ Successfully connected to MongoDB
+🚀 Server is running on port 5001
+[0mGET /api/health [32m200[0m 2.289 ms - 53[0m

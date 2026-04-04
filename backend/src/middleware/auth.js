@@ -31,10 +31,10 @@ const protect = asyncHandler(async (req, res, next) => {
             throw new Error('Token is valid but user not found');
         }
 
-        // Check if user is still active/verified
-        if (!req.user.isVerified) {
-            res.status(401);
-            throw new Error('Account not verified');
+        // Check if user is still active
+        if (req.user.status !== 'active') {
+            res.status(403);
+            throw new Error('Account suspended or inactive');
         }
 
         next();

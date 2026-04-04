@@ -15,7 +15,7 @@ const resolveApiBaseUrl = () => {
         }
     }
 
-    return 'http://127.0.0.1:5001/api';
+    return 'http://localhost:5001/api';
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -26,9 +26,7 @@ export const getImageUrl = (path) => {
     // If it's already a Base64 string (stored in Mongo), return it as is
     if (path.startsWith('data:image')) return path;
 
-    // Self-healing logic: If the URL is absolute but points to our internal uploads,
-    // we swap the hostname to match our current API_BASE_URL.
-    // This fixes issues when a database has 'localhost' links but is being used on Render.
+    // Self-healing & Logic for absolute URLs
     if (path.startsWith('http')) {
         if (path.includes('/uploads/')) {
             const parts = path.split('/uploads/');
@@ -39,6 +37,14 @@ export const getImageUrl = (path) => {
         return path;
     }
 
+    // Identify frontend public assets (Vite public folder)
+    // These should be served from the frontend server, hence stay relative.
+    const frontendPrefixes = ['/cart page/', '/factions/', '/logo.png', '/video/', '/hero/'];
+    if (frontendPrefixes.some(prefix => path.startsWith(prefix))) {
+        return path;
+    }
+
+    // Otherwise, assume it's a relative path from the backend (e.g. 'uploads/...')
     const baseUrl = API_BASE_URL.replace(/\/api$/, '');
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
 };
