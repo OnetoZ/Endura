@@ -1,17 +1,21 @@
-# ENDURA Frontend
+# ENDURA Admin Dashboard
 
-This folder contains the customer-facing application.
+The administrative hub for the ENDURA platform.
 
-## Responsibilities
-- Brand experience
-- Product browsing
-- Purchase flow
-- Digital Vault UI
+## 🚀 Admin Experience
+Designed to manage the complex ecosystem of physical and digital commerce. Admin accounts can monitor orders, manage inventory, and assign digital collectibles.
 
-## Setup
-1. `cd frontend`
-2. `npm install`
-3. Configure `.env` based on `.env.example`
-4. `npm run dev`
+[Root README.md](../README.md) contains full brand and platform documentation.
 
-Built for performance, aesthetics, and scalability.
+### 🧱 Admin Tech Stack
+*   **React.js** – Component-driven UI
+*   **Vite** – Fast development and optimized builds
+*   **Tailwind CSS** – Utility-first responsive design
+*   **Axios** – API communication to the central server
+
+### 🔐 Features
+*   Inventory & Product management
+*   Faction identity controls
+*   User & Order monitoring
+*   Digital collectible assignment
+*   System settings

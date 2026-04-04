@@ -1,17 +1,23 @@
 # ENDURA Frontend
 
-This folder contains the customer-facing application.
+The cinematic frontend implementation for the ENDURA platform.
 
-## Responsibilities
-- Brand experience
-- Product browsing
-- Purchase flow
-- Digital Vault UI
+## 🌑 Cinematic Concept
+Built around the philosophy of dual identity. This repository contains the customer-facing website and digital vault.
 
-## Setup
-1. `cd frontend`
-2. `npm install`
-3. Configure `.env` based on `.env.example`
-4. `npm run dev`
+[Root README.md](../README.md) contains full brand and platform documentation.
 
-Built for performance, aesthetics, and scalability.
+### 🧱 Frontend Tech Stack
+*   **React.js** – Component-driven UI
+*   **Vite** – Fast development and optimized builds
+*   **CSS / Modern Styling** – Custom cinematic design system
+*   **Framer Motion / CSS Animations** – Subtle transitions and effects
+*   **React Router** – Client-side routing
+*   **Axios** – API communication
+
+### 🚀 Key Features
+*   Cinematic landing experience
+*   Product catalog with faction-based identity
+*   Purchase flow for physical garments
+*   Digital Vault to redeem and view digital collectibles
+*   Secure user accounts and order history
