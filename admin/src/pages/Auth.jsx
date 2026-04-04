@@ -235,7 +235,8 @@ const Auth = () => {
 
                 if (response.ok && data.verified) {
                     const hint = encodeURIComponent(formData.email);
-                    const authUrl = `${API}/auth/google?login_hint=${hint}&source=admin`;
+                    const origin = encodeURIComponent(window.location.origin);
+                    const authUrl = `${API}/auth/google?login_hint=${hint}&source=admin&origin=${origin}`;
 
                     // Open Google OAuth in the same window
                     window.location.href = authUrl;
@@ -316,7 +317,8 @@ const Auth = () => {
     const SocialButton = ({ label, provider }) => {
         const handleSocialClick = (e) => {
             e.preventDefault();
-            const authUrl = `${API}/auth/${provider}?source=admin`;
+            const origin = encodeURIComponent(window.location.origin);
+            const authUrl = `${API}/auth/${provider}?source=admin&origin=${origin}`;
             window.location.href = authUrl;
         };
 
