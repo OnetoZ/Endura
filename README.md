@@ -4,7 +4,6 @@ ENDURA is a premium fashion commerce platform built around the philosophy of dua
 The platform blends storytelling, commerce, and technology to create an exclusive, cinematic brand experience.
 
 [www.wearendura.com](http://www.wearendura.com/)
-
 [https://admin.wearendura.com](https://admin.wearendura.com/)
 
 ## 🌑 Brand Concept
