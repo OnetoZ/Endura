@@ -8,7 +8,7 @@ This repository contains the full-stack implementation of the ENDURA platform, i
 ---
 www.wearendura.com/
 
-admin.wearendura.com/
+https://admin.wearendura.com/
 
 ## 🌑 Brand Concept
 
