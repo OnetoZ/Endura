@@ -6,6 +6,9 @@ The platform blends storytelling, commerce, and technology to create an exclusiv
 This repository contains the full-stack implementation of the ENDURA platform, including the customer-facing website, digital vault, and administrative systems.
 
 ---
+www.wearendura.com/
+
+admin.wearendura.com/
 
 ## 🌑 Brand Concept
 
