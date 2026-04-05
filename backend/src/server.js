@@ -32,7 +32,9 @@ const allowedOrigins = Array.from(new Set([
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5177',
-  'https://www.wearendura.com/',
+  'https://wearendura.com',
+  'https://www.wearendura.com',
+  'https://admin.wearendura.com',
 ]));
 
 console.log('✅ CORS allowed origins:', allowedOrigins);
