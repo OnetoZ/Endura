@@ -53,19 +53,32 @@ const registerUser = asyncHandler(async (req, res) => {
  */
 const checkAdminEmail = asyncHandler(async (req, res) => {
     const email = req.body.email?.trim() || '';
-    console.log('🔍 Admin Login Request:', email);
+    const ADMIN_EMAIL = 'enduraclothing.team@gmail.com';
 
-    const admin = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
+    console.log(`🔍 [ADMIN_VERIFY] Clearance Request: "${email}"`);
 
-    if (!admin) {
+    // Strict one-admin policy
+    if (email.toLowerCase() !== ADMIN_EMAIL) {
+        console.log(`❌ [ADMIN_VERIFY] Unauthorized login attempt: ${email}`);
         res.status(401);
-        throw new Error('ACCESS_DENIED: You are not an admin');
+        throw new Error('ACCESS_DENIED: You are not an ADMIN');
     }
 
-    console.log('✅ Admin confirmed:', email, isMasterAdmin ? '(via MASTER_FAILSAFE)' : '');
+    const admin = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
+    
+    // FAILS-SAFE: If it is the team email, let it pass so it can be auto-promoted in the next step!
+    if (!admin && email.toLowerCase() === ADMIN_EMAIL) {
+        console.log(`🆙 [ADMIN_VERIFY] Clearance granted for team account (First Login): ${email}`);
+    } else if (!admin) {
+        console.log(`❌ [ADMIN_VERIFY] Valid ID but not found in DB: ${email}`);
+        res.status(401);
+        throw new Error('ACCESS_DENIED: You are not an ADMIN');
+    }
+
+    console.log(`✅ [ADMIN_VERIFY] Identity Confirmed: ${email}`);
     res.json({
         verified: true,
-        message: 'Admin email verified. Proceed to Google sign-in.',
+        message: 'Admin Verified. Proceeding to Secure Link.',
         email: email,
     });
 });
@@ -248,6 +261,15 @@ const googleCallback = asyncHandler(async (req, res) => {
     // Dynamically determine targetUrl
     let targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : (process.env.CLIENT_URL || 'http://localhost:5173');
 
+    // AUTO-DEPLOYMENT DETECT: If running on Render, force live domain if not set
+    if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+        if (isSourceAdmin && !targetUrl.includes('wearendura.com')) {
+            targetUrl = 'https://admin.wearendura.com';
+        } else if (!isSourceAdmin && !targetUrl.includes('wearendura.com')) {
+            targetUrl = 'https://wearendura.com';
+        }
+    }
+
     if (stateObj.origin && !process.env.ADMIN_CLIENT_URL && !process.env.CLIENT_URL) {
         targetUrl = stateObj.origin;
     }
@@ -257,9 +279,18 @@ const googleCallback = asyncHandler(async (req, res) => {
     console.log(`📡 Google Callback for ${user.email}. Source: ${isSourceAdmin ? 'ADMIN' : 'USER'}. Expected Admin: ${expectedEmail || 'NONE'}`);
 
     if (isSourceAdmin) {
-        // Enforce admin role check — must be an admin in the database
-        if (user.role !== 'admin') {
-            console.log(`⛔ Direct admin OAuth access denied for non-admin: ${user.email}`);
+        const ADMIN_EMAIL = 'enduraclothing.team@gmail.com';
+
+        // SELF-HEALING: If the team account logins, auto-promote it to admin!
+        if (user.email.toLowerCase() === ADMIN_EMAIL && user.role !== 'admin') {
+            console.log(`🆙 Self-healing: Promoting ${user.email} to Admin...`);
+            user.role = 'admin';
+            await user.save();
+        }
+
+        // Enforce strict admin role AND specific email check
+        if (user.role !== 'admin' || user.email.toLowerCase() !== ADMIN_EMAIL) {
+            console.log(`⛔ Strict admin policy violation for: ${user.email}`);
             return res.redirect(`${targetUrl}/auth?error=NOT_ADMIN&admin=1`);
         }
 

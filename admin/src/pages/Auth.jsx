@@ -336,22 +336,22 @@ const Auth = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden pt-32">
-            {/* Background Glows */}
-            <div className="absolute top-1/4 -left-24 w-96 h-96 bg-primary/20 blur-[150px] rounded-full"></div>
-            <div className="absolute bottom-1/4 -right-24 w-96 h-96 bg-accent/10 blur-[150px] rounded-full"></div>
+            {/* Cybernetic Purple Ambience */}
+            <div className="absolute top-1/4 -left-24 w-96 h-96 bg-purple-600/20 blur-[150px] rounded-full"></div>
+            <div className="absolute bottom-1/4 -right-24 w-96 h-96 bg-purple-500/10 blur-[150px] rounded-full"></div>
 
             <div className="w-full max-w-xl relative">
 
                 <div className="glass p-12 border-white/5 relative group">
-                    <div className="absolute top-6 left-6 text-[8px] font-mono text-primary/60 tracking-widest uppercase">
+                    <div className="absolute top-6 left-6 text-[8px] font-mono text-purple-400/60 tracking-widest uppercase">
                         Secure_Node // ENDURA_ADMIN_PORTAL
                     </div>
 
                     <div className="text-center mb-10 mt-2 reveal active">
-                        <h2 className="text-4xl font-orbitron font-bold uppercase tracking-tight mb-2 text-gold">
+                        <h2 className="text-4xl font-orbitron font-bold uppercase tracking-tight mb-2 bg-gradient-to-b from-purple-400 to-purple-700 bg-clip-text text-transparent">
                             Admin Login
                         </h2>
-                        <p className="text-primary/50 text-[10px] uppercase tracking-[0.3em]">
+                        <p className="text-purple-500/50 text-[10px] uppercase tracking-[0.3em]">
                             Authorized Personnel Only
                         </p>
                     </div>
@@ -381,7 +381,7 @@ const Auth = () => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-4 bg-primary text-black font-black text-[10px] tracking-[0.3em] uppercase hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50"
+                                className="w-full py-4 bg-purple-600 text-white font-black text-[10px] tracking-[0.3em] uppercase hover:bg-purple-700 transition-all active:scale-[0.98] disabled:opacity-50 shadow-[0_0_20px_rgba(147,51,234,0.3)]"
                             >
                                 {isLoading ? 'Verifying...' : 'Initiate_Session'}
                             </button>
@@ -392,10 +392,10 @@ const Auth = () => {
                     </div>
                 </div>
 
-                <div className="mt-12 p-6 glass border-primary/20 flex items-center justify-between group cursor-default overflow-hidden">
+                <div className="mt-12 p-6 glass border-purple-500/20 flex items-center justify-between group cursor-default overflow-hidden">
                     <div className="absolute inset-0 shimmer opacity-50 -z-10"></div>
                     <div>
-                        <p className="text-[8px] font-black uppercase tracking-widest text-primary mb-1">Security_Status</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-purple-400 mb-1">Security_Status</p>
                         <p className="text-[10px] text-white font-bold tracking-widest">RSA_2048 // ENCRYPTED_TUNNEL</p>
                     </div>
                     <div className="flex gap-2">
