@@ -2,13 +2,18 @@ import axios from 'axios';
 
 const resolveApiBaseUrl = () => {
     const envUrl = import.meta.env.VITE_API_URL?.trim();
-    if (envUrl) {
+    if (envUrl && !envUrl.includes('localhost')) {
         return envUrl.replace(/\/$/, '');
     }
 
     if (typeof window !== 'undefined') {
         const { hostname } = window.location;
         const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+
+        // Direct catch for your specific domains
+        if (hostname.includes('wearendura.com')) {
+            return 'https://endura-2.onrender.com/api';
+        }
 
         if (!isLocalHost) {
             return 'https://endura-2.onrender.com/api';

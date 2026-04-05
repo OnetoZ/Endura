@@ -52,21 +52,34 @@ const registerUser = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const checkAdminEmail = asyncHandler(async (req, res) => {
-    const { email } = req.body;
-    console.log('🔍 Admin email check:', email);
+    const email = req.body.email?.trim() || '';
+    const ADMIN_EMAIL = 'enduraclothing.team@gmail.com';
 
-    const admin = await User.findOne({ email, role: 'admin' });
-    if (!admin) {
+    console.log(`🔍 [ADMIN_VERIFY] Clearance Request: "${email}"`);
+
+    // Strict one-admin policy
+    if (email.toLowerCase() !== ADMIN_EMAIL) {
+        console.log(`❌ [ADMIN_VERIFY] Unauthorized login attempt: ${email}`);
         res.status(401);
-        throw new Error('ACCESS_DENIED: You are not an admin');
+        throw new Error('ACCESS_DENIED: You are not an ADMIN');
     }
 
-    // Just confirm the email is an admin — Google OAuth comes NEXT, THEN 2FA
-    console.log('✅ Admin confirmed:', email);
+    const admin = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
+    
+    // FAILS-SAFE: If it is the team email, let it pass so it can be auto-promoted in the next step!
+    if (!admin && email.toLowerCase() === ADMIN_EMAIL) {
+        console.log(`🆙 [ADMIN_VERIFY] Clearance granted for team account (First Login): ${email}`);
+    } else if (!admin) {
+        console.log(`❌ [ADMIN_VERIFY] Valid ID but not found in DB: ${email}`);
+        res.status(401);
+        throw new Error('ACCESS_DENIED: You are not an ADMIN');
+    }
+
+    console.log(`✅ [ADMIN_VERIFY] Identity Confirmed: ${email}`);
     res.json({
         verified: true,
-        message: 'Admin email verified. Proceed to Google sign-in.',
-        email: admin.email,
+        message: 'Admin Verified. Proceeding to Secure Link.',
+        email: email,
     });
 });
 
@@ -232,7 +245,7 @@ const logoutUser = asyncHandler(async (req, res) => {
  */
 const googleCallback = asyncHandler(async (req, res) => {
     const user = req.user;
-    
+
     // Attempt to decode state parameter mapped from frontend
     let stateObj = {};
     if (req.query.state) {
@@ -244,24 +257,40 @@ const googleCallback = asyncHandler(async (req, res) => {
     }
 
     const isSourceAdmin = stateObj.source === 'admin';
-    
+
     // Dynamically determine targetUrl
     let targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : (process.env.CLIENT_URL || 'http://localhost:5173');
 
-    // If we're in "production" (or have a dynamic origin from the state) and haven't set it, we could try to use the request's origin
-    // but usually, it's safer to rely on state.origin if we pass it from the frontend.
+    // AUTO-DEPLOYMENT DETECT: If running on Render, force live domain if not set
+    if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+        if (isSourceAdmin && !targetUrl.includes('wearendura.com')) {
+            targetUrl = 'https://admin.wearendura.com';
+        } else if (!isSourceAdmin && !targetUrl.includes('wearendura.com')) {
+            targetUrl = 'https://wearendura.com';
+        }
+    }
+
     if (stateObj.origin && !process.env.ADMIN_CLIENT_URL && !process.env.CLIENT_URL) {
         targetUrl = stateObj.origin;
     }
 
-    // ── Admin flow: handle both pre-verified and direct Google login ────────────
+    // ── Admin flow ────────────
     const expectedEmail = req.session?.expectedAdminEmail || stateObj.expectedAdminEmail;
     console.log(`📡 Google Callback for ${user.email}. Source: ${isSourceAdmin ? 'ADMIN' : 'USER'}. Expected Admin: ${expectedEmail || 'NONE'}`);
 
     if (isSourceAdmin) {
-        // Enforce admin role check even without pre-verified email
-        if (user.role !== 'admin') {
-            console.log(`⛔ Direct admin OAuth access denied for non-admin: ${user.email}`);
+        const ADMIN_EMAIL = 'enduraclothing.team@gmail.com';
+
+        // SELF-HEALING: If the team account logins, auto-promote it to admin!
+        if (user.email.toLowerCase() === ADMIN_EMAIL && user.role !== 'admin') {
+            console.log(`🆙 Self-healing: Promoting ${user.email} to Admin...`);
+            user.role = 'admin';
+            await user.save();
+        }
+
+        // Enforce strict admin role AND specific email check
+        if (user.role !== 'admin' || user.email.toLowerCase() !== ADMIN_EMAIL) {
+            console.log(`⛔ Strict admin policy violation for: ${user.email}`);
             return res.redirect(`${targetUrl}/auth?error=NOT_ADMIN&admin=1`);
         }
 

@@ -119,7 +119,10 @@ app.use(require('./middleware/errorHandler'));
 // ── Database + Server Start ───────────────────────────────────────────────────
 const PORT = process.env.PORT || 5001;
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 30000, // 30 seconds wait
+    socketTimeoutMS: 45000,         // 45 seconds wait
+  })
   .then(() => {
     console.log('✅ Successfully connected to MongoDB');
     app.listen(PORT, '0.0.0.0', () => {
