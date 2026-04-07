@@ -147,12 +147,12 @@ const Cart = () => {
                     contact: shippingData.phone,
                 },
                 onSuccess: ({ orderResponse }) => {
-                    const dbOrderId = orderResponse?.dbOrderId || orderResponse?.db_order_id;
+                    const brandedOrderId = orderResponse?.orderId;
                     const paidAmount = Number(orderResponse?.amount || 0) / 100;
                     toast.success('Payment successful!');
                     navigate('/order-success', {
                         state: {
-                            orderId: dbOrderId,
+                            orderId: brandedOrderId,
                             amount: paidAmount,
                         },
                     });
@@ -238,7 +238,7 @@ const Cart = () => {
                     {placedOrder && (
                         <div className="mb-8 space-y-2">
                             <p className="text-gray-400 text-sm">
-                                Order ID: <span className="text-green-500 font-mono">{placedOrder._id}</span>
+                                Order ID: <span className="text-green-500 font-mono">{placedOrder.orderId || placedOrder._id}</span>
                             </p>
                             <p className="text-gray-400 text-sm">
                                 Total Amount: <span className="text-accent font-bold">₹{placedOrder.totalAmount}</span>
