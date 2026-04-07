@@ -17,12 +17,11 @@ const Footer = () => {
                             <img
                                 src="/logo.png"
                                 alt="ENDURA"
-                                className="h-10 w-auto object-contain transition-all duration-500 group-hover:brightness-125"
-                                style={{ filter: 'invert(52%) sepia(91%) saturate(3025%) hue-rotate(190deg) brightness(101%) contrast(101%)' }}
+                                className="h-10 w-auto object-contain transition-all duration-500 group-hover:brightness-200"
                             />
-                            {/* Animated Corner Brackets in Blue */}
-                            <div className="absolute -top-1 -left-1 w-3 h-3 border-l border-t border-blue-500/40 group-hover:border-blue-500 transition-all duration-300" />
-                            <div className="absolute -bottom-1 -right-1 w-3 h-3 border-r border-b border-blue-500/40 group-hover:border-blue-500 transition-all duration-300" />
+                            {/* Animated Corner Brackets */}
+                            <div className="absolute -top-1 -left-1 w-3 h-3 border-l border-t border-primary/40 group-hover:border-primary transition-all duration-300" />
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 border-r border-b border-primary/40 group-hover:border-primary transition-all duration-300" />
                         </div>
                     </Link>
                     <p className="text-gray-500 text-[11px] leading-relaxed uppercase tracking-widest max-w-[240px]">

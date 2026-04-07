@@ -128,16 +128,22 @@ const DoppelPieceScene = () => {
                     </div>
                 </div>
 
-                <div className="text-center space-y-6">
-                    <p className="doppel-text doppel-text-1 text-gray-500 font-mono text-[9px] tracking-[0.5em] uppercase">
-                        Every piece is crafted twice.
+                <div className="text-center space-y-8 max-w-2xl px-6">
+                    <div className="space-y-2">
+                        <span className="doppel-text doppel-text-1 text-primary font-mono text-[10px] tracking-[0.6em] uppercase block">
+                            THE ORDER
+                        </span>
+                        <h2 className="doppel-text doppel-text-2 text-3xl md:text-6xl font-heading uppercase tracking-tight leading-none">
+                            Every piece carries <span className="text-white/30">two forms.</span><br/>
+                            <span className="text-white/60">One worn. One eternal.</span>
+                        </h2>
+                    </div>
+
+                    <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary/40 to-transparent mx-auto" />
+
+                    <p className="doppel-text doppel-text-3 text-gray-500 font-light tracking-[0.3em] uppercase text-[10px] md:text-xs leading-relaxed">
+                        ENDURA is not a brand — it is an Order. Each physical garment is bound to a Digital Twin: a unique collectible that lives beyond fabric. Your identity exists in both realms.
                     </p>
-                    <h2 className="doppel-text doppel-text-2 text-4xl md:text-7xl font-oswald uppercase tracking-[0.05em] leading-tight">
-                        One for the <span className="text-white/30">flesh.</span>
-                    </h2>
-                    <h2 className="doppel-text doppel-text-3 text-4xl md:text-7xl font-oswald uppercase tracking-[0.05em] text-primary system-text-glow leading-tight">
-                        One for the avatar.
-                    </h2>
                 </div>
             </div>
 

@@ -359,8 +359,13 @@ const Vault = () => {
     const [targetItem, setTargetItem] = useState(null);
     const [clickPos, setClickPos] = useState({ x: 0, y: 0 });
     const [rewardUnlockItem, setRewardUnlockItem] = useState(null);
+    const [previewItem, setPreviewItem] = useState(null);
     const [showCongrats, setShowCongrats] = useState(false);
     const [congratsData, setCongratsData] = useState(null);
+
+    const handlePreview = (item) => {
+        setPreviewItem(item);
+    };
 
     useEffect(() => {
         const savedData = localStorage.getItem('endura_vault_persistence');
@@ -598,7 +603,11 @@ const Vault = () => {
                             {chunkedItems.map((row, idx) => (
                                 <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
                                     {row.map(item => (
-                                        <div key={item.id} className="vault-card-reveal">
+                                        <div 
+                                            key={item.id} 
+                                            className="vault-card-reveal"
+                                            onClick={() => unlockedIds.includes(item.id) && handlePreview(item)}
+                                        >
                                             <VaultCard
                                                 item={item}
                                                 isUnlocked={unlockedIds.includes(item.id)}
@@ -718,6 +727,67 @@ const Vault = () => {
                         onClose={() => setRewardUnlockItem(null)}
                     />
                 )}
+
+                <AnimatePresence>
+                    {previewItem && (
+                        <div 
+                            className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 sm:p-8"
+                            onClick={() => setPreviewItem(null)}
+                        >
+                            <motion.div 
+                                initial={{ scale: 0.8, opacity: 0, y: 50 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 1.1, opacity: 0, y: -50 }}
+                                className="relative w-full max-w-4xl bg-black/60 border border-white/10 rounded-3xl overflow-hidden glass p-12 flex flex-col items-center justify-center min-h-[60vh]"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Close Button */}
+                                <button 
+                                    onClick={() => setPreviewItem(null)}
+                                    className="absolute top-8 right-8 text-white/40 hover:text-white transition-colors"
+                                >
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
+                                    <div className="relative h-[300px] md:h-[500px] flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full" />
+                                        <DressItem 
+                                            item={{ ...previewItem, image: previewItem.image }}
+                                            vaultReady={true}
+                                        />
+                                    </div>
+                                    
+                                    <div className="space-y-8 text-center md:text-left">
+                                        <div className="space-y-2">
+                                            <span className="font-mono text-xs text-primary tracking-[0.4em] uppercase">
+                                                ARCHIVE: // {previewItem.tier}
+                                            </span>
+                                            <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-none">
+                                                {previewItem.name}
+                                            </h2>
+                                        </div>
+                                        
+                                        <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-md">
+                                            {previewItem.description || "Experimental digital artifact bound to physical legacy. Part of the Endura protocol."}
+                                        </p>
+
+                                        <div className="pt-8 border-t border-white/10 flex flex-wrap gap-4 justify-center md:justify-start">
+                                            <div className="px-4 py-2 border border-white/20 bg-white/5 rounded-full text-[10px] font-mono uppercase tracking-widest text-white/60">
+                                                STATUS: DECRYPTED
+                                            </div>
+                                            <div className="px-4 py-2 border border-white/20 bg-white/5 rounded-full text-[10px] font-mono uppercase tracking-widest text-white/60">
+                                                OWNER: VERIFIED
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
                 <AnimatePresence>
                     {showCongrats && (
