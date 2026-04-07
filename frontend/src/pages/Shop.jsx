@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { getImageUrl } from '../services/api';
+import SEO from '../components/SEO';
 
 const Shop = () => {
     const { products, addToCart } = useStore();
@@ -12,12 +13,12 @@ const Shop = () => {
     const filteredProducts = filter === 'All'
         ? products
         : products.filter(p => p.category === filter);
-    
+
     return (
         <div className="min-h-screen bg-black pt-24 pb-20 px-6">
             <SEO 
-                title="The Inventory | Luxury Streetwear Selection"
-                description="Explore the Endura inventory. High-end luxury streetwear, oversized hoodies, and digital collectibles crafted for the chosen few in India."
+                title="Inventory | Premium Streetwear & Digital Collectibles"
+                description="Browse ENDURA's complete inventory. From exclusive luxury apparel to rare digital collectibles in India."
                 canonical="/shop"
             />
             <div className="container mx-auto">

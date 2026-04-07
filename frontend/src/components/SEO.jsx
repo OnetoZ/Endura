@@ -13,9 +13,7 @@ import { Helmet } from 'react-helmet-async';
  */
 const SEO = ({ title, description, canonical, type = 'website', image, schema }) => {
   const siteName = 'ENDURA';
-  const fullTitle = title 
-    ? (title.includes(siteName) ? title : `${title} | ${siteName}`) 
-    : siteName;
+  const fullTitle = title ? `${siteName} ${title}` : siteName;
   const url = canonical ? `https://wearendura.com${canonical}` : 'https://wearendura.com';
 
   return (

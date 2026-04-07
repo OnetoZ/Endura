@@ -46,7 +46,7 @@ const LuxuryDropSection = () => {
                         <img 
                             ref={imageRef}
                             src="/drop-hoodie.png" 
-                            alt="Endura Apex Royale Limited Edition Luxury Hoodie India - Luxury Streetwear India" 
+                            alt="Limited Edition Drop" 
                             className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                         />
                         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 border border-accent/40">

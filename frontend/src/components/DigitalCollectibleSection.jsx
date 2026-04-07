@@ -46,7 +46,7 @@ const DigitalCollectibleSection = () => {
                     <div ref={vaultRef} className="relative w-full max-w-md aspect-square border border-accent/20 rounded-lg p-4 bg-black/40 backdrop-blur-xl shadow-[0_0_50px_rgba(212,175,55,0.1)]">
                         <img 
                             src="/digital-vault.png" 
-                            alt="Endura Digital Vault Collectible - Luxury Streetwear India" 
+                            alt="Digital Vault Collectible" 
                             className="w-full h-full object-cover rounded shadow-2xl"
                         />
                         

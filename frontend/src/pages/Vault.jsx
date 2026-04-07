@@ -14,6 +14,7 @@ import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
 import '../components/collections/collections.css';
 import { useVaultScore } from '../hooks/useVaultScore';
 import VaultCongratsOverlay from '../components/Vault/UI/VaultCongratsOverlay';
+import SEO from '../components/SEO';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
@@ -480,6 +481,11 @@ const Vault = () => {
 
     return (
         <>
+            <SEO 
+                title="official | The Vault - Exclusive Digital Collectibles"
+                description="Secure your digital future with ENDURA's Vault. Collect rare digital archives and unlock exclusive luxury streetwear rewards in India."
+                canonical="/vault"
+            />
             <AnimatePresence>
                 {!loadingDone && <VaultLoadingScreen onComplete={handleLoadingComplete} />}
             </AnimatePresence>

@@ -101,8 +101,8 @@ const CultPage = () => {
     return (
         <div ref={pageRef} className="bg-black text-white min-h-screen">
             <SEO 
-                title="The Cult | Brand Story & Factions"
-                description="Explore the five factions of Endura. Masters of shadow luxury, industrial pressure, and digital legacy. Choose your alignment in the Endura network."
+                title="official | The Cult - Brand Story & Factions"
+                description="Explore the five factions of ENDURA. Masters of shadow luxury, industrial pressure, and digital legacy in India. Choose your alignment in the Endura network."
                 canonical="/cult"
             />
             {/* HERO HEADER */}
