@@ -58,13 +58,12 @@ const CinematicFooter = () => {
                     <div className="relative group w-fit">
                         <img 
                             src="/logo.png" 
-                            alt="ENDURA Luxury Streetwear India" 
-                            className="h-12 md:h-16 object-contain footer-logo"
-                            style={{ filter: 'invert(52%) sepia(91%) saturate(3025%) hue-rotate(190deg) brightness(101%) contrast(101%)' }}
+                            alt="ENDURA" 
+                            className="h-12 md:h-16 object-contain footer-logo brightness-150 transition-all duration-500 group-hover:brightness-200"
                         />
                         {/* Corner Brackets */}
-                        <div className="absolute -top-2 -left-2 w-4 h-4 border-l-2 border-t-2 border-blue-500/30 group-hover:border-blue-500 transition-all duration-300" />
-                        <div className="absolute -bottom-2 -right-2 w-4 h-4 border-r-2 border-b-2 border-blue-500/30 group-hover:border-blue-500 transition-all duration-300" />
+                        <div className="absolute -top-2 -left-2 w-4 h-4 border-l-2 border-t-2 border-primary/30 group-hover:border-primary transition-all duration-300" />
+                        <div className="absolute -bottom-2 -right-2 w-4 h-4 border-r-2 border-b-2 border-primary/30 group-hover:border-primary transition-all duration-300" />
                     </div>
                     
                     <div className="space-y-4">

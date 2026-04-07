@@ -43,8 +43,10 @@ const DoppelPieceScene = () => {
         tl.to(glowRef.current, { opacity: 0.8, scale: 1.5, duration: 0.5 }, "-=0.5")
             .to(glowRef.current, { opacity: 0.2, scale: 1, duration: 0.5 });
 
-        tl.fromTo(".doppel-text-2", { opacity: 0 }, { opacity: 1, duration: 0.8 });
-        tl.fromTo(".doppel-text-3", { opacity: 0 }, { opacity: 1, duration: 0.8 }, "-=0.4");
+        tl.fromTo(".doppel-text-2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1 });
+        tl.fromTo(".doppel-text-3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1 }, "-=0.6");
+        tl.fromTo(".doppel-text-4", { opacity: 0 }, { opacity: 1, duration: 0.8 }, "-=0.4");
+        tl.fromTo(".divider-reveal", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 1 }, "-=0.5");
 
         // 3. Both align and merge
         tl.to(solidPieceRef.current, { x: 0, duration: 1.5 });
@@ -128,16 +130,34 @@ const DoppelPieceScene = () => {
                     </div>
                 </div>
 
-                <div className="text-center space-y-6">
-                    <p className="doppel-text doppel-text-1 text-gray-500 font-mono text-[9px] tracking-[0.5em] uppercase">
-                        Every piece is crafted twice.
-                    </p>
-                    <h2 className="doppel-text doppel-text-2 text-4xl md:text-7xl font-oswald uppercase tracking-[0.05em] leading-tight">
-                        One for the <span className="text-white/30">flesh.</span>
-                    </h2>
-                    <h2 className="doppel-text doppel-text-3 text-4xl md:text-7xl font-oswald uppercase tracking-[0.05em] text-primary system-text-glow leading-tight">
-                        One for the avatar.
-                    </h2>
+                <div className="text-center space-y-12 max-w-4xl px-6">
+                    <div className="space-y-6">
+                        <span className="doppel-text doppel-text-1 text-[#d4af37] font-mono text-[11px] tracking-[0.5em] uppercase block">
+                            THE ORDER
+                        </span>
+                        
+                        <div className="space-y-4">
+                            <h2 className="doppel-text doppel-text-2 text-4xl md:text-7xl font-light text-white tracking-tight leading-tight">
+                                Every piece carries two forms.
+                            </h2>
+                            <h2 className="doppel-text doppel-text-3 text-3xl md:text-6xl font-light text-white/40 tracking-tight leading-tight">
+                                One worn. One eternal.
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div className="space-y-10">
+                        <p className="doppel-text doppel-text-4 text-white/60 font-light tracking-wide text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+                            ENDURA is not a brand — it is an Order. Each physical garment is bound to a Digital Twin: a unique collectible that lives beyond fabric. Your identity exists in both realms.
+                        </p>
+
+                        {/* Diamond Divider */}
+                        <div className="flex items-center justify-center gap-4 divider-reveal">
+                            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent to-white/10" />
+                            <div className="w-2 h-2 border border-[#d4af37] rotate-45" />
+                            <div className="h-[1px] w-24 bg-gradient-to-l from-transparent to-white/10" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
