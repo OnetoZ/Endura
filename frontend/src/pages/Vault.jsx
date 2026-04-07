@@ -345,8 +345,13 @@ const Vault = () => {
     const [vaultReady, setVaultReady] = useState(false);
     const [exiting, setExiting] = useState(false);
     const [isVaultActive, setIsVaultActive] = useState(false);
-    const [isAccessUnlocked, setIsAccessUnlocked] = useState(sessionStorage.getItem('vault_unlocked') === 'true');
+    const [isAccessUnlocked, setIsAccessUnlocked] = useState(false);
     const [bursts, setBursts] = useState([]);
+
+    useEffect(() => {
+        // Reset access on every mount as requested
+        setIsAccessUnlocked(false);
+    }, []);
 
     // Unlock Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);

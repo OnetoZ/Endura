@@ -13,14 +13,37 @@ const CinematicFooter = () => {
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: containerRef.current,
-                start: "top 80%",
+                start: "top 90%",
                 toggleActions: "play none none reverse"
             }
         });
 
-        tl.from(".footer-brand", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
-            .from(".footer-col", { y: 30, opacity: 0, duration: 0.8, stagger: 0.2 }, "-=0.5")
-            .from(".footer-bottom", { opacity: 0, duration: 1 }, "-=0.5");
+        tl.from(".footer-logo", { 
+            scale: 0.8, 
+            y: 40, 
+            opacity: 0, 
+            filter: 'blur(10px)', 
+            duration: 1.2, 
+            ease: "back.out(1.7)" 
+        })
+            .from(".footer-brand > div:nth-child(2)", { 
+                y: 20, 
+                opacity: 0, 
+                duration: 0.8, 
+                ease: "power3.out" 
+            }, "-=0.6")
+            .from(".footer-col", { 
+                y: 30, 
+                opacity: 0, 
+                duration: 0.8, 
+                stagger: 0.15,
+                ease: "power2.out"
+            }, "-=0.4")
+            .from(".footer-bottom", { 
+                opacity: 0, 
+                duration: 1,
+                ease: "power1.inOut"
+            }, "-=0.5");
 
     }, { scope: containerRef });
 
@@ -31,31 +54,46 @@ const CinematicFooter = () => {
 
             <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
                 {/* Brand Column */}
-                <div className="footer-brand col-span-1 md:col-span-2 space-y-8">
-                    <h2 className="text-7xl md:text-9xl font-heading tracking-tight uppercase leading-none hover:text-blue-500 transition-colors duration-500 cursor-default">
-                        ENDURA<span className="text-blue-500">.</span>
-                    </h2>
-                    <p className="max-w-md text-gray-500 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm">
-                        The intersection of high-end fashion and digital permanence in India. 
-                        Building the infrastructure for the next generation of
-                        digital identity and physical luxury.
-                    </p>
+                <div className="footer-brand col-span-1 md:col-span-2 space-y-10">
+                    <div className="relative group w-fit">
+                        <img 
+                            src="/logo.png" 
+                            alt="ENDURA Luxury Streetwear India" 
+                            className="h-12 md:h-16 object-contain footer-logo"
+                            style={{ filter: 'invert(52%) sepia(91%) saturate(3025%) hue-rotate(190deg) brightness(101%) contrast(101%)' }}
+                        />
+                        {/* Corner Brackets */}
+                        <div className="absolute -top-2 -left-2 w-4 h-4 border-l-2 border-t-2 border-blue-500/30 group-hover:border-blue-500 transition-all duration-300" />
+                        <div className="absolute -bottom-2 -right-2 w-4 h-4 border-r-2 border-b-2 border-blue-500/30 group-hover:border-blue-500 transition-all duration-300" />
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <span className="font-mono text-[10px] tracking-[1.5em] text-blue-500/40 uppercase block">
+                            // DIGITAL_LEGACY_PROTOCOL
+                        </span>
+                        <p className="max-w-md text-gray-500 font-light tracking-wide leading-relaxed uppercase text-[10px] md:text-sm">
+                            The intersection of high-end fashion and digital permanence in India. 
+                            Building the infrastructure for the next generation of
+                            digital identity and physical luxury.
+                        </p>
+                    </div>
+
                     {/* Socials */}
                     <div className="flex gap-4 pt-4">
                         <a
                             href="https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
+                            className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-blue-500 hover:text-blue-500 transition-all duration-300 group"
                         >
                             <span className="text-[10px] font-mono uppercase tracking-widest">i</span>
                         </a>
-                        <a
-                            href="mailto:enduraclothing.team&#64;gmail.com"
-                            className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
+                        <button
+                            onClick={() => window.location.href = `mailto:${['enduraclothing', 'team', 'gmail.com'].join('.').replace('.team.', '.team@')}`}
+                            className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-blue-500 hover:text-blue-500 transition-all duration-300 group"
                         >
                             <span className="text-[10px] font-mono uppercase tracking-widest">@</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
 

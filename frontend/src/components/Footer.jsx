@@ -59,7 +59,14 @@ const Footer = () => {
                 <div>
                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Establish Link</h4>
                     <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                        <li><a href="mailto:enduraclothing.team&#64;gmail.com" className="hover:text-accent transition-all normal-case tracking-normal">enduraclothing.team&#64;gmail.com</a></li>
+                        <li>
+                            <button 
+                                onClick={() => window.location.href = `mailto:${['enduraclothing', 'team', 'gmail.com'].join('.').replace('.team.', '.team@')}`}
+                                className="hover:text-accent transition-all normal-case tracking-normal text-left"
+                            >
+                                enduraclothing.team [at] gmail.com
+                            </button>
+                        </li>
                         <li><a href="https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Instagram</a></li>
                         <li><a href="https://gmail.com" className="hover:text-primary transition-all">Gmail</a></li>
                         <li><a href="#" className="hover:text-primary transition-all">Socials</a></li>
