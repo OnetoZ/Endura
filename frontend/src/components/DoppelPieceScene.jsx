@@ -69,7 +69,7 @@ const DoppelPieceScene = () => {
             </div>
 
             <div className="relative z-10 w-full max-w-4xl flex flex-col items-center">
-                <div className="relative w-48 h-72 mb-12 flex items-center justify-center">
+                <div className="relative w-56 h-80 mb-8 flex items-center justify-center">
                     {/* Glow Pulse */}
                     <div ref={glowRef} className="absolute inset-[-40%] bg-radial-gradient from-primary/30 via-transparent to-transparent opacity-0 pointer-events-none" />
 
@@ -78,7 +78,7 @@ const DoppelPieceScene = () => {
                         ref={solidPieceRef}
                         src="/plain_shirt_model.png"
                         alt="IRL Piece"
-                        className="absolute w-full h-full object-cover border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] rounded-md"
+                        className="absolute w-full h-full object-contain border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] rounded-md"
                     />
 
                     {/* Digital Piece Layer (Wrapper for image + logo) */}
@@ -89,12 +89,12 @@ const DoppelPieceScene = () => {
                         <img
                             src="/plain_shirt_model.png"
                             alt="Digital Twin"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                         />
                         {/* The Overlay ENDURA Logo */}
                         <div className="absolute top-[38%] left-[50%] -translate-x-[50%] flex items-center justify-center pointer-events-none mix-blend-multiply opacity-95">
                             <span 
-                                className="font-oswald text-3xl md:text-4xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
+                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
                                 style={{
                                     background: "linear-gradient(to right, #e21ced, #6e02d6)",
                                     WebkitBackgroundClip: "text",
@@ -104,7 +104,7 @@ const DoppelPieceScene = () => {
                                 EN
                             </span>
                             <span 
-                                className="font-oswald text-3xl md:text-4xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)] relative flex items-center justify-center"
+                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)] relative flex items-center justify-center"
                                 style={{
                                     background: "linear-gradient(to right, #cf16db, #7500d1)",
                                     WebkitBackgroundClip: "text",
@@ -114,10 +114,10 @@ const DoppelPieceScene = () => {
                                 }}
                             >
                                 D
-                                <div className="absolute h-[140%] w-[2px] bg-gradient-to-b from-[#e21ced] to-[#6e02d6] drop-shadow-md z-10" />
+                                <div className="absolute h-[140%] w-[3px] bg-gradient-to-b from-[#e21ced] to-[#6e02d6] drop-shadow-md z-10" />
                             </span>
                             <span 
-                                className="font-oswald text-3xl md:text-4xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
+                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
                                 style={{
                                     background: "linear-gradient(to right, #7500d1, #a81cff)",
                                     WebkitBackgroundClip: "text",
@@ -130,17 +130,17 @@ const DoppelPieceScene = () => {
                     </div>
                 </div>
 
-                <div className="text-center space-y-8 max-w-3xl px-6">
+                <div className="text-center space-y-10 max-w-5xl px-6">
                     <div className="space-y-4">
-                        <span className="doppel-text doppel-text-1 text-[#d4af37] font-mono text-[10px] tracking-[0.4em] uppercase block">
+                        <span className="doppel-text doppel-text-1 text-[#d4af37] font-mono text-[11px] tracking-[0.6em] uppercase block">
                             THE ORDER
                         </span>
                         
                         <div className="space-y-2">
-                            <h2 className="doppel-text doppel-text-2 text-3xl md:text-5xl font-light text-white tracking-tight leading-tight">
+                            <h2 className="doppel-text doppel-text-2 text-3xl md:text-6xl font-light text-white tracking-tight leading-none whitespace-nowrap">
                                 Every piece carries two forms.
                             </h2>
-                            <h2 className="doppel-text doppel-text-3 text-2xl md:text-4xl font-light text-white/40 tracking-tight leading-tight">
+                            <h2 className="doppel-text doppel-text-3 text-2xl md:text-5xl font-light text-white/40 tracking-tight leading-none whitespace-nowrap">
                                 One worn. One eternal.
                             </h2>
                         </div>
