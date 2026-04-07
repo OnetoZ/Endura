@@ -233,6 +233,16 @@ const verifyPayment = asyncHandler(async (req, res) => {
     });
 
     if (expectedSignature === razorpay_signature) {
+        // Idempotency check: only reduce stock if not already marks as paid
+        if (order.paymentStatus === 'paid') {
+            console.log('[payment/verify] Order already marked as paid, skipping stock update');
+            return res.status(200).json({
+                success: true,
+                message: 'Payment already verified',
+                dbOrderId: order._id,
+            });
+        }
+
         // Valid payment
         order.paymentStatus = 'paid';
         order.isPaid = true;
@@ -241,6 +251,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
         order.razorpayPaymentId = razorpay_payment_id;
 
         await order.save();
+
+        console.log('[payment/verify] Order status updated to PAID, starting stock reduction');
 
         // Create Payment record
         await Payment.create({
@@ -253,12 +265,26 @@ const verifyPayment = asyncHandler(async (req, res) => {
         });
 
         // Decrement stock and increment sold count
-        for (const item of order.items) {
-            await Product.findByIdAndUpdate(
+        const stockPromises = order.items.map(async (item) => {
+            const qty = Number(item.quantity);
+            if (!qty || qty <= 0) return;
+            
+            console.log(`[payment/verify] Reducing stock for product ${item.product} by ${qty}`);
+            
+            const updatedProduct = await Product.findByIdAndUpdate(
                 item.product,
-                { $inc: { stock: -item.quantity, sold: item.quantity } }
+                { $inc: { stock: -qty, sold: qty } },
+                { new: true, runValidators: true }
             );
-        }
+
+            if (!updatedProduct) {
+                console.error(`[payment/verify] FAILED to find/update product ${item.product}`);
+            } else {
+                console.log(`[payment/verify] Product ${item.product} stock updated. New stock: ${updatedProduct.stock}`);
+            }
+        });
+        
+        await Promise.all(stockPromises);
 
         // Clear the user's cart
         await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
@@ -330,6 +356,8 @@ const webhook = asyncHandler(async (req, res) => {
             order.razorpayPaymentId = razorpayPaymentId;
             await order.save();
             
+            console.log('[payment/webhook] Event payment.captured: status updated to PAID, starting stock reduction');
+
             await Payment.create({
                 orderId: order._id,
                 razorpayOrderId,
@@ -339,12 +367,18 @@ const webhook = asyncHandler(async (req, res) => {
                 status: 'captured',
             });
 
-            for (const item of order.items) {
+            // Decrement stock and increment sold count
+            const stockPromises = order.items.map(async (item) => {
+                const qty = Number(item.quantity);
+                if (!qty || qty <= 0) return;
+                
                 await Product.findByIdAndUpdate(
                     item.product,
-                    { $inc: { stock: -item.quantity, sold: item.quantity } }
+                    { $inc: { stock: -qty, sold: qty } },
+                    { new: true, runValidators: true }
                 );
-            }
+            });
+            await Promise.all(stockPromises);
 
             await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
             await generateVaultItems(order);
