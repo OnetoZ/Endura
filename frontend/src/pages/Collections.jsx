@@ -1,10 +1,19 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 import PhysicalProductCard from '../components/collections/PhysicalProductCard';
+import CollectionsIntro from '../components/collections/CollectionsIntro';
+import { useState } from 'react';
 
 const Collections = () => {
     const { products } = useStore();
+    const [showIntro, setShowIntro] = useState(() => {
+        return !sessionStorage.getItem('collections_intro_played');
+    });
+
+    const handleIntroComplete = () => {
+        setShowIntro(false);
+        sessionStorage.setItem('collections_intro_played', 'true');
+    };
 
     // Use all products from context
     const physicalProducts = products;
@@ -22,7 +31,12 @@ const Collections = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
+        <>
+            <AnimatePresence>
+                {showIntro && <CollectionsIntro onComplete={handleIntroComplete} />}
+            </AnimatePresence>
+
+            <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             {/* Main Content */}
             <motion.div
                 initial={{ opacity: 0 }}
@@ -79,7 +93,8 @@ const Collections = () => {
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full"></div>
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02]"></div>
             </div>
-        </div>
+            </div>
+        </>
     );
 };
 

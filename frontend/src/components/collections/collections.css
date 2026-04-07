@@ -93,7 +93,7 @@
 
 .group:hover .luxury-border {
     border-color: var(--accent);
-    inset: -10px;
+    inset: 0;
     opacity: 0.5;
 }
 

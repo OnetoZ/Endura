@@ -49,8 +49,7 @@ const Cart = () => {
         return acc + (price * qty);
     }, 0);
     const shipping = 0;
-    const taxes = Math.floor(subtotal * 0.05);
-    const total = subtotal + shipping + taxes;
+    const total = subtotal + shipping;
 
     const availableCredits = currentUser?.credits || 0;
     const creditDiscount = useCredits ? Math.min(total, availableCredits) : 0;
@@ -83,13 +82,10 @@ const Cart = () => {
     };
 
     const handleAddressSelect = () => {
-        // Validate address
-        if (userAddresses.length === 0 && !showNewAddress) {
-            setShowNewAddress(true);
-            return;
-        }
-
-        if (showNewAddress) {
+        const addr = getSelectedAddress();
+        
+        // If we are showing new address form, validate it
+        if (showNewAddress || userAddresses.length === 0) {
             if (!newAddress.fullName || !newAddress.address || !newAddress.city || !newAddress.postalCode) {
                 setOrderError('Please fill in all required address fields');
                 return;
@@ -622,10 +618,7 @@ const Cart = () => {
                                         <span className="text-gray-400">Shipping</span>
                                         <span className="text-green-400 font-mono">{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-400">Tax (5%)</span>
-                                        <span className="text-white font-mono">₹{taxes}</span>
-                                    </div>
+
                                     {useCredits && creditDiscount > 0 && (
                                         <div className="flex justify-between text-sm">
                                             <span className="text-primary">Credits Applied</span>
