@@ -48,16 +48,23 @@ const addOrderItems = asyncHandler(async (req, res) => {
     }
 
     // Decrement stock and increment sold count, capture edition numbers
-    for (const item of orderItems) {
+    const stockPromises = orderItems.map(async (item) => {
+        const qty = Number(item.quantity);
+        if (!qty || qty <= 0) return;
+
         const product = await Product.findByIdAndUpdate(
             item.product,
-            { $inc: { stock: -item.quantity, sold: item.quantity } },
-            { new: true }
+            { $inc: { stock: -qty, sold: qty } },
+            { new: true, runValidators: true }
         );
-        // Edition number = total sold (after this purchase)
-        // e.g., if sold was 5 before and quantity=1, edition = 6
-        item.editionNumber = product.sold;
-    }
+        
+        if (product) {
+            // Edition number = total sold (after this purchase)
+            item.editionNumber = product.sold;
+        }
+    });
+
+    await Promise.all(stockPromises);
 
     const order = await Order.create({
         user: req.user._id,

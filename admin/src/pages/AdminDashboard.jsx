@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productService, userService, uploadService, getImageUrl } from '../services/api';
+import { productService, userService, uploadService, getImageUrl, orderService, vaultService } from '../services/api';
 import { toast } from 'react-hot-toast';
 
 const CATEGORY_STYLES = {
@@ -9,6 +9,8 @@ const CATEGORY_STYLES = {
     epic: { border: '#eab308', glow: '#eab30855', label: 'EPIC' },
     legendary: { border: '#a855f7', glow: '#a855f755', label: 'LEGENDARY' },
 };
+
+
 
 const INITIAL_PRODUCT_STATE = {
     name: '',
@@ -44,43 +46,112 @@ const AdminDashboard = () => {
         name: '', description: '', frontImage: '', backImage: '', category: 'common'
     });
 
+    // ── Order Details ──────────────────────────────────────────────────────
+    const [viewingOrder, setViewingOrder] = useState(null);
+
+    useEffect(() => {
+        if (viewingOrder) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [viewingOrder]);
+
     // ── Filters & Search ───────────────────────────────────────────────────
     const [userSearch, setUserSearch] = useState('');
     const [productSearch, setProductSearch] = useState('');
     const [orderFilter, setOrderFilter] = useState('All');
 
+    // ── Redemption Codes ───────────────────────────────────────────────────
+    const [redemptionCodes, setRedemptionCodes] = useState([]);
+    const [isManagingCodes, setIsManagingCodes] = useState(false);
+    const [codeFilter, setCodeFilter] = useState('All');
+    const [codeSearch, setCodeSearch] = useState('');
+
     // Fetch real data from backend
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [productsData, ordersData, usersData, userData, cardsData] = await Promise.all([
+                const [productsData, ordersData, usersData, userData, cardsData, codesData] = await Promise.all([
                     productService.getProducts(),
-                    (await import('../services/api')).orderService.getAllOrders(),
+                    orderService.getAllOrders(),
                     userService.getUsers(),
                     userService.getCurrentUser(),
                     productService.getVaultCards(),
+                    vaultService.getRedemptionCodes()
                 ]);
                 setProducts(productsData.products || []);
                 setOrders(ordersData || []);
                 setUsers(usersData || []);
                 setCurrentUser(userData || null);
                 setVaultCards(cardsData || []);
+                setRedemptionCodes(codesData || []);
                 const vaultData = await productService.getVaultItems();
                 setVaultItems(vaultData || []);
             } catch (error) {
                 console.error('Failed to fetch admin data:', error);
-                toast.error('Failed to load admin data');
+                // Only toast on initial load to avoid spam
+                if (isAuthLoading) toast.error('Failed to load admin data');
             } finally {
                 setIsAuthLoading(false);
             }
         };
 
         fetchData();
-    }, []);
+        const interval = setInterval(fetchData, 30000); // 30s auto-refresh
+        return () => clearInterval(interval);
+    }, [isAuthLoading]);
 
     // ── Products ──────────────────────────────────────────────────────────
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
     const [editingProductId, setEditingProductId] = useState(null);
+
+    // ── Recent Activity Logic ──────────────────────────────────────────────
+    const recentActivities = useMemo(() => {
+        const activities = [];
+
+        // Products
+        products.forEach(p => {
+            activities.push({
+                type: 'product',
+                action: 'Product Added',
+                time: new Date(p.createdAt || Date.now()),
+                detail: p.name,
+                id: p._id || p.id
+            });
+        });
+
+        // Orders
+        orders.forEach(o => {
+            activities.push({
+                type: 'order',
+                action: o.status === 'Processing' ? 'New Order' : `Order ${o.status}`,
+                time: new Date(o.createdAt || Date.now()),
+                detail: `Order #${(o._id || o.id || '').slice(-6)} - ₹${o.totalAmount}`,
+                id: o._id || o.id
+            });
+        });
+
+        // Users
+        users.forEach(u => {
+            activities.push({
+                type: 'user',
+                action: 'User Joined',
+                time: new Date(u.createdAt || Date.now()),
+                detail: u.username || u.email,
+                id: u._id || u.id
+            });
+        });
+
+        return activities
+            .filter(a => a.time)
+            .sort((a, b) => b.time - a.time)
+            .slice(0, 10);
+    }, [products, orders, users]);
+
 
     // Show spinner while profile is being fetched
     if (isAuthLoading) {
@@ -249,6 +320,21 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleUpdateStatus = async (orderId, newStatus) => {
+        try {
+            await orderService.updateOrderStatus(orderId, newStatus);
+            setOrders(prev => prev.map(o => (o._id || o.id) === orderId ? { ...o, status: newStatus } : o));
+            if (viewingOrder && (viewingOrder._id || viewingOrder.id) === orderId) {
+                setViewingOrder(prev => ({ ...prev, status: newStatus }));
+            }
+            toast.success(`Order status updated to ${newStatus}`);
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            toast.error('Failed to update status');
+        }
+    };
+
+
     const StatusWidget = ({ label, value, color = 'primary' }) => (
         <div className="glass border-white/5 p-6 flex flex-col justify-between h-32 relative group overflow-hidden">
             <div className={`absolute top-0 right-0 w-16 h-16 bg-${color}/10 blur-2xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-${color}/20 transition-all`}></div>
@@ -260,6 +346,144 @@ const AdminDashboard = () => {
 
     return (
         <div className="min-h-screen bg-black pt-28 pb-20 px-6 font-sans">
+            {/* Order Details Modal Overlay */}
+            {viewingOrder && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setViewingOrder(null)}></div>
+                    <div className="relative w-full max-w-4xl max-h-[90vh] bg-neutral-900 border border-white/10 overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="sticky top-0 z-10 glass border-b border-white/10 p-6 flex justify-between items-center bg-neutral-900/80 backdrop-blur-xl">
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1 block">Protocol: Detailed Intel</span>
+                                <h2 className="text-2xl font-oswald font-bold uppercase tracking-tight">Order #{(viewingOrder._id || viewingOrder.id || '').slice(-8)}</h2>
+                            </div>
+                            <button 
+                                onClick={() => setViewingOrder(null)}
+                                className="w-10 h-10 flex items-center justify-center border border-white/10 text-gray-500 hover:text-white hover:border-white/30 transition-all"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-12">
+                            {/* Top Grid: User & Status */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 border-b border-white/5 pb-2">Customer Identity</h4>
+                                    <div className="space-y-3">
+                                        <p className="text-lg font-bold uppercase tracking-tight">{viewingOrder.user?.username || viewingOrder.shippingAddress?.name || 'Unknown'}</p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <svg className="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                                <span className="text-primary font-bold lowercase">{viewingOrder.user?.email || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <svg className="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                                <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded font-mono text-white text-[11px]">
+                                                    {viewingOrder.shippingAddress?.phone || viewingOrder.user?.phone || 'NO_CONTACT_DATA'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 border-b border-white/5 pb-2">Shipping Intel</h4>
+                                    <div className="text-xs text-gray-400 space-y-1 font-medium leading-relaxed uppercase">
+                                        <p className="text-white font-bold">{viewingOrder.shippingAddress?.address}</p>
+                                        <p>{viewingOrder.shippingAddress?.city}, {viewingOrder.shippingAddress?.postalCode}</p>
+                                        <p>{viewingOrder.shippingAddress?.country}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 border-b border-white/5 pb-2">Order Lifecycle</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[9px] font-bold text-gray-600 uppercase">Current Status</span>
+                                            <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border ${viewingOrder.status === 'Confirmed' ? 'border-primary/50 text-primary' : 'border-yellow-500/50 text-yellow-500'}`}>
+                                                {viewingOrder.status}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            {['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered'].map(status => (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => handleUpdateStatus(viewingOrder._id || viewingOrder.id, status)}
+                                                    className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all border ${viewingOrder.status === status ? 'bg-white text-black border-white' : 'border-white/10 text-gray-500 hover:border-white/30'}`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Payment Section */}
+                            <div className="glass border-white/5 p-6 bg-white/[0.02]">
+                                <div className="flex flex-wrap items-center justify-between gap-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Financial Clearance</p>
+                                            <p className="text-sm font-bold uppercase">{viewingOrder.paymentMethod} // {viewingOrder.paymentStatus || 'UNPAID'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Total Transaction</p>
+                                        <p className="text-2xl font-oswald font-bold text-accent tracking-tighter">₹{viewingOrder.totalAmount}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Items List */}
+                            <div className="space-y-6">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 border-b border-white/5 pb-2">Acquired Assets</h4>
+                                <div className="space-y-4">
+                                    {viewingOrder.items?.map((item, idx) => (
+                                        <div key={idx} className="flex flex-col md:flex-row items-center gap-6 p-4 border border-white/5 hover:bg-white/[0.02] transition-all group">
+                                            <div className="w-20 h-20 bg-neutral-800 border border-white/10 shrink-0 overflow-hidden">
+                                                <img src={getImageUrl(item.image)} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={item.name} />
+                                            </div>
+                                            <div className="flex-1 text-center md:text-left">
+                                                <p className="text-sm font-black uppercase tracking-widest group-hover:text-primary transition-colors">{item.name}</p>
+                                                <p className="text-[10px] text-gray-500 uppercase tracking-tight mt-1">Edition: #{item.editionNumber || 'GENESIS'}</p>
+                                            </div>
+                                            <div className="flex gap-12 text-center md:text-right">
+                                                <div>
+                                                    <p className="text-[10px] text-gray-600 uppercase font-black mb-1">Unit Val</p>
+                                                    <p className="text-sm font-bold">₹{item.price}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-gray-600 uppercase font-black mb-1">Qty</p>
+                                                    <p className="text-sm font-bold">x{item.quantity}</p>
+                                                </div>
+                                                <div className="hidden md:block">
+                                                    <p className="text-[10px] text-primary uppercase font-black mb-1">Subtotal</p>
+                                                    <p className="text-sm font-bold text-primary">₹{item.price * item.quantity}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer Actions */}
+                        <div className="sticky bottom-0 z-10 glass border-t border-white/10 p-6 flex justify-end bg-neutral-900/80 backdrop-blur-xl">
+                            <button 
+                                onClick={() => setViewingOrder(null)}
+                                className="px-10 py-4 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all"
+                            >
+                                Close Intel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="container mx-auto max-w-7xl">
                 {/* Dashboard Header */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-8">
@@ -306,27 +530,56 @@ const AdminDashboard = () => {
                             <StatusWidget label="Avg. Price" value={`₹${Math.round(products.reduce((acc, p) => acc + p.price, 0) / products.length) || 0}`} color="yellow-400" />
 
                             {/* Recent Activity Mini-Feed */}
-                            <div className="lg:col-span-3 glass border-white/5 p-8 mt-4">
-                                <h3 className="text-xl font-oswald font-bold uppercase mb-6 flex items-center gap-3">
+                            <div className="lg:col-span-3 glass border-white/5 p-8 mt-4 overflow-hidden relative">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                                <h3 className="text-xl font-oswald font-bold uppercase mb-8 flex items-center gap-3 relative z-10">
                                     <span className="w-1.5 h-6 bg-primary"></span>
                                     Recent Activity
                                 </h3>
-                                <div className="space-y-4">
-                                    {[
-                                        { action: 'Product Added', time: '2m ago', detail: 'Alpha Core Shield' },
-                                        { action: 'Store Purchase', time: '15m ago', detail: 'Order #8832 Processed' },
-                                        { action: 'Order Shipped', time: '1h ago', detail: 'Order #ORD-1723467 dispatched' }
-                                    ].map((log, i) => (
-                                        <div key={i} className="flex items-center justify-between py-4 border-b border-white/5 hover:bg-white/5 px-2 transition-all">
-                                            <div className="flex items-center gap-8">
-                                                <span className="text-[10px] font-mono text-primary/60">{log.time}</span>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black uppercase text-white tracking-widest">{log.action}</span>
-                                                    <span className="text-[10px] text-gray-500 uppercase">{log.detail}</span>
+                                <div className="space-y-4 relative z-10">
+                                    {recentActivities.length === 0 ? (
+                                        <div className="py-10 text-center text-gray-600 text-[10px] font-black uppercase tracking-widest">No recent activity detected</div>
+                                    ) : (
+                                        recentActivities.map((log, i) => {
+                                            const typeColors = {
+                                                product: 'text-blue-400',
+                                                order: 'text-primary',
+                                                user: 'text-purple-400'
+                                            };
+                                            const typeGlows = {
+                                                product: 'group-hover:border-blue-500/50',
+                                                order: 'group-hover:border-primary/50',
+                                                user: 'group-hover:border-purple-500/50'
+                                            };
+
+                                            return (
+                                                <div key={i} className="flex flex-col md:flex-row md:items-center justify-between py-5 border-b border-white/5 hover:bg-white/[0.02] px-4 transition-all group">
+                                                    <div className="flex items-center gap-6 mb-2 md:mb-0">
+                                                        <div className={`flex flex-col items-center justify-center min-w-[70px] py-2 px-3 bg-white/5 border border-white/10 ${typeGlows[log.type] || 'group-hover:border-primary/30'} transition-colors`}>
+                                                            <span className="text-[14px] font-black text-white leading-none">{new Date(log.time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                                                            <span className={`text-[8px] font-bold ${typeColors[log.type] || 'text-primary'} uppercase tracking-tighter mt-1`}>{new Date(log.time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className={`text-[12px] font-black uppercase text-white tracking-widest ${typeColors[log.type] ? `group-hover:${typeColors[log.type]}` : 'group-hover:text-primary'} transition-colors`}>{log.action}</span>
+                                                            <span className="text-[10px] text-gray-500 uppercase tracking-tight">{log.detail}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <span className="text-[9px] font-mono text-gray-600 uppercase">
+                                                            {(() => {
+                                                                const diff = (new Date() - new Date(log.time)) / 1000;
+                                                                if (diff < 60) return 'Just now';
+                                                                if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+                                                                if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+                                                                return `${Math.floor(diff / 86400)}d ago`;
+                                                            })()}
+                                                        </span>
+                                                        <div className={`w-8 h-px bg-white/10 group-hover:w-16 transition-all hidden md:block ${typeColors[log.type] ? `group-hover:bg-${typeColors[log.type].replace('text-', '')}` : 'group-hover:bg-primary'}`}></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                            );
+                                        })
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -600,6 +853,7 @@ const AdminDashboard = () => {
                                         onChange={(e) => setOrderFilter(e.target.value)}
                                     >
                                         <option value="All">All Statuses</option>
+                                        <option value="Pending">Pending</option>
                                         <option value="Confirmed">Confirmed</option>
                                         <option value="Processing">Processing</option>
                                         <option value="Shipped">Shipped</option>
@@ -652,7 +906,12 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </td>
                                                     <td className="py-6 text-right">
-                                                        <button className="px-4 py-2 bg-primary/20 text-primary text-[8px] font-black uppercase hover:bg-primary hover:text-black transition-all">View Details</button>
+                                                        <button 
+                                                            onClick={() => setViewingOrder(o)}
+                                                            className="px-4 py-2 bg-primary/20 text-primary text-[8px] font-black uppercase hover:bg-primary hover:text-black transition-all"
+                                                        >
+                                                            View Details
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -669,24 +928,103 @@ const AdminDashboard = () => {
                             {/* Header */}
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-4">
                                 <div>
-                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Vault Cards</h3>
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage collectible vault cards shown to users</p>
+                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Vault Protocol</h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage collectible cards and redemption codes</p>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setIsAddingCard(!isAddingCard);
-                                        setEditingCardId(null);
-                                        setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
-                                    }}
-                                    className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white'
-                                        }`}
-                                >
-                                    {isAddingCard ? '✕ Cancel' : '+ Add Card'}
-                                </button>
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => setIsManagingCodes(!isManagingCodes)}
+                                        className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isManagingCodes ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border border-white/10 text-gray-500 hover:text-white'}`}
+                                    >
+                                        {isManagingCodes ? '✕ Back to Cards' : 'Manage Redemption Codes'}
+                                    </button>
+                                    {!isManagingCodes && (
+                                        <button
+                                            onClick={() => {
+                                                setIsAddingCard(!isAddingCard);
+                                                setEditingCardId(null);
+                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
+                                            }}
+                                            className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-accent text-black hover:bg-white'}`}
+                                        >
+                                            {isAddingCard ? '✕ Cancel' : '+ Add Card'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Add Card Form */}
-                            {isAddingCard && (
+                            {isManagingCodes ? (
+                                <div className="space-y-8 animate-in fade-in duration-500">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                        <div className="flex gap-4">
+                                            <select
+                                                className="bg-black border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
+                                                value={codeFilter}
+                                                onChange={(e) => setCodeFilter(e.target.value)}
+                                            >
+                                                <option value="All">All Statuses</option>
+                                                <option value="available">Available Only</option>
+                                                <option value="redeemed">Redeemed Only</option>
+                                            </select>
+                                            <input
+                                                type="text"
+                                                placeholder="SEARCH CODE..."
+                                                className="bg-black/50 border border-white/10 px-5 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest w-64"
+                                                value={codeSearch}
+                                                onChange={(e) => setCodeSearch(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
+                                                <tr>
+                                                    <th className="pb-4">Serial (Out of 100)</th>
+                                                    <th className="pb-4">Redemption Code</th>
+                                                    <th className="pb-4">Status</th>
+                                                    <th className="pb-4">Operative</th>
+                                                    <th className="pb-4">Timestamp</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-white/5 text-sm">
+                                                {redemptionCodes
+                                                    .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
+                                                    .filter(c => !codeSearch || c.code.toLowerCase().includes(codeSearch.toLowerCase()))
+                                                    .map(c => (
+                                                        <tr key={c._id || c.serialNumber} className="group hover:bg-white/5 transition-all transition-colors duration-300">
+                                                            <td className="py-6 font-mono text-xs text-gray-400 font-bold">{c.serialNumber}/100</td>
+                                                            <td className="py-6">
+                                                                <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded font-mono text-primary text-xs uppercase select-all tracking-wider shadow-inner">
+                                                                    {c.code}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-6">
+                                                                <span className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest border ${c.isRedeemed ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-green-500/10 border-green-500/30 text-green-500'}`}>
+                                                                    {c.isRedeemed ? 'REDEEMED' : 'AVAILABLE'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-6 uppercase font-bold text-[10px]">
+                                                                {c.redeemedBy ? (
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-white">{c.redeemedBy.username}</span>
+                                                                        <span className="text-[8px] text-gray-500 font-normal lowercase">{c.redeemedBy.email}</span>
+                                                                    </div>
+                                                                ) : <span className="text-gray-700 font-mono tracking-tighter">-- PENDING REDEMPTION --</span>}
+                                                            </td>
+                                                            <td className="py-6 font-mono text-[10px] text-gray-500">
+                                                                {c.redeemedAt ? new Date(c.redeemedAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '--'}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Add Card Form */}
+                                    {isAddingCard && (
                                 <div className="glass border-primary/20 p-8 mb-10 animate-in slide-in-from-top-4 duration-500 relative">
                                     <div className="absolute top-0 left-0 w-16 h-px bg-accent" />
                                     <div className="absolute top-0 left-0 w-px h-16 bg-accent" />
@@ -885,8 +1223,10 @@ const AdminDashboard = () => {
                                     })}
                                 </div>
                             )}
-                        </div>
+                        </>
                     )}
+                </div>
+            )}
 
                     {activeTab === 'users' && (
                         <div className="animate-in fade-in duration-500">
@@ -979,7 +1319,7 @@ const AdminDashboard = () => {
 
 
             {/* Global Admin Styles */}
-            < style > {`
+            <style>{`
                 .glass {
                     background: rgba(255, 255, 255, 0.03);
                     backdrop-filter: blur(10px);
@@ -997,7 +1337,7 @@ const AdminDashboard = () => {
                 .reveal {
                     animation: slideInUp 0.8s ease-out forwards;
                 }
-            `}</style >
+            `}</style>
         </div >
     );
 };

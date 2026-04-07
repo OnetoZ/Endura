@@ -186,6 +186,23 @@ export const productService = {
     },
 };
 
+
+
+export const vaultService = {
+    getRedemptionCodes: async (filters = {}) => {
+        const response = await api.get('/vault/codes', { params: filters });
+        return response.data;
+    },
+    importRedemptionCodes: async (codes) => {
+        const response = await api.post('/vault/codes/import', { codes });
+        return response.data;
+    },
+    redeemCode: async (code) => {
+        const response = await api.post('/vault/redeem-code', { code });
+        return response.data;
+    }
+};
+
 export const orderService = {
     placeOrder: async (orderData) => {
         const response = await api.post('/orders', orderData);
@@ -201,6 +218,10 @@ export const orderService = {
     },
     getOrderById: async (id) => {
         const response = await api.get(`/orders/${id}`);
+        return response.data;
+    },
+    updateOrderStatus: async (id, status) => {
+        const response = await api.put(`/orders/${id}/status`, { status });
         return response.data;
     },
     createRazorpayOrder: async (orderData) => {
