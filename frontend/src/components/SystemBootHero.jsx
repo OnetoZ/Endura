@@ -74,7 +74,7 @@ const SystemBootHero = () => {
     return (
         <section ref={containerRef} id="hero" className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
             {/* Screen Reader / SEO H1 (Hidden Visually) */}
-            <h1 className="sr-only">Endura Streetwear | Premium Cinematic Apparel in Bangalore</h1>
+            <h1 className="sr-only">ENDURA official | Luxury Streetwear India</h1>
 
             {/* Master Cinematic Hero Image with Parallax */}
             <div className="absolute inset-0 z-0">
@@ -82,7 +82,7 @@ const SystemBootHero = () => {
                     ref={bgRef}
                     className="w-full h-full bg-cover bg-center transition-all duration-[8000ms] ease-out"
                     style={{
-                        backgroundImage: 'url(/hero.png)',
+                        backgroundImage: 'url(/hero-luxury.png)',
                         transform: bootStage >= 1 ? 'scale(1.02)' : 'scale(1.1)',
                         opacity: bootStage >= 1 ? 0.7 : 0
                     }}
@@ -160,13 +160,14 @@ const SystemBootHero = () => {
                 </div>
 
                 <div className={`transition-all duration-1000 delay-200 ${bootStage >= 5 ? 'opacity-100' : 'opacity-0'}`}>
-                    <h2 className="text-lg md:text-3xl font-oswald uppercase tracking-[0.4em] text-white mb-6">
-                        WE EXIST <span className="text-primary system-text-glow">TWICE.</span>
+                    <h2 className="text-xl md:text-4xl font-heading uppercase tracking-[0.4em] text-white mb-6">
+                        LUXURY <span className="text-gold italic">STREETWEAR</span> INDIA
                     </h2>
-                    <p className="text-[10px] md:text-xs text-gray-400 font-light tracking-[0.6em] uppercase mb-12">
-                        PHYSICAL <span className="text-primary mx-2">X</span> DIGITAL
+                    <p className="text-[10px] md:text-xs text-gray-500 font-light tracking-[0.6em] uppercase mb-12 max-w-lg mx-auto leading-loose">
+                        CRAFTED NOT FOR THE MASSES, <br /> BUT FOR THE <span className="text-accent">CHOSEN FEW.</span>
                     </p>
                 </div>
+
 
                 <div className={`transition-all duration-1000 delay-400 ${bootStage >= 5 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                     <Link to="/collections" className="group relative inline-block overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95">

@@ -3,6 +3,7 @@ import { useStore } from '../context/StoreContext';
 import PhysicalProductCard from '../components/collections/PhysicalProductCard';
 import CollectionsIntro from '../components/collections/CollectionsIntro';
 import { useState } from 'react';
+import SEO from '../components/SEO';
 
 const Collections = () => {
     const { products } = useStore();
@@ -35,6 +36,12 @@ const Collections = () => {
             <AnimatePresence>
                 {showIntro && <CollectionsIntro onComplete={handleIntroComplete} />}
             </AnimatePresence>
+
+            <SEO 
+                title="The Collection | Season 01 Physical Assets"
+                description="Explore Season 01 from Endura. Tactical engineering meets premium fabric. Luxury streetwear and limited production runs in India."
+                canonical="/collections"
+            />
 
             <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             {/* Main Content */}
