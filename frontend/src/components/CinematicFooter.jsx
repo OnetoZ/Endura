@@ -36,7 +36,7 @@ const CinematicFooter = () => {
                         ENDURA<span className="text-primary">.</span>
                     </h2>
                     <p className="max-w-md text-gray-500 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm">
-                        The intersection of high-end fashion and digital permanence.
+                        The intersection of high-end fashion and digital permanence in India. 
                         Building the infrastructure for the next generation of
                         digital identity and physical luxury.
                     </p>

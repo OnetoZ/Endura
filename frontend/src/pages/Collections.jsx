@@ -33,15 +33,14 @@ const Collections = () => {
 
     return (
         <>
+            <SEO 
+                title="official | Season_01 Physical Assets"
+                description="Explore ENDURA's Season_01 collection. Premium tactical streetwear and physical assets crafted for the chosen few in India."
+                canonical="/collections"
+            />
             <AnimatePresence>
                 {showIntro && <CollectionsIntro onComplete={handleIntroComplete} />}
             </AnimatePresence>
-
-            <SEO 
-                title="The Collection | Season 01 Physical Assets"
-                description="Explore Season 01 from Endura. Tactical engineering meets premium fabric. Luxury streetwear and limited production runs in India."
-                canonical="/collections"
-            />
 
             <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             {/* Main Content */}
