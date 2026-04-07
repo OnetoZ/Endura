@@ -5,24 +5,27 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://checkout.razorpay.com https://cdn.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http://localhost:*; connect-src 'self' http://localhost:* ws://localhost:* https: wss: https://api.razorpay.com; frame-src 'self' https://accounts.google.com https://checkout.razorpay.com https://api.razorpay.com; object-src 'none';" />
   
   <!-- SEO Optimization -->
-  <title>ENDURA official | Luxury Streetwear India</title>
+  <title>ENDURA official | Luxury Streetwear & Digital Collectibles India</title>
   <meta name="description" content="ENDURA is a luxury streetwear brand from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few." />
   <meta name="keywords" content="Endura, Endura India, Luxury Streetwear India, Premium Streetwear, Techwear India, Digital Collectibles, Cinematic Apparel, Exclusive Drops" />
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://wearendura.com/" />
-  <meta property="og:title" content="ENDURA official | Luxury Streetwear India" />
+  <meta property="og:title" content="ENDURA official | Luxury Streetwear & Digital Collectibles India" />
   <meta property="og:description" content="ENDURA is a luxury streetwear brand from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few." />
   <meta property="og:image" content="https://wearendura.com/logo.png" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://wearendura.com/" />
-  <meta property="twitter:title" content="ENDURA official | Luxury Streetwear India" />
+  <meta property="twitter:title" content="ENDURA official | Luxury Streetwear & Digital Collectibles India" />
   <meta property="twitter:description" content="ENDURA is a luxury streetwear brand from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few." />
   <meta property="twitter:image" content="https://wearendura.com/logo.png" />
 
@@ -40,6 +43,11 @@
             "@type": "ImageObject",
             "url": "https://wearendura.com/logo.png"
           },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "enduraclothing.team@gmail.com",
+            "contactType": "customer support"
+          },
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "N/A",
@@ -49,7 +57,7 @@
             "addressCountry": "IN"
           },
           "sameAs": [
-            "https://www.instagram.com/enduratheorder"
+            "https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
           ]
         },
         {
@@ -65,6 +73,15 @@
     }
   </script>
 
+  <style>
+    /* Critical CSS for SEO Pre-render */
+    #root-static-header { padding: 2rem; font-family: sans-serif; background: #000; color: #fff; }
+    #root-static-main { padding: 2rem; font-family: sans-serif; background: #111; color: #ddd; }
+    .static-nav { margin-top: 1rem; border-top: 1px solid #333; padding-top: 1rem; }
+    .static-nav a { color: #d4af37; margin-right: 1.5rem; text-decoration: none; font-weight: bold; }
+    .seo-text { line-height: 1.6; margin-bottom: 1.5rem; }
+  </style>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -74,20 +91,29 @@
 
 <body>
   <div id="root">
-    <!-- Static Pre-render Output for SEO bots -->
-    <header style="padding: 2rem; font-family: sans-serif; background: #000; color: #fff;">
-      <h1>ENDURA official | Luxury Streetwear India</h1>
-      <p>Welcome to <strong>Endura</strong>, the premier luxury streetwear brand from India. Exclusive drops and digital collectibles for the chosen few.</p>
+    <!-- Static Pre-render Output for SEO bots - NO INLINE STYLES -->
+    <header id="root-static-header">
+      <h1>ENDURA official | Luxury Streetwear & Digital Collectibles India</h1>
+      <p class="seo-text">Welcome to <strong>Endura</strong>, the premier luxury streetwear brand from India. Our mission is to bridge the gap between physical high-fashion and digital permanence through exclusive drops and rare collectibles.</p>
+      <nav class="static-nav">
+        <a href="/">Home</a>
+        <a href="/shop">Shop Inventory</a>
+        <a href="/collections">Collections</a>
+        <a href="/vault">The Vault</a>
+        <a href="/cult">The Cult</a>
+      </nav>
     </header>
-    <main style="padding: 2rem; font-family: sans-serif; background: #111; color: #ddd;">
+    <main id="root-static-main">
       <section>
         <h2>Endura: India's Luxury Streetwear Revolution</h2>
-        <p>At wearendura.com, we define the future of Streetwear in India. From high-quality cinematic apparel to the latest exclusive drops, Endura redefines luxury urban wear.</p>
-        <img src="/logo.png" alt="Endura Streetwear India Logo - Premium Luxury Apparel" width="150" height="150" style="margin-top:20px;" />
+        <p class="seo-text">At wearendura.com, we define the future of premium streetwear in India. Our design philosophy merges technical engineering with premium fabrics, creating a unique aesthetic for the modern urban audience. From high-quality cinematic apparel to the latest exclusive drops, Endura redefines luxury urban wear by offering pieces that are crafted not for the masses, but for the chosen few.</p>
+        <p class="seo-text">Our collections feature oversized hoodies, tactical techwear, and luxury apparel that resonates with the bold and the visionary. Every piece is a statement of identity, designed to last both in the physical realm and within your digital archives.</p>
+        <img src="/logo.png" alt="Endura Streetwear India Logo - Premium Luxury Apparel & Digital Collectibles" width="150" height="150" />
       </section>
       <section>
-        <h3>Exclusive Digital Collectibles</h3>
-        <p>Beyond our physical apparel, Endura offers unique digital collectibles, merging digital art with premium lifestyle for the ultimate luxury experience.</p>
+        <h3>Exclusive Digital Collectibles & Virtual Assets</h3>
+        <p class="seo-text">Beyond our physical apparel, Endura offers unique digital collectibles and virtual assets. By merging digital art with premium lifestyle, we provide an unparalleled luxury experience. Our 'Vault' is a secure archive where your digital legacy is preserved, allowing you to collect rare assets that represent your status within the Endura network.</p>
+        <p class="seo-text">Join the evolution of fashion. Explore the factions, secure your archives, and become part of the Endura cult today. Experience the perfect synergy of physical luxury and digital innovation in India's first tech-forward streetwear brand.</p>
       </section>
     </main>
   </div>

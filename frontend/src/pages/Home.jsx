@@ -29,7 +29,7 @@ const Home = () => {
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">
             <SEO 
-                title="official | Luxury Streetwear India"
+                title="official | Luxury Streetwear & Digital Collectibles India"
                 description="ENDURA is a luxury streetwear brand from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few."
                 canonical="/"
                 image="https://wearendura.com/logo.png"
