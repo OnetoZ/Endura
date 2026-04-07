@@ -59,7 +59,6 @@ const CartSummary = ({ subtotal, total, credits, useCredits, onToggleCredits, on
 
                     <div className="text-right space-y-1">
                         <div className="flex items-center justify-end gap-2">
-                            <span className="text-[9px] font-mono text-accent/60 uppercase tracking-[0.3em] leading-none">Net_Manifest</span>
                             <span className="w-1 h-1 bg-accent rounded-full animate-pulse" />
                         </div>
                         <div className="text-4xl font-heading text-accent price-glow tracking-tighter">
