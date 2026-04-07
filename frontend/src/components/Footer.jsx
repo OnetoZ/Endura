@@ -11,13 +11,19 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 md:gap-16">
                 {/* Brand Section */}
                 <div className="col-span-1 md:col-span-1 flex flex-col items-start gap-6">
-                    <Link to="/" className="group">
-                        <img
-                            src="/logo.png"
-                            alt="ENDURA"
-                            className="h-10 w-auto object-contain transition-all duration-500 group-hover:brightness-125"
-                            style={{ filter: 'invert(52%) sepia(91%) saturate(3025%) hue-rotate(190deg) brightness(101%) contrast(101%)' }}
-                        />
+                    <Link to="/" className="group relative">
+                        {/* Logo Container with High-End Branding */}
+                        <div className="relative">
+                            <img
+                                src="/logo.png"
+                                alt="ENDURA"
+                                className="h-10 w-auto object-contain transition-all duration-500 group-hover:brightness-125"
+                                style={{ filter: 'invert(52%) sepia(91%) saturate(3025%) hue-rotate(190deg) brightness(101%) contrast(101%)' }}
+                            />
+                            {/* Animated Corner Brackets in Blue */}
+                            <div className="absolute -top-1 -left-1 w-3 h-3 border-l border-t border-blue-500/40 group-hover:border-blue-500 transition-all duration-300" />
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 border-r border-b border-blue-500/40 group-hover:border-blue-500 transition-all duration-300" />
+                        </div>
                     </Link>
                     <p className="text-gray-500 text-[11px] leading-relaxed uppercase tracking-widest max-w-[240px]">
                         Luxury streetwear from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few.
@@ -53,7 +59,7 @@ const Footer = () => {
                 <div>
                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Establish Link</h4>
                     <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                        <li><a href="mailto:enduraclothing.team@gmail.com" className="hover:text-accent transition-all normal-case tracking-normal">enduraclothing.team@gmail.com</a></li>
+                        <li><a href="mailto:enduraclothing.team&#64;gmail.com" className="hover:text-accent transition-all normal-case tracking-normal">enduraclothing.team&#64;gmail.com</a></li>
                         <li><a href="https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Instagram</a></li>
                         <li><a href="https://gmail.com" className="hover:text-primary transition-all">Gmail</a></li>
                         <li><a href="#" className="hover:text-primary transition-all">Socials</a></li>

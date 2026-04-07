@@ -42,24 +42,30 @@ const PageLoader = () => {
     if (!isVisible) return null;
 
     return (
-        <div className="page-loader-bg fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center opacity-0 pointer-events-none">
-            {/* Subtle Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(147,112,219,0.05)_0%,transparent_70%)]" />
+        <div className="page-loader-bg fixed inset-0 z-[9999] bg-black flex items-center justify-center opacity-0 pointer-events-none">
+            {/* Ultra-precise Background Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.12)_0%,transparent_60%)]" />
             
-            <div className="relative text-center space-y-8">
-                <img 
-                    src="/logo.png" 
-                    alt="ENDURA" 
-                    className="page-loader-logo w-48 md:w-80 object-contain opacity-0"
-                />
+            <div className="relative flex flex-col items-center justify-center space-y-10">
+                <div className="relative">
+                    <img 
+                        src="/logo.png" 
+                        alt="ENDURA" 
+                        className="page-loader-logo w-64 md:w-[450px] object-contain opacity-0 brightness-125"
+                    />
+                    {/* Secondary Glow behind logo */}
+                    <div className="absolute inset-0 bg-blue-500/10 blur-[100px] -z-10 rounded-full" />
+                </div>
                 
-                <p className="page-loader-tagline font-mono text-[8px] md:text-[10px] tracking-[1.5em] text-white/40 uppercase opacity-0 mr-[-1.5em]">
-                    // DIGITAL_LEGACY_PROTOCOL
-                </p>
+                <div className="page-loader-tagline overflow-hidden w-full flex justify-center opacity-0">
+                    <p className="font-mono text-[9px] md:text-[11px] tracking-[1.8em] text-blue-500/60 uppercase mr-[-1.8em] whitespace-nowrap">
+                        // DIGITAL_LEGACY_PROTOCOL
+                    </p>
+                </div>
             </div>
 
             {/* Scan line effect */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
         </div>
     );
 };

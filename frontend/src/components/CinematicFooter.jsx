@@ -51,7 +51,7 @@ const CinematicFooter = () => {
                             <span className="text-[10px] font-mono uppercase tracking-widest">i</span>
                         </a>
                         <a
-                            href="mailto:enduraclothing.team@gmail.com"
+                            href="mailto:enduraclothing.team&#64;gmail.com"
                             className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
                         >
                             <span className="text-[10px] font-mono uppercase tracking-widest">@</span>
