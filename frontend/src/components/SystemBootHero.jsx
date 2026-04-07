@@ -74,7 +74,7 @@ const SystemBootHero = () => {
     return (
         <section ref={containerRef} id="hero" className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
             {/* Screen Reader / SEO H1 (Hidden Visually) */}
-            <h1 className="sr-only">ENDURA official | Luxury Streetwear India</h1>
+            <h1 className="sr-only">ENDURA official | Luxury Streetwear & Digital Collectibles India</h1>
 
             {/* Master Cinematic Hero Image with Parallax */}
             <div className="absolute inset-0 z-0">

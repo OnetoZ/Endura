@@ -42,6 +42,8 @@ function ScrollToTop() {
   return null;
 }
 
+import PageLoader from './components/PageLoader';
+
 function AppLayout() {
   const location = useLocation();
   const { currentUser } = useStore();
@@ -80,6 +82,7 @@ function AppLayout() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-black overflow-x-hidden">
+      <PageLoader />
       <ScrollToTop />
       {showNavbar && <Navbar />}
       <main key={location.pathname} className="flex-grow">

@@ -32,8 +32,8 @@ const CinematicFooter = () => {
             <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
                 {/* Brand Column */}
                 <div className="footer-brand col-span-1 md:col-span-2 space-y-8">
-                    <h2 className="text-7xl md:text-9xl font-heading tracking-tight uppercase leading-none hover:text-primary transition-colors duration-500 cursor-default">
-                        ENDURA<span className="text-primary">.</span>
+                    <h2 className="text-7xl md:text-9xl font-heading tracking-tight uppercase leading-none hover:text-blue-500 transition-colors duration-500 cursor-default">
+                        ENDURA<span className="text-blue-500">.</span>
                     </h2>
                     <p className="max-w-md text-gray-500 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm">
                         The intersection of high-end fashion and digital permanence in India. 
@@ -42,16 +42,20 @@ const CinematicFooter = () => {
                     </p>
                     {/* Socials */}
                     <div className="flex gap-4 pt-4">
-                        {['instagram', 'twitter', 'discord'].map((social) => (
-                            <a
-                                key={social}
-                                href="#"
-                                className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
-                            >
-                                <span className="text-[10px] font-mono uppercase tracking-widest">{social[0]}</span>
-                                {/* In a real app, replace with actual icons */}
-                            </a>
-                        ))}
+                        <a
+                            href="https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
+                        >
+                            <span className="text-[10px] font-mono uppercase tracking-widest">i</span>
+                        </a>
+                        <a
+                            href="mailto:enduraclothing.team@gmail.com"
+                            className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all duration-300 group"
+                        >
+                            <span className="text-[10px] font-mono uppercase tracking-widest">@</span>
+                        </a>
                     </div>
                 </div>
 
