@@ -409,13 +409,17 @@ const Vault = () => {
 
         if (unlockCode.toUpperCase() === 'ENDURA-LEVEL1' || /^\d+$/.test(unlockCode)) {
             if (isModalOpen) {
-                // If it was the modal for a specific item
+                // Specific item unlock modal
                 setRitualId(targetItem.id); 
                 setIsModalOpen(false);
             } else {
-                // If it was the main access code section
+                // Initial Vault Access: Trigger a ceremonial reveal of the first item
                 setIsAccessUnlocked(true);
-                sessionStorage.setItem('vault_unlocked', 'true');
+                // Trigger a ritual for the first available item as a 'Welcome' reveal
+                if (vaultItems.length > 0) {
+                    setTargetItem(vaultItems[0]);
+                    setRitualId(vaultItems[0].id);
+                }
             }
             toast.success('DECRYPTION SUCCESSFUL', { style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' } });
         } else {
@@ -751,35 +755,47 @@ const Vault = () => {
                                     </svg>
                                 </button>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center w-full">
-                                    <div className="relative h-[300px] md:h-[500px] flex items-center justify-center">
-                                        <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-center w-full px-4">
+                                    <div className="relative h-[300px] md:h-[600px] flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-primary/10 blur-[150px] rounded-full" />
                                         <DressItem 
                                             item={{ ...previewItem, image: previewItem.image }}
                                             vaultReady={true}
                                         />
                                     </div>
                                     
-                                    <div className="space-y-8 text-center md:text-left">
-                                        <div className="space-y-2">
-                                            <span className="font-mono text-xs text-primary tracking-[0.4em] uppercase">
+                                    <div className="space-y-10 text-center md:text-left">
+                                        <div className="space-y-4">
+                                            <span className="font-mono text-[10px] text-[#d4af37] tracking-[0.5em] uppercase">
                                                 ARCHIVE: // {previewItem.tier}
                                             </span>
-                                            <h2 className="text-4xl md:text-6xl font-heading font-black tracking-tight uppercase leading-none">
+                                            <h2 className="text-4xl md:text-7xl font-heading font-black tracking-tight uppercase leading-none break-words">
                                                 {previewItem.name}
                                             </h2>
+                                            <div className="flex items-center justify-center md:justify-start gap-3">
+                                                <div className="h-px w-8 bg-[#d4af37]/30" />
+                                                <span className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Protocol Verified</span>
+                                            </div>
                                         </div>
                                         
-                                        <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-md">
-                                            {previewItem.description || "Experimental digital artifact bound to physical legacy. Part of the Endura protocol."}
-                                        </p>
-
-                                        <div className="pt-8 border-t border-white/10 flex flex-wrap gap-4 justify-center md:justify-start">
-                                            <div className="px-4 py-2 border border-white/20 bg-white/5 rounded-full text-[10px] font-mono uppercase tracking-widest text-white/60">
-                                                STATUS: DECRYPTED
+                                        <div className="space-y-6">
+                                            <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
+                                                {previewItem.description || "Experimental digital artifact bound to physical luxury. Part of the Endura protocol."}
+                                            </p>
+                                            
+                                            <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-[0.2em] text-[#d4af37]/60">
+                                                <span>PHASE: 01_DECRYPTION</span>
+                                                <span className="text-white/10">|</span>
+                                                <span>REWARDS: SYNC_READY</span>
                                             </div>
-                                            <div className="px-4 py-2 border border-white/20 bg-white/5 rounded-full text-[10px] font-mono uppercase tracking-widest text-white/60">
-                                                OWNER: VERIFIED
+                                        </div>
+
+                                        <div className="pt-10 border-t border-white/5 flex flex-wrap gap-4 justify-center md:justify-start">
+                                            <div className="px-5 py-2.5 border border-[#d4af37]/20 bg-[#d4af37]/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-[#d4af37]">
+                                                LEGACY STATUS: ACTIVE
+                                            </div>
+                                            <div className="px-5 py-2.5 border border-white/10 bg-white/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-white/40">
+                                                DATA_SECURED
                                             </div>
                                         </div>
                                     </div>
