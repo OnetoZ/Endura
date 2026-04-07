@@ -20,8 +20,9 @@ const Footer = () => {
                         />
                     </Link>
                     <p className="text-gray-500 text-[11px] leading-relaxed uppercase tracking-widest max-w-[240px]">
-                        The intersection of high-end fashion and digital soul. We exist twice.
+                        Luxury streetwear from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few.
                     </p>
+
                 </div>
 
                 {/* Navigation Section */}

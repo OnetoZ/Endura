@@ -75,7 +75,7 @@ const DoppelPieceScene = () => {
                     <img
                         ref={solidPieceRef}
                         src="/plain_shirt_model.png"
-                        alt="IRL Piece"
+                        alt="Endura Physical Luxury Apparel India"
                         className="absolute w-full h-full object-cover border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] rounded-md"
                     />
 
@@ -86,7 +86,7 @@ const DoppelPieceScene = () => {
                     >
                         <img
                             src="/plain_shirt_model.png"
-                            alt="Digital Twin"
+                            alt="Endura Digital Twin Collectible Luxury Streetwear"
                             className="w-full h-full object-cover"
                         />
                         {/* The Overlay ENDURA Logo */}

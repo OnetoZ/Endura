@@ -2,15 +2,15 @@ import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SystemBootHero from '../components/SystemBootHero';
-import DivideScene from '../components/DivideScene';
+import LuxuryDropSection from '../components/LuxuryDropSection';
+import DigitalCollectibleSection from '../components/DigitalCollectibleSection';
 import DoppelPieceScene from '../components/DoppelPieceScene';
-// import CinematicFooter from '../components/CinematicFooter';
+import CinematicFooter from '../components/CinematicFooter';
+import SEO from '../components/SEO';
+import { useGSAP } from '@gsap/react';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
-
-import { useGSAP } from '@gsap/react';
-import SEO from '../components/SEO';
 
 const Home = () => {
     const mainRef = useRef();
@@ -29,25 +29,25 @@ const Home = () => {
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">
             <SEO 
-                title="Premium Cinematic Streetwear & Techwear in Bangalore"
-                description="Endura is a premium streetwear brand based in Bangalore, India. Discover oversized hoodies, techwear, and digital vault collectibles for the Gen Z urban audience."
+                title="ENDURA | Luxury Streetwear India | Exclusive Digital Collectibles"
+                description="ENDURA is an official luxury streetwear brand from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few."
                 canonical="/"
                 image="https://wearendura.com/logo.png"
             />
-            {/* SCENE 1: System Boot / Hero Identity */}
+            {/* SCENE 1: Master Hero Experience */}
             <SystemBootHero />
 
-            {/* SCENE 2: THE DOPPEL PIECE (Product Philosophy) */}
+            {/* SCENE 2: EXCLUSIVE DROP SHOWCASE */}
+            <LuxuryDropSection />
+
+            {/* SCENE 3: THE DOPPEL PIECE (Product Philosophy) */}
             <DoppelPieceScene />
 
-            {/* SCENE 3: THE DIVIDE (Reality vs Digital) (Door animation - commented out per request) */}
-            {/* <DivideScene /> */}
+            {/* SCENE 4: DIGITAL TWIN / VAULT SYSTEM */}
+            <DigitalCollectibleSection />
 
-            {/* SCENE 4: IMPACT STATEMENT (Emotional Hook) */}
-            {/* <ImpactStatement /> */}
-
-            {/* SCENE 5: THE CLOSURE (Cinematic Footer) */}
-            {/* <CinematicFooter /> */}
+            {/* SCENE 5: CINEMATIC FOOTER */}
+            <CinematicFooter />
         </div>
     );
 };
