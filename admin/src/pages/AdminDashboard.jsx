@@ -67,6 +67,7 @@ const AdminDashboard = () => {
     const [orderFilter, setOrderFilter] = useState('All');
 
     // ── Redemption Codes ───────────────────────────────────────────────────
+    const [activeBatch, setActiveBatch] = useState(1);
     const [redemptionCodes, setRedemptionCodes] = useState([]);
     const [isManagingCodes, setIsManagingCodes] = useState(false);
     const [codeFilter, setCodeFilter] = useState('All');
@@ -74,45 +75,49 @@ const AdminDashboard = () => {
 
     // Fetch real data from backend
     useEffect(() => {
-        const fetchData = async () => {
-            console.log('🚀 [ADMIN] Initializing Data Hydration...');
+        const verifyAndLoad = async () => {
+            console.log('🚀 [ADMIN] Initializing Security Clearance...');
+            
+            // Phase 1: Verify current user profile (Quickest)
             try {
-                const [productsData, ordersData, usersData, userData, cardsData, codesData, vaultData] = await Promise.all([
-                    productService.getProducts(),
-                    orderService.getAllOrders(),
-                    userService.getUsers(),
-                    userService.getCurrentUser(),
-                    productService.getVaultCards(),
-                    vaultService.getRedemptionCodes(),
-                    productService.getVaultItems()
-                ]);
-
-                console.log('✅ [ADMIN] Data Received:', {
-                    products: productsData?.products?.length,
-                    orders: ordersData?.length,
-                    vault: vaultData?.length
-                });
-
-                setProducts(productsData.products || []);
-                setOrders(ordersData || []);
-                setUsers(usersData || []);
-                setCurrentUser(userData || null);
-                setVaultCards(cardsData || []);
-                setRedemptionCodes(codesData || []);
-                setVaultItems(vaultData || []);
+                const userData = await userService.getCurrentUser();
+                setCurrentUser(userData);
+                setIsAuthLoading(false); // Clear loading screen as soon as we have a profile
             } catch (error) {
-                console.error('❌ [ADMIN] Fetch Failure:', error);
-                // Only toast on initial load to avoid spam
-                if (isAuthLoading) toast.error('Check console: Failed to load admin data');
-            } finally {
-                setIsAuthLoading(false);
+                console.error('❌ [ADMIN] Auth Failure:', error);
+                setIsAuthLoading(false); // Clear screen anyway to show 'Access Denied' if needed
             }
+
+            // Phase 2: Hydrate background data
+            const loadData = async () => {
+                try {
+                    const [productsData, ordersData, usersData, cardsData, codesData, vaultData] = await Promise.all([
+                        productService.getProducts().catch(e => ({ products: [] })),
+                        orderService.getAllOrders().catch(e => []),
+                        userService.getUsers().catch(e => []),
+                        productService.getVaultCards().catch(e => []),
+                        vaultService.getRedemptionCodes().catch(e => []),
+                        productService.getVaultItems().catch(e => [])
+                    ]);
+
+                    setProducts(productsData.products || []);
+                    setOrders(ordersData || []);
+                    setUsers(usersData || []);
+                    setVaultCards(cardsData || []);
+                    setRedemptionCodes(codesData || []);
+                    setVaultItems(vaultData || []);
+                } catch (error) {
+                    console.error('❌ [ADMIN] Background Hydration Failure:', error);
+                }
+            };
+
+            loadData();
         };
 
-        fetchData();
-        const interval = setInterval(fetchData, 60000); // Increased to 60s for stability
+        verifyAndLoad();
+        const interval = setInterval(verifyAndLoad, 60000);
         return () => clearInterval(interval);
-    }, []); // Only run once on mount
+    }, []);
 
     // ── Products ──────────────────────────────────────────────────────────
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
@@ -965,24 +970,8 @@ const AdminDashboard = () => {
                                             {[1, 2, 3].map(id => (
                                                 <button
                                                     key={id}
-                                                    onClick={async () => {
-                                                        if (id === 1) {
-                                                            const imagePath = '/images/BLACK TSHIRT DC.png';
-                                                            if (!window.confirm(`Synchronize all protocols with reference 0${id}?`)) return;
-                                                            try {
-                                                                await vaultService.bulkUpdateCodeImages(imagePath);
-                                                                toast.success('Protocols Synchronized');
-                                                                // Refresh data
-                                                                const updatedCodes = await vaultService.getRedemptionCodes();
-                                                                setRedemptionCodes(updatedCodes);
-                                                            } catch (err) {
-                                                                toast.error('Sync Failed');
-                                                            }
-                                                        } else {
-                                                            toast.info(`Protocol ${id} image mapping pending.`);
-                                                        }
-                                                    }}
-                                                    className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 text-[10px] font-black hover:bg-primary hover:text-black transition-all"
+                                                    onClick={() => setActiveBatch(id)}
+                                                    className={`w-10 h-10 flex items-center justify-center border border-white/10 text-[10px] font-black transition-all ${activeBatch === id ? 'bg-primary text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
                                                 >
                                                     {id}
                                                 </button>
@@ -996,6 +985,7 @@ const AdminDashboard = () => {
                                         <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
                                             <tr>
                                                 <th className="pb-4">Image</th>
+                                                <th className="pb-4">Category</th>
                                                 <th className="pb-4">Serial (Out of 100)</th>
                                                 <th className="pb-4">Redemption Code</th>
                                                 <th className="pb-4">Status</th>
@@ -1005,8 +995,9 @@ const AdminDashboard = () => {
                                         </thead>
                                         <tbody className="divide-y divide-white/5 text-sm">
                                             {redemptionCodes
+                                                .filter(c => c.batchId === activeBatch)
                                                 .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
-                                                .filter(c => !codeSearch || c.code.toLowerCase().includes(codeSearch.toLowerCase()))
+                                                .filter(c => !codeSearch || (c.code && c.code.toLowerCase().includes(codeSearch.toLowerCase())))
                                                 .map(c => (
                                                     <tr key={c._id || c.serialNumber} className="group hover:bg-white/5 transition-all transition-colors duration-300">
                                                         <td className="py-6">
@@ -1017,6 +1008,20 @@ const AdminDashboard = () => {
                                                             ) : (
                                                                 <div className="w-12 h-12 border border-dashed border-white/5 bg-white/2 flex items-center justify-center text-[8px] font-black text-gray-700">NO_DATA</div>
                                                             )}
+                                                        </td>
+                                                        <td className="py-6">
+                                                            <div className="flex items-center gap-2">
+                                                                <div 
+                                                                    className="w-2 h-2 rounded-full animate-pulse"
+                                                                    style={{ backgroundColor: CATEGORY_STYLES[(c.type || 'common').toLowerCase()]?.border || '#a3a3a3' }}
+                                                                />
+                                                                <span 
+                                                                    className="text-[9px] font-black tracking-tighter uppercase"
+                                                                    style={{ color: CATEGORY_STYLES[(c.type || 'common').toLowerCase()]?.border || '#a3a3a3' }}
+                                                                >
+                                                                    {c.type || 'Common'}
+                                                                </span>
+                                                            </div>
                                                         </td>
                                                         <td className="py-6 font-mono text-xs text-gray-400 font-bold">{c.serialNumber}/100</td>
                                                         <td className="py-6">
