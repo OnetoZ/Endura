@@ -7,11 +7,12 @@ const asyncHandler = require('../utils/asyncHandler');
  * @access  Private/Admin
  */
 const getRedemptionCodes = asyncHandler(async (req, res) => {
-    const { status, search } = req.query;
+    const { status, search, batchId } = req.query;
     let query = {};
 
     if (status === 'redeemed') query.isRedeemed = true;
     if (status === 'available') query.isRedeemed = false;
+    if (batchId) query.batchId = Number(batchId);
 
     if (search) {
         query.code = { $regex: search, $options: 'i' };
@@ -19,7 +20,7 @@ const getRedemptionCodes = asyncHandler(async (req, res) => {
 
     const codes = await RedemptionCode.find(query)
         .populate('redeemedBy', 'username email')
-        .sort({ serialNumber: 1 })
+        .sort({ batchId: 1, serialNumber: 1 })
         .lean();
 
     res.json(codes);
@@ -83,7 +84,14 @@ const redeemProvidedCode = asyncHandler(async (req, res) => {
     res.json({
         success: true,
         message: 'Redemption successful. Access granted.',
-        serialNumber: redemptionCode.serialNumber
+        protocol: {
+            serialNumber: redemptionCode.serialNumber,
+            code: redemptionCode.code,
+            image: redemptionCode.image,
+            type: redemptionCode.type,
+            batchId: redemptionCode.batchId,
+            redeemedAt: redemptionCode.redeemedAt
+        }
     });
 });
 
