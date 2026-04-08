@@ -32,6 +32,10 @@ const redemptionCodeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'VaultCard',
         default: null,
+    },
+    image: {
+        type: String,
+        default: null,
     }
 }, { timestamps: true });
 

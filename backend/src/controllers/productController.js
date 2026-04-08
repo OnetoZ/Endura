@@ -21,9 +21,11 @@ const getProducts = asyncHandler(async (req, res) => {
     const total = await Product.countDocuments(filter);
 
     const products = await Product.find(filter)
+        .select('-images -digitalTwinMetadata') // Strictly exclude huge fields from list view
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(Number(limit));
+        .limit(Number(limit))
+        .lean();
 
     res.json({
         products,

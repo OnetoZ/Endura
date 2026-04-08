@@ -31,7 +31,7 @@ const loginValidation = [
 ];
 
 const adminCheckValidation = [
-    body('email').isEmail().withMessage('Valid email is required'),
+    body('email').notEmpty().withMessage('Identifier is required'),
     validate
 ];
 

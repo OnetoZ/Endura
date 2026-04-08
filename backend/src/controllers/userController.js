@@ -8,7 +8,7 @@ const asyncHandler = require('../utils/asyncHandler');
  * @access  Private/Admin
  */
 const getAllUsers = asyncHandler(async (req, res) => {
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    const users = await User.find({}).select('-password').sort({ createdAt: -1 }).lean();
     res.json(users);
 });
 
@@ -70,7 +70,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         User.countDocuments(),
         Order.countDocuments(),
         Product.countDocuments({ isActive: true }),
-        Order.find({ isPaid: true }),
+        Order.find({ isPaid: true }).lean(),
     ]);
 
     const totalRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
@@ -78,7 +78,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     const recentOrders = await Order.find({})
         .populate('user', 'username email')
         .sort({ createdAt: -1 })
-        .limit(5);
+        .limit(5)
+        .lean();
 
     res.json({
         totalUsers,

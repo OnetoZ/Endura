@@ -6,7 +6,7 @@ const asyncHandler = require('../utils/asyncHandler');
  * @access  Public
  */
 const getVaultCards = asyncHandler(async (req, res) => {
-    const cards = await VaultCard.find({}).sort({ createdAt: -1 });
+    const cards = await VaultCard.find({}).sort({ createdAt: -1 }).lean();
     res.json(cards);
 });
 

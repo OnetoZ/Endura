@@ -58,7 +58,10 @@ const checkAdminEmail = asyncHandler(async (req, res) => {
     console.log(`🔍 [ADMIN_VERIFY] Clearance Request: "${email}"`);
 
     // Strict one-admin policy
-    if (email.toLowerCase() !== ADMIN_EMAIL) {
+    // Strict one-admin policy
+    const IS_TEAM_IDENTIFIER = email.toLowerCase() === ADMIN_EMAIL || email.toUpperCase() === 'ENDURA CLOTHING';
+
+    if (!IS_TEAM_IDENTIFIER) {
         console.log(`❌ [ADMIN_VERIFY] Unauthorized login attempt: ${email}`);
         res.status(401);
         throw new Error('ACCESS_DENIED: You are not an ADMIN');
@@ -66,8 +69,8 @@ const checkAdminEmail = asyncHandler(async (req, res) => {
 
     const admin = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
     
-    // FAILS-SAFE: If it is the team email, let it pass so it can be auto-promoted in the next step!
-    if (!admin && email.toLowerCase() === ADMIN_EMAIL) {
+    // FAILS-SAFE: If it is the team email or identifier, let it pass so it can be auto-promoted in the next step!
+    if (!admin && IS_TEAM_IDENTIFIER) {
         console.log(`🆙 [ADMIN_VERIFY] Clearance granted for team account (First Login): ${email}`);
     } else if (!admin) {
         console.log(`❌ [ADMIN_VERIFY] Valid ID but not found in DB: ${email}`);
@@ -282,14 +285,16 @@ const googleCallback = asyncHandler(async (req, res) => {
         const ADMIN_EMAIL = 'enduraclothing.team@gmail.com';
 
         // SELF-HEALING: If the team account logins, auto-promote it to admin!
-        if (user.email.toLowerCase() === ADMIN_EMAIL && user.role !== 'admin') {
+        const IS_TEAM_ACCOUNT = user.email.toLowerCase() === ADMIN_EMAIL || user.username?.toUpperCase() === 'ENDURA CLOTHING';
+
+        if (IS_TEAM_ACCOUNT && user.role !== 'admin') {
             console.log(`🆙 Self-healing: Promoting ${user.email} to Admin...`);
             user.role = 'admin';
             await user.save();
         }
 
-        // Enforce strict admin role AND specific email check
-        if (user.role !== 'admin' || user.email.toLowerCase() !== ADMIN_EMAIL) {
+        // Enforce strict admin role AND specific email/identifier check
+        if (user.role !== 'admin' && !IS_TEAM_ACCOUNT) {
             console.log(`⛔ Strict admin policy violation for: ${user.email}`);
             return res.redirect(`${targetUrl}/auth?error=NOT_ADMIN&admin=1`);
         }
@@ -397,7 +402,7 @@ const verifyGoogleTwoFactor = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const getUserProfile = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).lean();
     if (!user) {
         res.status(404);
         throw new Error('User not found');

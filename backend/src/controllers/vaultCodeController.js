@@ -12,14 +12,15 @@ const getRedemptionCodes = asyncHandler(async (req, res) => {
 
     if (status === 'redeemed') query.isRedeemed = true;
     if (status === 'available') query.isRedeemed = false;
-    
+
     if (search) {
         query.code = { $regex: search, $options: 'i' };
     }
 
     const codes = await RedemptionCode.find(query)
         .populate('redeemedBy', 'username email')
-        .sort({ serialNumber: 1 });
+        .sort({ serialNumber: 1 })
+        .lean();
 
     res.json(codes);
 });
@@ -86,8 +87,31 @@ const redeemProvidedCode = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @route   PUT /api/vault/codes/bulk-update-image
+ * @desc    Apply a specific image to all redemption codes
+ * @access  Private/Admin
+ */
+const bulkUpdateCodeImages = asyncHandler(async (req, res) => {
+    const { image } = req.body;
+
+    if (!image) {
+        res.status(400);
+        throw new Error('Image reference required');
+    }
+
+    const result = await RedemptionCode.updateMany({}, { image });
+
+    res.json({
+        success: true,
+        message: `Successfully synchronized ${result.modifiedCount} protocols`,
+        count: result.modifiedCount
+    });
+});
+
 module.exports = {
     getRedemptionCodes,
     importRedemptionCodes,
-    redeemProvidedCode
+    redeemProvidedCode,
+    bulkUpdateCodeImages
 };
