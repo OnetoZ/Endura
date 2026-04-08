@@ -185,6 +185,10 @@ export const productService = {
         const response = await api.delete(`/vault/cards/${id}`);
         return response.data;
     },
+    collectVaultCard: async (id) => {
+        const response = await api.post(`/vault/${id}/collect`);
+        return response.data;
+    },
 };
 
 export const orderService = {
