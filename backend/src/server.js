@@ -109,6 +109,7 @@ app.use('/api/payment', require('./routes/paymentRoutes'));
 // Serve uploads folder statically
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((req, res) => {

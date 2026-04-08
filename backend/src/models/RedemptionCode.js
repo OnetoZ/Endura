@@ -12,7 +12,10 @@ const redemptionCodeSchema = new mongoose.Schema({
         required: [true, 'Serial number is required (1-100)'],
         min: 1,
         max: 100,
-        unique: true,
+    },
+    batchId: {
+        type: Number,
+        default: 1, // Batch 1, 2 or 3
     },
     isRedeemed: {
         type: Boolean,
@@ -36,7 +39,14 @@ const redemptionCodeSchema = new mongoose.Schema({
     image: {
         type: String,
         default: null,
+    },
+    type: {
+        type: String,
+        default: 'Rare',
     }
 }, { timestamps: true });
+
+// Ensure unique serial number within a specific batch
+redemptionCodeSchema.index({ serialNumber: 1, batchId: 1 }, { unique: true });
 
 module.exports = mongoose.model('RedemptionCode', redemptionCodeSchema);
