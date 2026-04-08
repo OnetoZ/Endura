@@ -200,6 +200,10 @@ export const vaultService = {
     redeemCode: async (code) => {
         const response = await api.post('/vault/redeem-code', { code });
         return response.data;
+    },
+    bulkUpdateCodeImages: async (image) => {
+        const response = await api.put('/vault/codes/bulk-update-image', { image });
+        return response.data;
     }
 };
 

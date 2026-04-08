@@ -37,15 +37,15 @@ export const AppProvider = ({ children }) => {
                 setCurrentUser(parsed);
                 await loadCart();
 
-                // If we only have a token (common after OAuth redirect), hydrate full profile.
-                const hasIdentity = Boolean(parsed?.email || parsed?.username || parsed?._id);
-                if (!hasIdentity && parsed?.token) {
+                // Always hydrate full profile on init to ensure 'role' and other permissions are fresh
+                if (parsed?.token) {
                     try {
                         const fresh = await authService.getProfile();
                         setCurrentUser(fresh);
                         localStorage.setItem('userInfo', JSON.stringify(fresh));
                     } catch (e) {
                         console.error('Failed to hydrate user profile:', e);
+                        // If token is invalid, clear it
                         localStorage.removeItem('userInfo');
                         setCurrentUser(null);
                     }
@@ -260,7 +260,7 @@ export const AppProvider = ({ children }) => {
 
     return (
         <StoreContext.Provider value={{
-            products, currentUser, cart, orders, vaultItems, users,
+            products, currentUser, setCurrentUser, cart, orders, vaultItems, users,
             login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             placeRazorpayOrder, verifyRazorpayPayment,
             addProduct, removeProduct, unlockVaultItem

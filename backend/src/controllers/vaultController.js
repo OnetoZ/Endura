@@ -11,7 +11,8 @@ const getUserVault = asyncHandler(async (req, res) => {
     const items = await VaultItem.find({ user: req.user._id })
         .populate('product', 'name images type')
         .populate('vaultCard', 'name frontImage category')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
 
     res.json(items);
 });
@@ -118,7 +119,8 @@ const getAllVaultItems = asyncHandler(async (req, res) => {
         .populate('user', 'username email')
         .populate('product', 'name')
         .populate('vaultCard', 'name')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
 
     res.json(items);
 });

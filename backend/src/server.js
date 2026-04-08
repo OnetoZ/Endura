@@ -69,8 +69,8 @@ app.use(session({
     ttl: 24 * 60 * 60 // 1 day
   }),
   cookie: {
-    secure: true, // Required for sameSite: 'none'
-    sameSite: 'none', // Allow cross-domain cookies for OAuth
+    secure: false, // Set to false for local development
+    sameSite: 'lax', 
     maxAge: 24 * 60 * 60 * 1000
   },
 }));

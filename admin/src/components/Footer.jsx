@@ -15,8 +15,8 @@ const Footer = () => {
                         <img
                             src="/logo.png"
                             alt="ENDURA"
-                            className="h-10 w-auto object-contain transition-all duration-500 group-hover:brightness-125"
-                            style={{ filter: 'brightness(0.9) invert(1)' }}
+                            className="h-10 w-auto object-contain transition-all duration-500 group-hover:brightness-150"
+                            style={{ filter: 'invert(37%) sepia(93%) saturate(2465%) hue-rotate(251deg) brightness(94%) contrast(106%)' }}
                         />
                     </Link>
                     <p className="text-gray-500 text-[11px] leading-relaxed uppercase tracking-widest max-w-[240px]">

@@ -113,7 +113,7 @@ const getOrderById = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const getMyOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }).lean();
     res.json(orders);
 });
 
@@ -124,7 +124,7 @@ const getMyOrders = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const getOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find({}).populate('user', 'username email').sort({ createdAt: -1 });
+    const orders = await Order.find({}).populate('user', 'username email').sort({ createdAt: -1 }).lean();
     res.json(orders);
 });
 

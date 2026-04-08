@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productService, userService, uploadService, getImageUrl, orderService, vaultService } from '../services/api';
 import { toast } from 'react-hot-toast';
+import { useStore } from '../context/StoreContext';
 
 const CATEGORY_STYLES = {
     common: { border: '#a3a3a3', glow: '#a3a3a355', label: 'COMMON' },
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null);
+    const { currentUser, setCurrentUser } = useStore();
     const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [vaultItems, setVaultItems] = useState([]);
 
@@ -74,36 +75,44 @@ const AdminDashboard = () => {
     // Fetch real data from backend
     useEffect(() => {
         const fetchData = async () => {
+            console.log('🚀 [ADMIN] Initializing Data Hydration...');
             try {
-                const [productsData, ordersData, usersData, userData, cardsData, codesData] = await Promise.all([
+                const [productsData, ordersData, usersData, userData, cardsData, codesData, vaultData] = await Promise.all([
                     productService.getProducts(),
                     orderService.getAllOrders(),
                     userService.getUsers(),
                     userService.getCurrentUser(),
                     productService.getVaultCards(),
-                    vaultService.getRedemptionCodes()
+                    vaultService.getRedemptionCodes(),
+                    productService.getVaultItems()
                 ]);
+
+                console.log('✅ [ADMIN] Data Received:', {
+                    products: productsData?.products?.length,
+                    orders: ordersData?.length,
+                    vault: vaultData?.length
+                });
+
                 setProducts(productsData.products || []);
                 setOrders(ordersData || []);
                 setUsers(usersData || []);
                 setCurrentUser(userData || null);
                 setVaultCards(cardsData || []);
                 setRedemptionCodes(codesData || []);
-                const vaultData = await productService.getVaultItems();
                 setVaultItems(vaultData || []);
             } catch (error) {
-                console.error('Failed to fetch admin data:', error);
+                console.error('❌ [ADMIN] Fetch Failure:', error);
                 // Only toast on initial load to avoid spam
-                if (isAuthLoading) toast.error('Failed to load admin data');
+                if (isAuthLoading) toast.error('Check console: Failed to load admin data');
             } finally {
                 setIsAuthLoading(false);
             }
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 30000); // 30s auto-refresh
+        const interval = setInterval(fetchData, 60000); // Increased to 60s for stability
         return () => clearInterval(interval);
-    }, [isAuthLoading]);
+    }, []); // Only run once on mount
 
     // ── Products ──────────────────────────────────────────────────────────
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
@@ -357,7 +366,7 @@ const AdminDashboard = () => {
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1 block">Protocol: Detailed Intel</span>
                                 <h2 className="text-2xl font-oswald font-bold uppercase tracking-tight">Order #{(viewingOrder._id || viewingOrder.id || '').slice(-8)}</h2>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setViewingOrder(null)}
                                 className="w-10 h-10 flex items-center justify-center border border-white/10 text-gray-500 hover:text-white hover:border-white/30 transition-all"
                             >
@@ -474,7 +483,7 @@ const AdminDashboard = () => {
 
                         {/* Footer Actions */}
                         <div className="sticky bottom-0 z-10 glass border-t border-white/10 p-6 flex justify-end bg-neutral-900/80 backdrop-blur-xl">
-                            <button 
+                            <button
                                 onClick={() => setViewingOrder(null)}
                                 className="px-10 py-4 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all"
                             >
@@ -885,7 +894,7 @@ const AdminDashboard = () => {
                                                 <tr key={o._id || o.id} className="group hover:bg-white/5 transition-all">
                                                     <td className="py-6 font-mono text-xs text-gray-500">#{(o._id || o.id || '').slice(-6)}</td>
                                                     <td className="py-6 uppercase font-bold text-xs">
-                                                        {o.user?.username || 'Unknown'} <br/>
+                                                        {o.user?.username || 'Unknown'} <br />
                                                         <span className="text-[8px] text-gray-500 font-normal lowercase">{o.user?.email}</span>
                                                     </td>
                                                     <td className="py-6">
@@ -906,7 +915,7 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </td>
                                                     <td className="py-6 text-right">
-                                                        <button 
+                                                        <button
                                                             onClick={() => setViewingOrder(o)}
                                                             className="px-4 py-2 bg-primary/20 text-primary text-[8px] font-black uppercase hover:bg-primary hover:text-black transition-all"
                                                         >
@@ -928,305 +937,117 @@ const AdminDashboard = () => {
                             {/* Header */}
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-4">
                                 <div>
-                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Vault Protocol</h3>
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage collectible cards and redemption codes</p>
-                                </div>
-                                <div className="flex gap-4">
-                                    <button
-                                        onClick={() => setIsManagingCodes(!isManagingCodes)}
-                                        className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isManagingCodes ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border border-white/10 text-gray-500 hover:text-white'}`}
-                                    >
-                                        {isManagingCodes ? '✕ Back to Cards' : 'Manage Redemption Codes'}
-                                    </button>
-                                    {!isManagingCodes && (
-                                        <button
-                                            onClick={() => {
-                                                setIsAddingCard(!isAddingCard);
-                                                setEditingCardId(null);
-                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
-                                            }}
-                                            className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-accent text-black hover:bg-white'}`}
-                                        >
-                                            {isAddingCard ? '✕ Cancel' : '+ Add Card'}
-                                        </button>
-                                    )}
+                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Redemption Protocol</h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage and monitor secure redemption codes</p>
                                 </div>
                             </div>
 
-                            {isManagingCodes ? (
-                                <div className="space-y-8 animate-in fade-in duration-500">
-                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                        <div className="flex gap-4">
-                                            <select
-                                                className="bg-black border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
-                                                value={codeFilter}
-                                                onChange={(e) => setCodeFilter(e.target.value)}
-                                            >
-                                                <option value="All">All Statuses</option>
-                                                <option value="available">Available Only</option>
-                                                <option value="redeemed">Redeemed Only</option>
-                                            </select>
-                                            <input
-                                                type="text"
-                                                placeholder="SEARCH CODE..."
-                                                className="bg-black/50 border border-white/10 px-5 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest w-64"
-                                                value={codeSearch}
-                                                onChange={(e) => setCodeSearch(e.target.value)}
-                                            />
+                            <div className="space-y-8 animate-in fade-in duration-500">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                    <div className="flex gap-4">
+                                        <select
+                                            className="bg-black border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
+                                            value={codeFilter}
+                                            onChange={(e) => setCodeFilter(e.target.value)}
+                                        >
+                                            <option value="All">All Statuses</option>
+                                            <option value="available">Available Only</option>
+                                            <option value="redeemed">Redeemed Only</option>
+                                        </select>
+                                        <input
+                                            type="text"
+                                            placeholder="SEARCH CODE..."
+                                            className="bg-black/50 border border-white/10 px-5 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest w-64"
+                                            value={codeSearch}
+                                            onChange={(e) => setCodeSearch(e.target.value)}
+                                        />
+                                        <div className="flex gap-2">
+                                            {[1, 2, 3].map(id => (
+                                                <button
+                                                    key={id}
+                                                    onClick={async () => {
+                                                        if (id === 1) {
+                                                            const imagePath = '/images/BLACK TSHIRT DC.png';
+                                                            if (!window.confirm(`Synchronize all protocols with reference 0${id}?`)) return;
+                                                            try {
+                                                                await vaultService.bulkUpdateCodeImages(imagePath);
+                                                                toast.success('Protocols Synchronized');
+                                                                // Refresh data
+                                                                const updatedCodes = await vaultService.getRedemptionCodes();
+                                                                setRedemptionCodes(updatedCodes);
+                                                            } catch (err) {
+                                                                toast.error('Sync Failed');
+                                                            }
+                                                        } else {
+                                                            toast.info(`Protocol ${id} image mapping pending.`);
+                                                        }
+                                                    }}
+                                                    className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 text-[10px] font-black hover:bg-primary hover:text-black transition-all"
+                                                >
+                                                    {id}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
-                                            <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
-                                                <tr>
-                                                    <th className="pb-4">Serial (Out of 100)</th>
-                                                    <th className="pb-4">Redemption Code</th>
-                                                    <th className="pb-4">Status</th>
-                                                    <th className="pb-4">Operative</th>
-                                                    <th className="pb-4">Timestamp</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-white/5 text-sm">
-                                                {redemptionCodes
-                                                    .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
-                                                    .filter(c => !codeSearch || c.code.toLowerCase().includes(codeSearch.toLowerCase()))
-                                                    .map(c => (
-                                                        <tr key={c._id || c.serialNumber} className="group hover:bg-white/5 transition-all transition-colors duration-300">
-                                                            <td className="py-6 font-mono text-xs text-gray-400 font-bold">{c.serialNumber}/100</td>
-                                                            <td className="py-6">
-                                                                <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded font-mono text-primary text-xs uppercase select-all tracking-wider shadow-inner">
-                                                                    {c.code}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-6">
-                                                                <span className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest border ${c.isRedeemed ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-green-500/10 border-green-500/30 text-green-500'}`}>
-                                                                    {c.isRedeemed ? 'REDEEMED' : 'AVAILABLE'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-6 uppercase font-bold text-[10px]">
-                                                                {c.redeemedBy ? (
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-white">{c.redeemedBy.username}</span>
-                                                                        <span className="text-[8px] text-gray-500 font-normal lowercase">{c.redeemedBy.email}</span>
-                                                                    </div>
-                                                                ) : <span className="text-gray-700 font-mono tracking-tighter">-- PENDING REDEMPTION --</span>}
-                                                            </td>
-                                                            <td className="py-6 font-mono text-[10px] text-gray-500">
-                                                                {c.redeemedAt ? new Date(c.redeemedAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '--'}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
                                 </div>
-                            ) : (
-                                <>
-                                    {/* Add Card Form */}
-                                    {isAddingCard && (
-                                <div className="glass border-primary/20 p-8 mb-10 animate-in slide-in-from-top-4 duration-500 relative">
-                                    <div className="absolute top-0 left-0 w-16 h-px bg-accent" />
-                                    <div className="absolute top-0 left-0 w-px h-16 bg-accent" />
-                                    <h4 className="text-accent font-black uppercase tracking-[0.4em] text-xs mb-8">{editingCardId ? 'Edit Vault Card' : 'New Vault Card'}</h4>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                                        {/* Left: Text fields */}
-                                        <div className="space-y-5">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Card Name *</label>
-                                                <input
-                                                    className="w-full bg-white/5 border border-white/10 p-4 text-sm font-bold uppercase tracking-widest text-white outline-none focus:border-accent transition-all"
-                                                    placeholder="e.g. PHANTOM STRIKER"
-                                                    value={newCard.name}
-                                                    onChange={e => setNewCard({ ...newCard, name: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Description</label>
-                                                <textarea
-                                                    rows={3}
-                                                    className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white/80 outline-none focus:border-accent transition-all resize-none"
-                                                    placeholder="Card lore or description..."
-                                                    value={newCard.description}
-                                                    onChange={e => setNewCard({ ...newCard, description: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Category</label>
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    {['common', 'rare', 'epic', 'legendary'].map(cat => (
-                                                        <button
-                                                            key={cat}
-                                                            type="button"
-                                                            onClick={() => setNewCard({ ...newCard, category: cat })}
-                                                            className={`py-3 text-[9px] font-black uppercase tracking-widest transition-all border ${newCard.category === cat
-                                                                ? 'text-black'
-                                                                : 'border-white/10 text-gray-500 hover:border-white/30'
-                                                                }`}
-                                                            style={newCard.category === cat ? {
-                                                                background: CATEGORY_STYLES[cat]?.border,
-                                                                borderColor: CATEGORY_STYLES[cat]?.border,
-                                                                color: '#000'
-                                                            } : {}}
-                                                        >
-                                                            {cat}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Right: Image URLs + previews */}
-                                        <div className="space-y-5">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image *</label>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="w-full bg-white/5 border border-white/10 p-4 text-[11px] text-gray-400 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                    onChange={e => handleCardImageUpload(e, 'frontImage')}
-                                                />
-                                                {newCard.frontImage && (
-                                                    <img src={getImageUrl(newCard.frontImage)} alt="front" className="w-full h-32 object-cover border border-white/10 mt-2" onError={e => e.target.style.display = 'none'} />
-                                                )}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image *</label>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="w-full bg-white/5 border border-white/10 p-4 text-[11px] text-gray-400 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                    onChange={e => handleCardImageUpload(e, 'backImage')}
-                                                />
-                                                {newCard.backImage && (
-                                                    <img src={getImageUrl(newCard.backImage)} alt="back" className="w-full h-32 object-cover border border-white/10 mt-2" onError={e => e.target.style.display = 'none'} />
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        disabled={cardSaving || !newCard.name || !newCard.frontImage || !newCard.backImage}
-                                        onClick={async () => {
-                                            setCardSaving(true);
-                                            try {
-                                                if (editingCardId) {
-                                                    const updated = await productService.updateVaultCard(editingCardId, newCard);
-                                                    setVaultCards(prev => prev.map(c => c._id === editingCardId ? updated : c));
-                                                    toast.success('Card updated successfully!');
-                                                } else {
-                                                    const created = await productService.createVaultCard(newCard);
-                                                    setVaultCards(prev => [created, ...prev]);
-                                                    toast.success('Card added to vault!');
-                                                }
-
-                                                // Reload removed since state is updated manually for seamless UX
-                                                // setTimeout(() => window.location.reload(), 1500);
-
-                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
-                                                setEditingCardId(null);
-                                                setIsAddingCard(false);
-                                            } catch (err) {
-                                                toast.error(err?.response?.data?.message || 'Failed to save card');
-                                            } finally {
-                                                setCardSaving(false);
-                                            }
-                                        }}
-                                        className="w-full py-5 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                    >
-                                        {cardSaving ? 'Saving...' : (editingCardId ? 'Save Changes' : 'Save Card to Vault')}
-                                    </button>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
+                                            <tr>
+                                                <th className="pb-4">Image</th>
+                                                <th className="pb-4">Serial (Out of 100)</th>
+                                                <th className="pb-4">Redemption Code</th>
+                                                <th className="pb-4">Status</th>
+                                                <th className="pb-4">Operative</th>
+                                                <th className="pb-4">Timestamp</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5 text-sm">
+                                            {redemptionCodes
+                                                .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
+                                                .filter(c => !codeSearch || c.code.toLowerCase().includes(codeSearch.toLowerCase()))
+                                                .map(c => (
+                                                    <tr key={c._id || c.serialNumber} className="group hover:bg-white/5 transition-all transition-colors duration-300">
+                                                        <td className="py-6">
+                                                            {c.image ? (
+                                                                <div className="w-12 h-12 border border-white/10 bg-black/40 overflow-hidden">
+                                                                    <img src={getImageUrl(c.image)} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-12 h-12 border border-dashed border-white/5 bg-white/2 flex items-center justify-center text-[8px] font-black text-gray-700">NO_DATA</div>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-6 font-mono text-xs text-gray-400 font-bold">{c.serialNumber}/100</td>
+                                                        <td className="py-6">
+                                                            <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded font-mono text-primary text-xs uppercase select-all tracking-wider shadow-inner">
+                                                                {c.code}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-6">
+                                                            <span className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest border ${c.isRedeemed ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-green-500/10 border-green-500/30 text-green-500'}`}>
+                                                                {c.isRedeemed ? 'REDEEMED' : 'AVAILABLE'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-6 uppercase font-bold text-[10px]">
+                                                            {c.redeemedBy ? (
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-white">{c.redeemedBy.username}</span>
+                                                                    <span className="text-[8px] text-gray-500 font-normal lowercase">{c.redeemedBy.email}</span>
+                                                                </div>
+                                                            ) : <span className="text-gray-700 font-mono tracking-tighter">-- PENDING REDEMPTION --</span>}
+                                                        </td>
+                                                        <td className="py-6 font-mono text-[10px] text-gray-500">
+                                                            {c.redeemedAt ? new Date(c.redeemedAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '--'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            )}
-
-                            {/* Cards Grid */}
-                            {vaultCards.length === 0 ? (
-                                <div className="glass border-white/5 py-20 text-center">
-                                    <p className="text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">No cards yet — click + Add Card to create one</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {vaultCards.map(card => {
-                                        const style = CATEGORY_STYLES[card.category] || CATEGORY_STYLES.common;
-                                        return (
-                                            <div
-                                                key={card._id}
-                                                className="relative group glass overflow-hidden rounded-lg"
-                                                style={{ borderColor: style.border, boxShadow: `0 0 20px ${style.glow}` }}
-                                            >
-                                                {/* Front image */}
-                                                <div className="relative aspect-[3/4] overflow-hidden">
-                                                    <img
-                                                        src={getImageUrl(card.frontImage)}
-                                                        alt={card.name}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                    />
-                                                    {/* Category badge */}
-                                                    <span
-                                                        className="absolute top-3 left-3 text-[8px] font-black uppercase tracking-widest px-2 py-1"
-                                                        style={{ background: style.border, color: '#000' }}
-                                                    >
-                                                        {style.label}
-                                                    </span>
-                                                    {/* Hover: show back image */}
-                                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                                        <img src={getImageUrl(card.backImage)} alt="back" className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                            <span className="text-[9px] font-mono text-white/60 tracking-widest uppercase">Back View</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Info */}
-                                                <div className="p-4">
-                                                    <h4 className="font-black uppercase tracking-widest text-sm text-white mb-1 truncate">{card.name}</h4>
-                                                    {card.description && (
-                                                        <p className="text-[10px] text-gray-500 line-clamp-2">{card.description}</p>
-                                                    )}
-                                                    <div className="flex gap-4 mt-3">
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingCardId(card._id);
-                                                                setNewCard({
-                                                                    name: card.name || '',
-                                                                    description: card.description || '',
-                                                                    frontImage: card.frontImage || '',
-                                                                    backImage: card.backImage || '',
-                                                                    category: card.category || 'common'
-                                                                });
-                                                                setIsAddingCard(true);
-                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                            }}
-                                                            className="text-[8px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={async () => {
-                                                                if (!window.confirm(`Delete "${card.name}"?`)) return;
-                                                                try {
-                                                                    await productService.deleteVaultCard(card._id);
-                                                                    setVaultCards(prev => prev.filter(c => c._id !== card._id));
-                                                                    toast.success('Card deleted');
-                                                                } catch {
-                                                                    toast.error('Failed to delete');
-                                                                }
-                                                            }}
-                                                            className="text-[8px] font-black uppercase tracking-widest text-red-500 hover:text-white transition-colors"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </>
+                            </div>
+                        </div>
                     )}
-                </div>
-            )}
 
                     {activeTab === 'users' && (
                         <div className="animate-in fade-in duration-500">
