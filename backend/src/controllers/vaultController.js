@@ -27,7 +27,8 @@ const getUserVault = asyncHandler(async (req, res) => {
         serialNumber: p.serialNumber,
         batchId: p.batchId,
         name: `ENDURA ARCHIVE #${p.serialNumber}`,
-        frontImage: p.image,
+        frontImage: p.frontImage,
+        backImage: p.backImage,
         category: p.type || 'rare',
         redeemedAt: p.redeemedAt
     }));

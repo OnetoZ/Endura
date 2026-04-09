@@ -37,7 +37,7 @@ const DigitalCollectibleSection = () => {
         <section ref={containerRef} className="relative py-32 px-6 bg-black overflow-hidden border-t border-white/5">
             {/* Background elements */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 rounded-full blur-[150px] pointer-events-none" />
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
 
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row-reverse items-center gap-16">
                 

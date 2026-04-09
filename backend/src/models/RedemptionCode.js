@@ -39,7 +39,11 @@ const redemptionCodeSchema = new mongoose.Schema({
         ref: 'VaultCard',
         default: null,
     },
-    image: {
+    frontImage: {
+        type: String,
+        default: null,
+    },
+    backImage: {
         type: String,
         default: null,
     },

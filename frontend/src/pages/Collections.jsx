@@ -97,7 +97,7 @@ const Collections = () => {
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full"></div>
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full"></div>
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02]"></div>
+                <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.02]"></div>
             </div>
             </div>
         </>

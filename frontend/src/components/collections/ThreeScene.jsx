@@ -164,10 +164,10 @@ export const ThreeScene = ({ images = [] }) => {
         <Suspense fallback={null}>
           <fog attach="fog" args={['#000', 5, 15]} />
           <ScrollControls pages={isMobile ? 0.5 : 4} damping={0.2}>
-            <Rig rotation={[0, 0, 0.1]}>
+            <Rig rotation={[0, 0, 0.1]} scale={isMobile ? 0.65 : 1}>
               <Carousel 
                 images={images} 
-                radius={isMobile ? 2.5 : 3.5} 
+                radius={isMobile ? 2.2 : 3.5} 
                 count={isMobile ? 8 : 16} 
               />
             </Rig>

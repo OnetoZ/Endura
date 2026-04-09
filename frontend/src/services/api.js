@@ -49,7 +49,7 @@ export const getImageUrl = (path) => {
     }
 
     // Identify frontend public assets (Vite public folder)
-    const frontendPrefixes = ['/cart page/', '/factions/', '/logo.png', '/video/', '/hero/'];
+    const frontendPrefixes = ['/cart page/', '/factions/', '/logo.png', '/video/', '/hero/', '/tarot-card-13.png'];
     if (typeof path === 'string' && frontendPrefixes.some(prefix => path.startsWith(prefix))) {
         return path;
     }

@@ -58,44 +58,36 @@ const CoinBurst = ({ x, y, onComplete }) => {
     );
 };
 
-const AnimatedDragon = ({ tier, isHovered }) => {
-    const imageUrl = "https://i.pinimg.com/736x/4b/73/26/4b732678c000facb5f1bcf0cec096b1e.jpg";
-
-    const getFilter = (tier) => {
-        const base = 'contrast(1.2) brightness(1.1) saturate(1.1)';
-        const t = tier ? tier.toLowerCase() : '';
-        switch (t) {
-            case 'common':
-                return `${base} grayscale(1) brightness(1.5)`; // Silver
-            case 'rare':
-                return `${base} hue-rotate(180deg) saturate(1.8) brightness(1.2)`; // Diamond Blue
-            case 'legendary':
-                return `${base} hue-rotate(270deg) saturate(2) brightness(1.1)`; // Purple
-            case 'epic':
-            default:
-                return `${base} sepia(1) saturate(1.3) brightness(1.2) hue-rotate(-20deg)`; // Gold
-        }
-    };
-
+const AssetBackground = ({ tier, isHovered }) => {
     return (
         <motion.div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
-            animate={{ scale: isHovered ? 1.05 : 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden bg-[#050505]"
+            animate={{ scale: isHovered ? 1.1 : 1 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
         >
-            <img
-                src={imageUrl}
-                alt="Imperial Dragon"
-                className="w-full h-full object-cover transition-all duration-1000"
+            {/* Geometric Grid Pattern */}
+            <div className="absolute inset-0 opacity-20"
                 style={{
-                    filter: getFilter(tier),
-                    opacity: isHovered ? 1 : 0.8
+                    backgroundImage: 'radial-gradient(circle, #ffffff11 1px, transparent 1px)',
+                    backgroundSize: '20px 20px'
+                }}
+            />
+
+            {/* Dynamic Radial Glow */}
+            <div className="absolute inset-0 opacity-40 bg-radial-gradient from-white/10 via-transparent to-transparent" />
+
+            {/* Tier-Specific Bottom Glow */}
+            <motion.div
+                animate={{ opacity: isHovered ? 0.6 : 0.3 }}
+                className="absolute inset-x-0 bottom-0 h-1/2"
+                style={{
+                    background: `linear-gradient(to top, ${tierAccent(tier)}33, transparent)`
                 }}
             />
 
             {/* Tier-based Edge Glow */}
             <motion.div
-                className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000"
+                className="absolute inset-0 z-10 pointer-events-none opacity-100 transition-opacity duration-1000"
                 style={{
                     boxShadow: `inset 0 0 100px 20px ${tierAccent(tier)}33`,
                     background: `radial-gradient(circle at center, transparent 30%, ${tierAccent(tier)}11 100%)`
@@ -112,110 +104,79 @@ const VaultCard = ({
     onUnlockRequest,
     vaultReady
 }) => {
-    const [isHovered, setIsHovered] = useState(false);
+    const [isHovered, setIsHovered] = useState(true);
     const accent = tierAccent(item.tier);
 
     return (
         <div
-            className="relative w-full max-w-[280px] md:max-w-none mx-auto h-[300px] md:h-[350px] [perspective:1000px] group cursor-pointer"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="relative w-full max-w-[280px] md:max-w-none mx-auto h-[350px] md:h-[420px] [perspective:1000px] group cursor-pointer"
         >
             <motion.div
-                className="relative w-full h-full duration-700 [transform-style:preserve-3d]"
-                animate={{ 
+                className="relative w-full h-full duration-1000 [transform-style:preserve-3d]"
+                animate={{
                     rotateY: isUnlocked ? 180 : 0,
-                    scale: isHovered ? 1.05 : 1
+                    scale: 1.02,
+                    rotateX: (Math.random() - 0.5) * 5, // Subtle tilt
+                    rotateZ: (Math.random() - 0.5) * 2
                 }}
-                transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
             >
-                {/* Front Side: Pure Image Card */}
+                {/* ─── FRONT SIDE: Ethereal Tarot ─── */}
                 <div
-                    className="absolute inset-0 w-full h-full [backface-visibility:hidden] flex flex-col items-center justify-center overflow-hidden rounded-xl bg-black"
+                    className="absolute inset-0 w-full h-full [backface-visibility:hidden] flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/5 shadow-2xl"
                 >
-                    {/* The Dragon Artwork Card Face */}
-                    <motion.div
-                        initial={false}
-                        animate={{ opacity: isHovered && !isUnlocked ? 0.15 : 1 }}
-                        className="absolute inset-0 z-0"
-                    >
-                        <AnimatedDragon tier={item.tier} isHovered={isHovered} />
-                    </motion.div>
+                    {/* Artistic Background Layer */}
+                    <div className="absolute inset-0 z-0">
+                        <AssetBackground tier={item.tier} isHovered={isHovered} />
+                    </div>
 
-                    {/* Pre-Unlock Reveal Image (Hover Only) */}
-                    <AnimatePresence>
-                        {isHovered && !isUnlocked && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 0.6, scale: 0.95 }}
-                                exit={{ opacity: 0, scale: 1.1 }}
-                                className="absolute inset-0 z-10 flex items-center justify-center p-12"
-                            >
-                                <img 
-                                    src={getImageUrl(item.image)} 
-                                    alt="Encrypted Preview" 
-                                    className="w-full h-full object-contain filter grayscale brightness-150 contrast-125 saturate-150"
-                                    style={{
-                                        filter: `drop-shadow(0 0 20px ${accent}44) grayscale(0.5) contrast(1.2)`
-                                    }}
-                                />
-                                {/* Add a 'PROJECTED' label */}
-                                <div className="absolute bottom-16 left-0 right-0 text-center">
-                                    <span className="text-[6px] font-mono tracking-[0.4em] text-white/30 uppercase animate-pulse">Signature Detected</span>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {/* Holographic Grain Overlay */}
+                    <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.03] mix-blend-overlay film-grain" />
 
-                    {/* Scan Animation Overlays */}
-                    <AnimatePresence>
-                        {isHovered && !isUnlocked && (
-                            <>
-                                {/* Vertical Scan Beam */}
-                                <motion.div
-                                    initial={{ top: '-10%' }}
-                                    animate={{ top: '110%' }}
-                                    transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-x-0 h-[80px] z-20 pointer-events-none opacity-40"
-                                    style={{
-                                        background: `linear-gradient(to bottom, transparent, ${accent}, transparent)`,
-                                        boxShadow: `0 0 30px ${accent}`
-                                    }}
-                                />
+                    {/* The Core Image */}
+                    <div className="relative z-20 w-full h-full p-4 flex items-center justify-center">
+                        <motion.div
+                            animate={{
+                                scale: 1.05,
+                                filter: 'brightness(1.1) contrast(1.1)'
+                            }}
+                            className="w-full h-full relative"
+                        >
+                            <img
+                                src={getImageUrl(item.image || item.frontImage)}
+                                alt={item.name}
+                                className="w-full h-full object-cover rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-all duration-700"
+                            />
 
-                                {/* Interactive UI Overlay */}
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute inset-0 z-30 flex flex-col items-center justify-between py-12 px-8 pointer-events-none"
-                                >
-                                    <div className="text-center">
-                                        <p className="text-[10px] font-mono tracking-[0.6em] text-white/60 mb-1">{item.name.toUpperCase()}</p>
-                                        <div className="h-[1px] w-12 bg-white/20 mx-auto" />
-                                    </div>
+                            {/* Glass Reflection Highlight */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                        </motion.div>
+                    </div>
 
-                                    <div className="bg-black/60 backdrop-blur-md px-6 py-3 border border-white/10 flex flex-col items-center gap-1">
-                                        <p className="text-[12px] font-heading font-black tracking-[0.4em] text-[#d4af37]">TAP TO UNLOCK</p>
-                                        <p className="text-[8px] font-mono tracking-[0.2em] text-white/40">{item.tier.toUpperCase()} ARCHIVE</p>
-                                    </div>
-                                </motion.div>
-                            </>
-                        )}
-                    </AnimatePresence>
+                    {/* Seal of the Order (Minimalist Replacement for Text) */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                            <div className="w-1.5 h-1.5 bg-accent/60 rotate-45 animate-pulse" />
+                        </div>
+                    </div>
 
-                    {/* Hidden but functional interaction button */}
+                    {/* Interactive Corner Accents */}
+                    <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-white/10" />
+                    <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-white/10" />
+                    <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-white/10" />
+                    <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-white/10" />
+
+                    {/* Interaction Button */}
                     {!isUnlocked && (
                         <button
                             onClick={(e) => { e.stopPropagation(); onUnlockRequest(item, e); }}
-                            className="absolute inset-0 z-40 w-full h-full opacity-0 highlight-none"
-                            aria-label="Unlock Card"
+                            className="absolute inset-0 z-40 w-full h-full opacity-0 cursor-pointer"
                         />
                     )}
                 </div>
 
-                {/* Back Side: The Floating Product */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-xl">
+                {/* ─── BACK SIDE: The Floating Product ─── */}
+                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-2xl bg-black border border-white/10">
                     <DressItem item={item} vaultReady={vaultReady} />
                 </div>
             </motion.div>
@@ -228,14 +189,12 @@ const DressItem = ({
     item,
     vaultReady
 }) => {
-    const [isHovered, setIsHovered] = useState(false);
+    const [isHovered, setIsHovered] = useState(true);
     const accent = tierAccent(item.tier);
 
     return (
         <div
             className="relative w-full h-full bg-black overflow-hidden group/dress border border-white/10 rounded-xl"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
             style={{
                 boxShadow: `inset 0 0 100px 20px ${accent}33`,
                 background: `radial-gradient(circle at center, transparent 30%, ${accent}11 100%)`
@@ -256,7 +215,7 @@ const DressItem = ({
                     }}
                 >
                     <img
-                        src={getImageUrl(item.image)}
+                        src={getImageUrl(item.backImageUrl || item.backImage || item.image || item.frontImage)}
                         alt={item.name}
                         className="w-full h-full object-contain block transition-transform duration-700"
                         style={{
@@ -290,30 +249,15 @@ const DressItem = ({
 
                             {/* Item Info Reveal */}
                             <div className="mt-auto mb-16 text-center space-y-2">
-                                <motion.h3
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    className="text-[16px] font-heading font-black tracking-[0.3em] text-white"
-                                >
-                                    {item.name.toUpperCase()}
-                                </motion.h3>
-                                <motion.div
-                                    initial={{ y: 10, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="flex flex-col items-center justify-center gap-1 text-[10px] font-mono tracking-widest"
-                                >
-                                    <div className="flex items-center gap-4 text-white/40">
-                                        <span style={{ color: accent }}>{item.tier.toUpperCase()}</span>
-                                        <span className="w-1 h-1 bg-white/20 rounded-full" />
-                                        <span>ARCHIVE COLLECTED</span>
-                                    </div>
-                                    {item.serialNumber && (
-                                        <div className="text-[12px] font-black text-[#d4af37] tracking-[0.2em] mt-1">
-                                            SERIAL: {item.serialNumber} / 100
-                                        </div>
-                                    )}
-                                </motion.div>
+                                {item.serialNumber && (
+                                    <motion.div
+                                        initial={{ y: 0, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        className="text-[12px] font-black text-[#d4af37] tracking-[0.2em] mt-1"
+                                    >
+                                        SERIAL: {item.serialNumber} / 100
+                                    </motion.div>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -361,7 +305,7 @@ const Vault = () => {
     const { collectItem } = useVaultScore();
 
     const [vaultItems, setDbCards] = useState([]);
-    
+
     // Server-side State
     const [unlockedIds, setUnlockedIds] = useState([]);
     const [stats, setStats] = useState({ common: 0, rare: 0, epic: 0, legendary: 0 });
@@ -378,7 +322,7 @@ const Vault = () => {
                     batchId: c.batchId || 1,
                     name: c.name,
                     description: c.description,
-                    image: c.frontImage,   
+                    image: c.frontImage,
                     backImageUrl: c.backImage,
                     tier: c.category,
                     _source: 'db'
@@ -389,7 +333,7 @@ const Vault = () => {
                 if (userAssets && userAssets.protocols) {
                     const ownedIds = userAssets.protocols.map(p => p._id);
                     setUnlockedIds(ownedIds);
-                    
+
                     // Update stats based on owned protocols
                     const newStats = { common: 0, rare: 0, epic: 0, legendary: 0 };
                     userAssets.protocols.forEach(p => {
@@ -406,12 +350,12 @@ const Vault = () => {
                         batchId: p.batchId,
                         name: p.name,
                         image: p.frontImage,
-                        backImageUrl: p.frontImage,
+                        backImageUrl: p.backImage,
                         tier: p.category,
                         isUnlocked: true,
                         _source: 'protocol'
                     }));
-                    
+
                     // Prepend owned items to the grid
                     setDbCards(prev => [...ownedProtocols, ...prev]);
                 }
@@ -440,6 +384,7 @@ const Vault = () => {
     const [previewItem, setPreviewItem] = useState(null);
     const [showCongrats, setShowCongrats] = useState(false);
     const [congratsData, setCongratsData] = useState(null);
+    const [showPurchasePopup, setShowPurchasePopup] = useState(false);
 
     const handlePreview = (item) => {
         setPreviewItem(item);
@@ -459,12 +404,12 @@ const Vault = () => {
 
         try {
             const response = await vaultService.redeemCode(unlockCode);
-            
+
             if (response.success && response.protocol) {
                 const { serialNumber, batchId } = response.protocol;
-                
+
                 // Find matching card in our loaded vault items
-                const matchedItem = vaultItems.find(it => 
+                const matchedItem = vaultItems.find(it =>
                     it.serialNumber === serialNumber && it.batchId === batchId
                 );
 
@@ -474,8 +419,8 @@ const Vault = () => {
                     setIsModalOpen(false);
                     setUnlockCode('');
                     setUnlockedIds(prev => [...prev, matchedItem.id]);
-                    toast.success('DECRYPTION SUCCESSFUL', { 
-                        style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' } 
+                    toast.success('DECRYPTION SUCCESSFUL', {
+                        style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' }
                     });
                 } else {
                     toast.error('ASSET NOT INITIALIZED IN ARCHIVE', {
@@ -519,9 +464,7 @@ const Vault = () => {
     const chunkedItems = useMemo(() => {
         const rows = [];
         const filtered = vaultItems.filter(item => {
-            if (collectionFilter === 'Collected') return unlockedIds.includes(item.id);
-            if (collectionFilter === 'Not Collected') return !unlockedIds.includes(item.id);
-            return true;
+            return unlockedIds.includes(item.id);
         });
         for (let i = 0; i < filtered.length; i += 3) {
             rows.push(filtered.slice(i, i + 3));
@@ -557,7 +500,7 @@ const Vault = () => {
 
     return (
         <>
-            <SEO 
+            <SEO
                 title="official | The Vault - Exclusive Digital Collectibles"
                 description="Secure your digital future with ENDURA's Vault. Collect rare digital archives and unlock exclusive luxury streetwear rewards in India."
                 canonical="/vault"
@@ -584,129 +527,123 @@ const Vault = () => {
                             </h1>
                         </div>
 
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 text-[8px] md:text-[10px] font-mono tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/40 border-t border-white/5 pt-8">
-                            <div className="flex items-center justify-center md:justify-start gap-3 md:gap-12 flex-nowrap w-full md:w-auto">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Silver:</span>
-                                    <span><Counter value={stats.common} /></span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Gold:</span>
-                                    <span><Counter value={stats.rare} /></span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Diamond:</span>
-                                    <span><Counter value={stats.epic} /></span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-white/20">Legendary:</span>
-                                    <span><Counter value={stats.legendary} /></span>
-                                </div>
-                            </div>
 
-                            <div className="flex items-center gap-6">
-                                <button
-                                    onClick={handleResetVault}
-                                    className="px-4 py-2 border border-red-500/30 text-red-500/50 hover:text-red-500 hover:border-red-500 text-[8px] font-mono uppercase tracking-[0.2em] transition-all bg-red-500/5"
+                        {/* ─── SECURITY HUB ENTRY (Side-by-Side) ─── */}
+                        {unlockedIds.length === 0 && (
+                            <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 mt-12 md:mt-32 mb-24 relative w-full max-w-7xl mx-auto px-6 reveal">
+
+                                {/* LEFT SIDE: Identity Card Preview (Minimalist) */}
+                                <div
+                                    className="flex-1 w-full max-w-[300px] lg:max-w-xs cursor-pointer hover:scale-105 transition-transform duration-500"
+                                    onClick={() => setShowPurchasePopup(true)}
                                 >
-                                    Reset Protocol
-                                </button>
-                                <select
-                                    className="bg-black/50 border border-white/10 px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-white outline-none focus:border-[#d4af37]/50 appearance-none cursor-pointer"
-                                    value={collectionFilter}
-                                    onChange={(e) => setCollectionFilter(e.target.value)}
-                                >
-                                    <option value="All">View All Archives</option>
-                                    <option value="Collected">Decrypted</option>
-                                    <option value="Not Collected">Encrypted</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col items-center mt-44 mb-16 relative">
-                            {/* Decorative HUD Scan Line */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent overflow-hidden">
-                                <motion.div 
-                                    animate={{ left: ['-100%', '100%'] }}
-                                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                                />
-                            </div>
-                            
-
-                            <div className="relative group p-8">
-                                {/* Rotating Scanner Rings */}
-                                <motion.div 
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-0 border border-dashed border-[#d4af37]/20 rounded-full scale-[1.15] pointer-events-none"
-                                />
-                                <motion.div 
-                                    animate={{ rotate: -360 }}
-                                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                                    className="absolute inset-0 border border-dotted border-white/5 rounded-full scale-[1.3] pointer-events-none"
-                                />
-
-                                {/* Corner Accents (Enhanced) */}
-                                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#d4af37]/50 transition-all group-hover:scale-110 group-hover:border-[#d4af37]" />
-                                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#d4af37]/50 transition-all group-hover:scale-110 group-hover:border-[#d4af37]" />
-                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#d4af37]/50 transition-all group-hover:scale-110 group-hover:border-[#d4af37]" />
-                                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#d4af37]/50 transition-all group-hover:scale-110 group-hover:border-[#d4af37]" />
-
-                                <motion.button
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                    onClick={() => {
-                                        setTargetItem(null);
-                                        setIsModalOpen(true);
-                                        setUnlockCode('');
-                                    }}
-                                    className="relative z-10 px-14 py-6 bg-[#d4af37] text-black font-heading font-black text-xs uppercase tracking-[0.6em] hover:bg-white hover:scale-105 transition-all shadow-[0_0_70px_rgba(212,175,55,0.25)] active:scale-95"
-                                >
-                                    ENTER PROTOCOL CODE
-                                </motion.button>
-                            </div>
-
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 1 }}
-                                className="mt-12 space-y-2 text-center"
-                            >
-                                <div className="text-[7px] font-mono text-white/30 tracking-[0.4em] uppercase">Biometric Authorization Required</div>
-                                <div className="text-[6px] font-mono text-white/10 tracking-[0.2em] uppercase max-w-xs leading-relaxed mx-auto italic">
-                                    Archive synchronization complete. Verification modules ready. 
-                                    Input designated decryption protocol to access secured luxury assets.
+                                    <div className="space-y-4">
+                                        <VaultCard
+                                            item={{
+                                                name: "",
+                                                description: "",
+                                                tier: "Legendary",
+                                                image: "/tarot-card-13.png"
+                                            }}
+                                            isUnlocked={true}
+                                            vaultReady={true}
+                                            onUnlockRequest={() => { }}
+                                        />
+                                    </div>
                                 </div>
-                            </motion.div>
-                        </div>
+
+                                {/* RIGHT SIDE: High-Fidelity Terminal Interface */}
+                                <div className="flex-1 w-full max-w-lg relative">
+                                    {/* Decorative Outer HUD Glow */}
+                                    <div className="absolute -inset-4 bg-accent/5 blur-[80px] rounded-full pointer-events-none" />
+
+                                    <div className="relative group overflow-hidden border-2 border-white/10 bg-black/60 rounded-3xl backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+
+                                        {/* Main content grid */}
+                                        <div className="p-12 md:p-16 relative">
+                                            {/* Technical SVG decals */}
+                                            <svg className="absolute inset-x-0 top-0 w-full h-full opacity-[0.03] pointer-events-none" viewBox="0 0 400 400">
+                                                <circle cx="200" cy="200" r="180" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="10 20" />
+                                                <path d="M50 200 L350 200 M200 50 L200 350" stroke="white" strokeWidth="0.2" />
+                                                <rect x="180" y="180" width="40" height="40" fill="none" stroke="white" strokeWidth="1" />
+                                            </svg>
+
+                                            <div className="relative z-10 space-y-10 text-center">
+                                                <div className="space-y-4">
+                                                    <motion.div
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        className="inline-block px-4 py-1 border-2 border-accent/20 bg-accent/5 rounded-full"
+                                                    >
+                                                        <span className="text-[8px] font-mono text-accent tracking-[0.5em] uppercase">Authorization Required</span>
+                                                    </motion.div>
+                                                    <h3 className="text-2xl md:text-4xl font-heading font-black text-white tracking-[0.1em] md:tracking-widest uppercase leading-none">
+                                                        Encryption <span className="text-accent">Override</span>
+                                                    </h3>
+                                                    <p className="text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-[0.1em] md:tracking-[0.2em] max-w-sm mx-auto leading-relaxed">
+                                                        Deploy designated decryption protocol to access restricted luxury assets in the archive.
+                                                    </p>
+                                                </div>
+
+                                                <div className="relative inline-block group/btn cursor-pointer">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        onClick={() => {
+                                                            setTargetItem(null);
+                                                            setIsModalOpen(true);
+                                                            setUnlockCode('');
+                                                        }}
+                                                        className="relative z-10 px-10 md:px-12 py-4 md:py-5 bg-accent text-black font-heading font-black text-[9px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] shadow-[0_0_60px_rgba(212,175,55,0.2)] hover:shadow-[0_0_100px_rgba(212,175,55,0.4)] transition-all duration-500 overflow-hidden"
+                                                    >
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 skew-x-12" />
+                                                        Initialize Protocol
+                                                    </motion.button>
+                                                </div>
+
+                                                <div className="pt-8 border-t border-white/5 flex items-center justify-between md:justify-center gap-4 md:gap-12">
+                                                    <div className="space-y-1 text-left md:text-center">
+                                                        <div className="text-[6px] md:text-[7px] font-mono text-white/20 uppercase tracking-[0.1em] md:tracking-[0.2em]">Signal_Status</div>
+                                                        <div className="text-[7px] md:text-[8px] font-mono text-green-500/60 uppercase tracking-[0.1em] md:tracking-[0.3em]">Encrypted_Link</div>
+                                                    </div>
+                                                    <div className="w-px h-8 bg-white/5 hidden md:block" />
+                                                    <div className="space-y-1 text-right md:text-center">
+                                                        <div className="text-[6px] md:text-[7px] font-mono text-white/20 uppercase tracking-[0.1em] md:tracking-[0.2em]">Archive_Sync</div>
+                                                        <div className="text-[7px] md:text-[8px] font-mono text-accent/60 uppercase tracking-[0.1em] md:tracking-[0.3em]">Stable_99.8%</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </header>
 
 
                 <main className="relative z-10 max-w-[1200px] mx-auto px-6 pt-24 pb-48 transition-all duration-1000">
-                        <div className="flex flex-col gap-24">
-                            {chunkedItems.map((row, idx) => (
-                                <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-                                    {row.map(item => (
-                                        <div 
-                                            key={item.id} 
-                                            className="vault-card-reveal"
-                                            onClick={() => unlockedIds.includes(item.id) && handlePreview(item)}
-                                        >
-                                            <VaultCard
-                                                item={item}
-                                                isUnlocked={unlockedIds.includes(item.id)}
-                                                onUnlockRequest={handleUnlockRequest}
-                                                vaultReady={vaultReady}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
-                    </main>
+                    <div className="flex flex-col gap-24">
+                        {chunkedItems.map((row, idx) => (
+                            <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+                                {row.map(item => (
+                                    <div
+                                        key={item.id}
+                                        className="vault-card-reveal"
+                                        onClick={() => unlockedIds.includes(item.id) && handlePreview(item)}
+                                    >
+                                        <VaultCard
+                                            item={item}
+                                            isUnlocked={unlockedIds.includes(item.id)}
+                                            onUnlockRequest={handleUnlockRequest}
+                                            vaultReady={vaultReady}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </main>
 
                 {bursts.map(b => (
                     <CoinBurst key={b.id} x={b.x} y={b.y} onComplete={() => setBursts(p => p.filter(i => i.id !== b.id))} />
@@ -716,55 +653,55 @@ const Vault = () => {
                     {ritualId && (
                         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-xl">
                             {/* Subway Surfers style reveal: Pop and Glow */}
-                            <motion.div 
-                                initial={{ scale: 0, rotate: -10, opacity: 0 }} 
-                                animate={{ scale: [0, 1.2, 1], rotate: 0, opacity: 1 }} 
-                                transition={{ 
-                                    duration: 0.8, 
+                            <motion.div
+                                initial={{ scale: 0, rotate: -10, opacity: 0 }}
+                                animate={{ scale: [0, 1.2, 1], rotate: 0, opacity: 1 }}
+                                transition={{
+                                    duration: 0.8,
                                     ease: [0.34, 1.56, 0.64, 1], // Custom spring-like easing
-                                }} 
+                                }}
                                 className="w-[320px] relative"
                                 onAnimationComplete={() => {
-                                    const it = targetItem; 
-                                    if (!it) return; 
-                                    const nU = [...unlockedIds, it.id]; 
+                                    const it = targetItem;
+                                    if (!it) return;
+                                    const nU = [...unlockedIds, it.id];
                                     const nS = { ...stats, [(it.tier || 'common').toLowerCase()]: (stats[(it.tier || 'common').toLowerCase()] || 0) + 1 };
-                                    setUnlockedIds(nU); 
-                                    setStats(nS); 
+                                    setUnlockedIds(nU);
+                                    setStats(nS);
                                     updatePersistence(nU, credits + 1, nS);
-                                    
+
                                     setTimeout(() => {
                                         if (it._source === 'db') {
                                             productService.collectVaultCard(it.id)
-                                                .then(d => { 
-                                                    setCongratsData(d); 
-                                                    setCredits(d.newScore); 
-                                                    setShowCongrats(true); 
-                                                    setRitualId(null); 
+                                                .then(d => {
+                                                    setCongratsData(d);
+                                                    setCredits(d.newScore);
+                                                    setShowCongrats(true);
+                                                    setRitualId(null);
                                                 })
-                                                .catch(() => { 
-                                                    setShowCongrats(true); 
-                                                    setRitualId(null); 
+                                                .catch(() => {
+                                                    setShowCongrats(true);
+                                                    setRitualId(null);
                                                 });
-                                        } else { 
-                                            setCredits(credits + 1); 
-                                            setRewardUnlockItem(it); 
-                                            setRitualId(null); 
+                                        } else {
+                                            setCredits(credits + 1);
+                                            setRewardUnlockItem(it);
+                                            setRitualId(null);
                                         }
                                     }, 1000);
                                 }}
                             >
                                 {/* Glow Effect Behind */}
                                 <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full animate-pulse" />
-                                
-                                <VaultCard 
-                                    item={vaultItems.find(it => it.id === ritualId)} 
-                                    isUnlocked={true} 
-                                    onUnlockRequest={() => { }} 
-                                    vaultReady={true} 
+
+                                <VaultCard
+                                    item={vaultItems.find(it => it.id === ritualId)}
+                                    isUnlocked={true}
+                                    onUnlockRequest={() => { }}
+                                    vaultReady={true}
                                 />
-                                
-                                <motion.div 
+
+                                <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.5 }}
@@ -817,11 +754,11 @@ const Vault = () => {
 
                 <AnimatePresence>
                     {previewItem && (
-                        <div 
+                        <div
                             className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 sm:p-8"
                             onClick={() => setPreviewItem(null)}
                         >
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0.8, opacity: 0, y: 50 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
                                 exit={{ scale: 1.1, opacity: 0, y: -50 }}
@@ -829,7 +766,7 @@ const Vault = () => {
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Close Button */}
-                                <button 
+                                <button
                                     onClick={() => setPreviewItem(null)}
                                     className="absolute top-8 right-8 text-white/40 hover:text-white transition-colors"
                                 >
@@ -841,12 +778,12 @@ const Vault = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-center w-full px-4">
                                     <div className="relative h-[300px] md:h-[600px] flex items-center justify-center">
                                         <div className="absolute inset-0 bg-primary/10 blur-[150px] rounded-full" />
-                                        <DressItem 
+                                        <DressItem
                                             item={{ ...previewItem, image: previewItem.image }}
                                             vaultReady={true}
                                         />
                                     </div>
-                                    
+
                                     <div className="space-y-10 text-center md:text-left">
                                         <div className="space-y-4">
                                             <span className="font-mono text-[10px] text-[#d4af37] tracking-[0.5em] uppercase">
@@ -860,12 +797,12 @@ const Vault = () => {
                                                 <span className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Protocol Verified</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="space-y-6">
                                             <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
                                                 {previewItem.description || "Experimental digital artifact bound to physical luxury. Part of the Endura protocol."}
                                             </p>
-                                            
+
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-[0.2em] text-[#d4af37]/60">
                                                 <span>PHASE: 01_DECRYPTION</span>
                                                 <span className="text-white/10">|</span>
@@ -905,6 +842,45 @@ const Vault = () => {
                                 />
                             )}
                         </VaultCongratsOverlay>
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {showPurchasePopup && (
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 backdrop-blur-3xl bg-black/80">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                className="glass p-12 max-w-lg w-full border-white/10 text-center relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent" />
+
+                                <div className="w-20 h-20 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-8 bg-accent/5">
+                                    <div className="w-2 h-2 bg-accent rounded-full animate-ping" />
+                                </div>
+
+                                <div className="space-y-6">
+                                    <h3 className="text-2xl font-heading font-black tracking-[0.2em] text-white">PURCHASE PROTOCOL</h3>
+                                    <p className="text-[11px] font-mono text-white/60 leading-relaxed uppercase tracking-widest">
+                                        Purchase an ENDURA product to receive a unique decryption protocol for your digital collectible cards.
+                                    </p>
+                                    <div className="pt-8 flex flex-col gap-4">
+                                        <button
+                                            onClick={() => navigate('/collections')}
+                                            className="w-full py-4 bg-accent text-black font-heading font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-all shadow-[0_0_30px_rgba(212,175,55,0.1)]"
+                                        >
+                                            Browse Collections
+                                        </button>
+                                        <button
+                                            onClick={() => setShowPurchasePopup(false)}
+                                            className="w-full py-4 border border-white/10 text-white/40 font-mono text-[9px] uppercase tracking-widest hover:text-white hover:border-white transition-all"
+                                        >
+                                            Close Uplink
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
                     )}
                 </AnimatePresence>
             </div>

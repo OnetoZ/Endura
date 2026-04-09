@@ -32,7 +32,7 @@ const getRedemptionCodes = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const importRedemptionCodes = asyncHandler(async (req, res) => {
-    const { codes, batchId, image, type, serialScale, clearBatch } = req.body; 
+    const { codes, batchId, frontImage, backImage, type, serialScale, clearBatch } = req.body; 
 
     if (!Array.isArray(codes) || codes.length === 0) {
         res.status(400);
@@ -55,7 +55,8 @@ const importRedemptionCodes = asyncHandler(async (req, res) => {
             { 
                 code: c.code.trim().toUpperCase(), 
                 isRedeemed: false,
-                image: image || '/images/default-vault.png',
+                frontImage: frontImage || '/images/default-vault.png',
+                backImage: backImage || '/images/default-vault.png',
                 type: type || 'Rare',
                 serialScale: Number(serialScale) || 100
             },
@@ -101,7 +102,8 @@ const redeemProvidedCode = asyncHandler(async (req, res) => {
         protocol: {
             serialNumber: redemptionCode.serialNumber,
             code: redemptionCode.code,
-            image: redemptionCode.image,
+            frontImage: redemptionCode.frontImage,
+            backImage: redemptionCode.backImage,
             type: redemptionCode.type,
             batchId: redemptionCode.batchId,
             redeemedAt: redemptionCode.redeemedAt
@@ -115,14 +117,14 @@ const redeemProvidedCode = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const bulkUpdateCodeImages = asyncHandler(async (req, res) => {
-    const { image } = req.body;
+    const { frontImage, backImage } = req.body;
 
-    if (!image) {
+    if (!frontImage || !backImage) {
         res.status(400);
-        throw new Error('Image reference required');
+        throw new Error('Both front and back image references required');
     }
 
-    const result = await RedemptionCode.updateMany({}, { image });
+    const result = await RedemptionCode.updateMany({}, { frontImage, backImage });
 
     res.json({
         success: true,
@@ -137,12 +139,13 @@ const bulkUpdateCodeImages = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const updateRedemptionCode = asyncHandler(async (req, res) => {
-    const { code, image, type, isRedeemed } = req.body;
+    const { code, frontImage, backImage, type, isRedeemed } = req.body;
     const redemptionCode = await RedemptionCode.findById(req.params.id);
 
     if (redemptionCode) {
         redemptionCode.code = code || redemptionCode.code;
-        redemptionCode.image = image || redemptionCode.image;
+        redemptionCode.frontImage = frontImage || redemptionCode.frontImage;
+        redemptionCode.backImage = backImage || redemptionCode.backImage;
         redemptionCode.type = type || redemptionCode.type;
         if (isRedeemed !== undefined) redemptionCode.isRedeemed = isRedeemed;
         
