@@ -7,7 +7,7 @@ const session = require('express-session');
 const { MongoStore } = require('connect-mongo');
 const rateLimit = require('express-rate-limit');
 
-dotenv.config();
+dotenv.config({ override: true });
 
 // Initialize passport AFTER dotenv so env vars are available
 const passport = require('./config/passport');

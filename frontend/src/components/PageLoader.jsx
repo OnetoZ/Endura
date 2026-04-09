@@ -39,10 +39,10 @@ const PageLoader = () => {
         return () => tl.kill();
     }, [location.pathname]);
 
-    if (!isVisible) return null;
-
     return (
-        <div className="page-loader-bg fixed inset-0 z-[9999] bg-black flex items-center justify-center opacity-0 pointer-events-none">
+        <div 
+            className={`page-loader-bg fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
             {/* Ultra-precise Background Glow */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.12)_0%,transparent_60%)]" />
             

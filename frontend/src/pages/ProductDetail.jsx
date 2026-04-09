@@ -166,25 +166,25 @@ const ProductDetail = () => {
                             {product.description}
                         </p>
 
-                        <div className="flex items-center gap-8 mb-12">
-                            <div className="flex border border-white/10">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 mb-12">
+                            <div className="flex border border-white/10 w-full sm:w-auto overflow-hidden">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
+                                    className="flex-1 sm:px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
                                 >-</button>
-                                <div className="px-8 py-4 bg-white/5 font-bold text-sm flex items-center">{quantity}</div>
+                                <div className="flex-1 sm:px-8 py-4 bg-white/5 font-bold text-sm flex items-center justify-center">{quantity}</div>
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
-                                    className="px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
+                                    className="flex-1 sm:px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
                                 >+</button>
                             </div>
 
-                                <button
+                            <button
                                 onClick={() => {
                                     for (let i = 0; i < quantity; i++) addToCart(product);
                                     navigate('/cart');
                                 }}
-                                className="flex-grow whitespace-nowrap py-2.5 sm:py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
+                                className="w-full sm:flex-grow py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
                             >
                                 Initiate Protocol (Add to Cart)
                             </button>

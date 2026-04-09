@@ -11,26 +11,29 @@ const asyncHandler = require('../utils/asyncHandler');
 const getProducts = asyncHandler(async (req, res) => {
     const { type, search, category, page = 1, limit = 100 } = req.query;
 
-    const filter = { isActive: true };
-
+    const filter = {};
     if (type) filter.type = type;
     if (category) filter.category = { $regex: category, $options: 'i' };
     if (search) filter.name = { $regex: search, $options: 'i' };
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const pageNumber = Math.max(1, parseInt(page) || 1);
+    const limitNumber = Math.max(1, parseInt(limit) || 100);
+    const skip = (pageNumber - 1) * limitNumber;
+
     const total = await Product.countDocuments(filter);
 
+    // Exclude heavy fields to prevent hanging on large Base64 data locally
     const products = await Product.find(filter)
-        .select('-digitalTwinMetadata') // Strictly exclude huge fields from list view
+        .select('-digitalTwinMetadata -images -image -frontImage -backImage -digitalTwinImage') 
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(Number(limit))
+        .limit(limitNumber)
         .lean();
 
     res.json({
         products,
-        page: Number(page),
-        pages: Math.ceil(total / Number(limit)),
+        page: pageNumber,
+        pages: Math.ceil(total / limitNumber),
         total,
     });
 });

@@ -181,19 +181,19 @@ const Navbar = React.forwardRef((props, ref) => {
                                         </div>
                                 </div>
                             ) : (
-                                <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.8] origin-right transition-all duration-500 hover:scale-105 active:scale-95">
-                                    {/* Gold Gradient Background */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-[#fee08b] via-[#d4af37] to-[#b8860b] animate-shimmer" />
+                                <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.8] origin-right transition-all duration-500 hover:scale-105 active:scale-95 border border-purple-500/20">
+                                    {/* Purple Gradient Background */}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-800 via-purple-600 to-purple-800 animate-shimmer" />
 
                                     {/* Shimmer Overlay */}
                                     <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
 
                                     {/* Content */}
                                     <div className="relative z-10 px-6 md:px-10 py-2 md:py-3 flex items-center gap-1 md:gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
                                             Login
                                         </span>
-                                        <svg className="w-3.5 h-3.5 text-black group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3.5 h-3.5 text-white group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                                         </svg>
                                     </div>

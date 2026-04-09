@@ -20,7 +20,7 @@ const CollectionsIntro = ({ onComplete }) => {
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0a0a0a]"
         >
             {/* Subtle Grain Overlay */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('/noise.svg')]"></div>
 
             <div className="relative flex flex-col items-center">
                 <motion.div

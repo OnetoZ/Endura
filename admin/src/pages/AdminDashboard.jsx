@@ -51,17 +51,6 @@ const AdminDashboard = () => {
     // ── Order Details ──────────────────────────────────────────────────────
     const [viewingOrder, setViewingOrder] = useState(null);
 
-    useEffect(() => {
-        if (viewingOrder) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [viewingOrder]);
-
     // ── Filters & Search ───────────────────────────────────────────────────
     const [userSearch, setUserSearch] = useState('');
     const [productSearch, setProductSearch] = useState('');
@@ -78,12 +67,24 @@ const AdminDashboard = () => {
     const [editingCode, setEditingCode] = useState(null);
     const [bulkData, setBulkData] = useState({
         codes: '',
-        image: '',
+        frontImage: '',
+        backImage: '',
         type: 'Rare',
         serialScale: '100',
         batchId: 1,
         clearBatch: false
     });
+
+    useEffect(() => {
+        if (viewingOrder || showBulkImport || editingCode) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [viewingOrder, showBulkImport, editingCode]);
 
     const verifyAndLoad = useCallback(async () => {
         console.log('🚀 [ADMIN] Initializing Security Clearance...');
@@ -111,7 +112,7 @@ const AdminDashboard = () => {
                     productService.getVaultItems().catch(e => [])
                 ]);
 
-                setProducts(productsData.products || []);
+                setProducts(Array.isArray(productsData) ? productsData : (productsData.products || []));
                 setOrders(ordersData || []);
                 setUsers(usersData || []);
                 setVaultCards(cardsData || []);
@@ -842,47 +843,57 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5 text-sm">
-                                        {products.filter(p => !productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase())).map(p => (
-                                            <tr key={p._id || p.id} className="group hover:bg-white/5 transition-all">
-                                                <td className="py-6 font-mono text-xs text-gray-600">#{(p._id || p.id || '').slice(-6)}</td>
-                                                <td className="py-6">
-                                                    <div className="flex gap-4 items-center">
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <img 
-                                                                src={getImageUrl(p.images?.[0] || p.image)} 
-                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
-                                                                className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" 
-                                                                alt="Physical" 
-                                                            />
-                                                            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Physical</span>
-                                                        </div>
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <img 
-                                                                src={getImageUrl(p.images?.[2] || p.digitalTwinImage)} 
-                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800' }}
-                                                                className="w-10 h-10 object-cover border border-accent/30 p-0.5" 
-                                                                alt="Digital Twin" 
-                                                            />
-                                                            <span className="text-[8px] text-accent uppercase font-black tracking-widest">Digital Twin</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="py-6">
-                                                    <p className="font-bold uppercase tracking-tight">{p.name}</p>
-                                                    <p className="text-accent font-mono text-[10px]">₹{p.price}</p>
-                                                </td>
-                                                <td className="py-6">
-                                                    <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.type === 'Legendary' ? 'purple-500' : 'primary'}/30 text-white/70`}>
-                                                        {p.type || p.faction}
-                                                    </span>
-                                                </td>
-                                                <td className="py-6 font-mono text-xs">{p.stock || '∞'}</td>
-                                                <td className="py-6 text-right space-x-4">
-                                                    <button onClick={() => handleEditClick(p)} className="text-gray-500 hover:text-white text-[9px] font-black uppercase">Edit</button>
-                                                    <button onClick={() => handleDeleteProduct(p._id || p.id)} className="text-red-500 hover:text-white text-[9px] font-black uppercase">Delete</button>
-                                                </td>
+                                        {products.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="py-20 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em]">No products detected in archive</td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            products.filter(p => {
+                                                if (!productSearch) return true;
+                                                const name = p.name || '';
+                                                return name.toLowerCase().includes(productSearch.toLowerCase());
+                                            }).map(p => (
+                                                <tr key={p._id || p.id} className="group hover:bg-white/5 transition-all">
+                                                    <td className="py-6 font-mono text-xs text-gray-600">#{(p._id || p.id || '').slice(-6)}</td>
+                                                    <td className="py-6">
+                                                        <div className="flex gap-4 items-center">
+                                                            <div className="flex flex-col items-center gap-1">
+                                                                <img 
+                                                                    src={getImageUrl(p.images?.[0] || p.image)} 
+                                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
+                                                                    className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" 
+                                                                    alt="Physical" 
+                                                                />
+                                                                <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Physical</span>
+                                                            </div>
+                                                            <div className="flex flex-col items-center gap-1">
+                                                                <img 
+                                                                    src={getImageUrl(p.images?.[2] || p.digitalTwinImage)} 
+                                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800' }}
+                                                                    className="w-10 h-10 object-cover border border-accent/30 p-0.5" 
+                                                                    alt="Digital Twin" 
+                                                                />
+                                                                <span className="text-[8px] text-accent uppercase font-black tracking-widest">Digital Twin</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-6">
+                                                        <p className="font-bold uppercase tracking-tight">{p.name}</p>
+                                                        <p className="text-accent font-mono text-[10px]">₹{p.price}</p>
+                                                    </td>
+                                                    <td className="py-6">
+                                                        <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.type === 'Legendary' ? 'purple-500' : 'primary'}/30 text-white/70`}>
+                                                            {p.type || p.faction}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-6 font-mono text-xs">{p.stock || '∞'}</td>
+                                                    <td className="py-6 text-right space-x-4">
+                                                        <button onClick={() => handleEditClick(p)} className="text-gray-500 hover:text-white text-[9px] font-black uppercase">Edit</button>
+                                                        <button onClick={() => handleDeleteProduct(p._id || p.id)} className="text-red-500 hover:text-white text-[9px] font-black uppercase">Delete</button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -1083,9 +1094,16 @@ const AdminDashboard = () => {
                                                         <td className="py-6">
                                                             <div className="w-10 h-10 bg-white/5 border border-white/10 p-1 flex items-center justify-center">
                                                                 <img 
-                                                                    src={c.image || '/images/default-vault.png'} 
+                                                                    src={c.frontImage || '/images/default-vault.png'} 
                                                                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" 
-                                                                    alt="Asset" 
+                                                                    alt="Front" 
+                                                                />
+                                                            </div>
+                                                            <div className="w-10 h-10 bg-white/5 border border-white/10 p-1 flex items-center justify-center mt-1">
+                                                                <img 
+                                                                    src={c.backImage || '/images/default-vault.png'} 
+                                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" 
+                                                                    alt="Back" 
                                                                 />
                                                             </div>
                                                         </td>
@@ -1259,12 +1277,12 @@ const AdminDashboard = () => {
             {/* Bulk Import Modal */}
             <AnimatePresence>
                 {showBulkImport && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 bg-black/90 backdrop-blur-xl overflow-y-auto">
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 p-10 relative overflow-hidden"
+                            className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 p-6 md:p-12 relative overflow-hidden my-auto"
                         >
                             <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
                             
@@ -1319,34 +1337,66 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Archive Image Asset</label>
-                                        <div className="flex gap-4">
-                                            <input
-                                                type="text"
-                                                placeholder="PASTE IMAGE URL..."
-                                                className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest"
-                                                value={bulkData.image}
-                                                onChange={(e) => setBulkData({...bulkData, image: e.target.value})}
-                                            />
-                                            <button 
-                                                className="px-4 bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
-                                                onClick={() => document.getElementById('bulk-img-upload').click()}
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                            </button>
-                                            <input 
-                                                type="file" 
-                                                id="bulk-img-upload" 
-                                                className="hidden" 
-                                                onChange={async (e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        const url = await uploadService.uploadImage(file);
-                                                        setBulkData({...bulkData, image: url});
-                                                    }
-                                                }}
-                                            />
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Front Side Asset</label>
+                                            <div className="flex gap-4">
+                                                <input
+                                                    type="text"
+                                                    placeholder="FRONT ASSET URL..."
+                                                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest"
+                                                    value={bulkData.frontImage}
+                                                    onChange={(e) => setBulkData({...bulkData, frontImage: e.target.value})}
+                                                />
+                                                <button 
+                                                    className="px-4 bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all"
+                                                    onClick={() => document.getElementById('bulk-front-upload').click()}
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                                </button>
+                                                <input 
+                                                    type="file" 
+                                                    id="bulk-front-upload" 
+                                                    className="hidden" 
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            const url = await uploadService.uploadImage(file);
+                                                            setBulkData({...bulkData, frontImage: url});
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Back Side Asset</label>
+                                            <div className="flex gap-4">
+                                                <input
+                                                    type="text"
+                                                    placeholder="BACK ASSET URL..."
+                                                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest"
+                                                    value={bulkData.backImage}
+                                                    onChange={(e) => setBulkData({...bulkData, backImage: e.target.value})}
+                                                />
+                                                <button 
+                                                    className="px-4 bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all"
+                                                    onClick={() => document.getElementById('bulk-back-upload').click()}
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                                </button>
+                                                <input 
+                                                    type="file" 
+                                                    id="bulk-back-upload" 
+                                                    className="hidden" 
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            const url = await uploadService.uploadImage(file);
+                                                            setBulkData({...bulkData, backImage: url});
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1355,10 +1405,33 @@ const AdminDashboard = () => {
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol Code Strings (Pasted)</label>
                                     <textarea
                                         placeholder="PASTE CODES HERE... (ONE PER LINE OR COMMA SEPARATED)"
-                                        className="w-full h-[240px] bg-white/5 border border-white/10 p-4 text-[11px] font-mono text-white outline-none focus:border-primary/50 resize-none overflow-y-auto"
+                                        className="w-full h-[280px] bg-white/5 border border-white/10 p-4 text-[11px] font-mono text-white outline-none focus:border-primary/50 overflow-y-scroll custom-scrollbar resize-y"
+                                        style={{ 
+                                            scrollbarWidth: 'auto',
+                                            scrollbarColor: '#9370DB rgba(255,255,255,0.05)',
+                                            whiteSpace: 'pre',
+                                            wordWrap: 'normal'
+                                        }}
                                         value={bulkData.codes}
                                         onChange={(e) => setBulkData({...bulkData, codes: e.target.value})}
                                     />
+                                    <style>{`
+                                        .custom-scrollbar::-webkit-scrollbar {
+                                            width: 8px !important;
+                                            display: block !important;
+                                        }
+                                        .custom-scrollbar::-webkit-scrollbar-track {
+                                            background: rgba(255, 255, 255, 0.05) !important;
+                                        }
+                                        .custom-scrollbar::-webkit-scrollbar-thumb {
+                                            background: #9370DB !important;
+                                            border-radius: 4px !important;
+                                            border: 2px solid rgba(0,0,0,0.2) !important;
+                                        }
+                                        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                                            background: #b194e8 !important;
+                                        }
+                                    `}</style>
                                     <div className="flex items-center gap-2 mt-2">
                                         <input
                                             type="checkbox"
@@ -1372,7 +1445,7 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 mt-8 pb-4">
                                 <button
                                     onClick={async () => {
                                         const codeStrings = bulkData.codes
@@ -1390,7 +1463,8 @@ const AdminDashboard = () => {
                                             const syncData = {
                                                 codes: codeStrings.map((code, index) => ({ code, serialNumber: index + 1 })),
                                                 batchId: parseInt(bulkData.batchId),
-                                                image: bulkData.image,
+                                                frontImage: bulkData.frontImage,
+                                                backImage: bulkData.backImage,
                                                 type: bulkData.type,
                                                 serialScale: parseInt(bulkData.serialScale || 100),
                                                 clearBatch: bulkData.clearBatch
@@ -1420,13 +1494,14 @@ const AdminDashboard = () => {
                                             setIsVaultLoading(false);
                                         }
                                     }}
-                                    className="flex-1 bg-primary text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-lg shadow-primary/20"
+                                    className="flex-1 bg-primary text-black py-5 text-[10px] font-black uppercase tracking-[0.5em] hover:bg-white transition-all shadow-[0_0_50px_rgba(147,112,219,0.3)]"
+                                    disabled={isVaultLoading}
                                 >
-                                    Initiate Mass Synchronization
+                                    {isVaultLoading ? 'Syncing...' : 'Initiate Mass Synchronization'}
                                 </button>
                                 <button
                                     onClick={() => setShowBulkImport(false)}
-                                    className="px-10 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:border-white transition-all"
+                                    className="px-12 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:border-white transition-all"
                                 >
                                     Abort
                                 </button>
@@ -1489,14 +1564,25 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Asset Image URL</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
-                                        value={editingCode.image}
-                                        onChange={(e) => setEditingCode({...editingCode, image: e.target.value})}
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Front Side URL</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
+                                            value={editingCode.frontImage}
+                                            onChange={(e) => setEditingCode({...editingCode, frontImage: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Back Side URL</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
+                                            value={editingCode.backImage}
+                                            onChange={(e) => setEditingCode({...editingCode, backImage: e.target.value})}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center gap-4 py-4 border-y border-white/5">

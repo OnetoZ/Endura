@@ -62,6 +62,6 @@ const productSchema = new mongoose.Schema({
     reviews: [reviewSchema],
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
-}, { timestamps: true });
+}, { timestamps: true, collection: 'products' });
 
 module.exports = mongoose.model('Product', productSchema);
