@@ -69,7 +69,107 @@
   </script>
 
   <style>
-    /* Critical CSS for SEO Pre-render */
+    /* Critical CSS for Static Loader mimicking PageLoader.jsx */
+    #initial-splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      font-family: 'Inter', monospace;
+    }
+    
+    .splash-bg-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+    }
+
+    .splash-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+    }
+
+    .splash-logo-container {
+      position: relative;
+    }
+
+    .splash-logo {
+      width: 16rem;
+      object-fit: contain;
+      filter: brightness(1.25);
+      animation: logoRise 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
+      opacity: 0;
+    }
+    @media (min-width: 768px) {
+      .splash-logo {
+        width: 450px;
+      }
+    }
+
+    .splash-logo-glow {
+      position: absolute;
+      inset: 0;
+      background: rgba(59, 130, 246, 0.1);
+      filter: blur(100px);
+      z-index: -1;
+      border-radius: 50%;
+    }
+
+    .splash-tagline-container {
+      overflow: hidden;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      opacity: 0;
+      animation: taglineFade 0.4s ease-out forwards;
+      animation-delay: 0.4s;
+    }
+
+    .splash-tagline {
+      font-family: monospace;
+      font-size: 9px;
+      letter-spacing: 1.8em;
+      color: rgba(59, 130, 246, 0.6);
+      text-transform: uppercase;
+      margin-right: -1.8em;
+      white-space: nowrap;
+    }
+    @media (min-width: 768px) {
+      .splash-tagline {
+        font-size: 11px;
+      }
+    }
+
+    .splash-scanline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4), transparent);
+    }
+
+    @keyframes logoRise {
+      0% { opacity: 0; transform: translateY(30px); filter: blur(10px) brightness(1.25); }
+      100% { opacity: 1; transform: translateY(0); filter: blur(0px) brightness(1.25); }
+    }
+
+    @keyframes taglineFade {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 0.4; transform: scale(1); }
+    }
+
+    /* Critical CSS for SEO Pre-render - Positioned behind splash */
     #root-static-header { padding: 2rem; font-family: sans-serif; background: #000; color: #fff; }
     #root-static-main { padding: 2rem; font-family: sans-serif; background: #111; color: #ddd; }
     .static-nav { margin-top: 1rem; border-top: 1px solid #333; padding-top: 1rem; }
@@ -86,31 +186,51 @@
 
 <body>
   <div id="root">
-    <!-- Static Pre-render Output for SEO bots - NO INLINE STYLES -->
-    <header id="root-static-header">
-      <h1>ENDURA official | Luxury Streetwear & Digital Collectibles India</h1>
-      <p class="seo-text">Welcome to <strong>Endura</strong>, the premier luxury streetwear brand from India. Our mission is to bridge the gap between physical high-fashion and digital permanence through exclusive drops and rare collectibles.</p>
-      <nav class="static-nav">
-        <a href="/">Home</a>
-        <a href="/shop">Shop Inventory</a>
-        <a href="/collections">Collections</a>
-        <a href="/vault">The Vault</a>
-        <a href="/cult">The Cult</a>
-      </nav>
-    </header>
-    <main id="root-static-main">
-      <section>
-        <h2>Endura: India's Luxury Streetwear Revolution</h2>
-        <p class="seo-text">At wearendura.com, we define the future of premium streetwear in India. Our design philosophy merges technical engineering with premium fabrics, creating a unique aesthetic for the modern urban audience. From high-quality cinematic apparel to the latest exclusive drops, Endura redefines luxury urban wear by offering pieces that are crafted not for the masses, but for the chosen few.</p>
-        <p class="seo-text">Our collections feature oversized hoodies, tactical techwear, and luxury apparel that resonates with the bold and the visionary. Every piece is a statement of identity, designed to last both in the physical realm and within your digital archives.</p>
-        <img src="/logo.png" alt="Endura Streetwear India Logo - Premium Luxury Apparel & Digital Collectibles" width="150" height="150" />
-      </section>
-      <section>
-        <h3>Exclusive Digital Collectibles & Virtual Assets</h3>
-        <p class="seo-text">Beyond our physical apparel, Endura offers unique digital collectibles and virtual assets. By merging digital art with premium lifestyle, we provide an unparalleled luxury experience. Our 'Vault' is a secure archive where your digital legacy is preserved, allowing you to collect rare assets that represent your status within the Endura network.</p>
-        <p class="seo-text">Join the evolution of fashion. Explore the factions, secure your archives, and become part of the Endura cult today. Experience the perfect synergy of physical luxury and digital innovation in India's first tech-forward streetwear brand.</p>
-      </section>
-    </main>
+    <!-- Initial Splash Screen mimicking PageLoader -->
+    <div id="initial-splash">
+      <div class="splash-bg-glow"></div>
+      
+      <div class="splash-content">
+        <div class="splash-logo-container">
+          <img src="/logo.png" class="splash-logo" alt="ENDURA">
+          <div class="splash-logo-glow"></div>
+        </div>
+        
+        <div class="splash-tagline-container">
+          <p class="splash-tagline">// DIGITAL_LEGACY_PROTOCOL</p>
+        </div>
+      </div>
+
+      <div class="splash-scanline"></div>
+    </div>
+
+    <!-- Static Pre-render Output for SEO bots -->
+    <div id="seo-static-container" aria-hidden="true" style="position: absolute; top:0; left:0; width:100%; opacity: 0.1; pointer-events: none; z-index: 1;">
+      <header id="root-static-header">
+        <h1>ENDURA official | Luxury Streetwear & Digital Collectibles India</h1>
+        <p class="seo-text">Welcome to <strong>Endura</strong>, the premier luxury streetwear brand from India. Our mission is to bridge the gap between physical high-fashion and digital permanence through exclusive drops and rare collectibles.</p>
+        <nav class="static-nav">
+          <a href="/">Home</a>
+          <a href="/shop">Shop Inventory</a>
+          <a href="/collections">Collections</a>
+          <a href="/vault">The Vault</a>
+          <a href="/cult">The Cult</a>
+        </nav>
+      </header>
+      <main id="root-static-main">
+        <section>
+          <h2>Endura: India's Luxury Streetwear Revolution</h2>
+          <p class="seo-text">At wearendura.com, we define the future of premium streetwear in India. Our design philosophy merges technical engineering with premium fabrics, creating a unique aesthetic for the modern urban audience. From high-quality cinematic apparel to the latest exclusive drops, Endura redefines luxury urban wear by offering pieces that are crafted not for the masses, but for the chosen few.</p>
+          <p class="seo-text">Our collections feature oversized hoodies, tactical techwear, and luxury apparel that resonates with the bold and the visionary. Every piece is a statement of identity, designed to last both in the physical realm and within your digital archives.</p>
+          <img src="/logo.png" alt="Endura Streetwear India Logo - Premium Luxury Apparel & Digital Collectibles" width="150" height="150" />
+        </section>
+        <section>
+          <h3>Exclusive Digital Collectibles & Virtual Assets</h3>
+          <p class="seo-text">Beyond our physical apparel, Endura offers unique digital collectibles and virtual assets. By merging digital art with premium lifestyle, we provide an unparalleled luxury experience. Our 'Vault' is a secure archive where your digital legacy is preserved, allowing you to collect rare assets that represent your status within the Endura network.</p>
+          <p class="seo-text">Join the evolution of fashion. Explore the factions, secure your archives, and become part of the Endura cult today. Experience the perfect synergy of physical luxury and digital innovation in India's first tech-forward streetwear brand.</p>
+        </section>
+      </main>
+    </div>
   </div>
   <!-- Google Analytics Placeholder -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
