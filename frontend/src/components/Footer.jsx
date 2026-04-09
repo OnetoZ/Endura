@@ -8,9 +8,9 @@ const Footer = () => {
             {/* Background Accent */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-primary/5 blur-[120px] rounded-full -z-10"></div>
 
-            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 md:gap-16">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 md:gap-16 text-center md:text-left">
                 {/* Brand Section */}
-                <div className="col-span-1 md:col-span-1 flex flex-col items-start gap-6">
+                <div className="col-span-1 md:col-span-1 flex flex-col items-center md:items-start gap-6">
                     <Link to="/" className="group relative">
                         {/* Logo Container with High-End Branding */}
                         <div className="relative">
@@ -27,7 +27,6 @@ const Footer = () => {
                     <p className="text-gray-500 text-[11px] leading-relaxed uppercase tracking-widest max-w-[240px]">
                         Luxury streetwear from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few.
                     </p>
-
                 </div>
 
                 {/* Navigation Section */}
@@ -55,13 +54,13 @@ const Footer = () => {
                 </div>
 
                 {/* Contact Section */}
-                <div>
+                <div className="flex flex-col items-center md:items-start">
                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Establish Link</h4>
-                    <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                    <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 text-center md:text-left">
                         <li>
                             <button 
                                 onClick={() => window.location.href = `mailto:${['enduraclothing', 'team', 'gmail.com'].join('.').replace('.team.', '.team@')}`}
-                                className="hover:text-accent transition-all normal-case tracking-normal text-left"
+                                className="hover:text-accent transition-all normal-case tracking-normal md:text-left"
                             >
                                 enduraclothing.team [at] gmail.com
                             </button>

@@ -130,19 +130,19 @@ const ProductDetail = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-30 pointer-events-none">
-                            <div className="glass p-4 border-white/10 relative min-w-max">
+                        <div className="absolute top-6 right-6 md:top-auto md:bottom-8 md:right-8 z-30 pointer-events-none">
+                            <div className="glass p-3 md:p-4 border-white/10 relative min-w-max">
                                 <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1 whitespace-nowrap">Status</p>
-                                <div className="flex items-center gap-3 whitespace-nowrap">
+                                <div className="flex items-center gap-2 md:gap-3 whitespace-nowrap">
                                     {product.stock > 0 ? (
                                         <>
-                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
-                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">In Stock ({product.stock})</span>
+                                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                                            <span className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest">In Stock ({product.stock})</span>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
-                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Out of Stock</span>
+                                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
+                                            <span className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest">Out of Stock</span>
                                         </>
                                     )}
                                 </div>
@@ -157,12 +157,12 @@ const ProductDetail = () => {
                             {product.name}
                         </h1>
 
-                        <div className="flex items-end gap-6 mb-12">
-                            <p className="text-4xl font-bold text-accent">₹{product.price}</p>
-                            <p className="text-gray-500 text-sm italic">Local Currency Synchronized</p>
+                        <div className="flex flex-wrap items-end gap-3 md:gap-6 mb-8 md:mb-12">
+                            <p className="text-3xl md:text-4xl font-bold text-accent">₹{product.price}</p>
+                            <p className="text-gray-500 text-[10px] md:text-sm italic pb-1">Local Currency Synchronized</p>
                         </div>
 
-                        <p className="text-gray-400 text-lg leading-relaxed mb-12 border-l-2 border-primary pl-8">
+                        <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-12 border-l-2 border-primary pl-6 md:pl-8">
                             {product.description}
                         </p>
 
