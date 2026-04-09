@@ -100,7 +100,7 @@ const Navbar = React.forwardRef((props, ref) => {
                         {/* CENTER: Navigation Links */}
                         <div className="hidden md:flex items-center gap-1">
                             {[
-                                ...(currentUser ? [{ to: '/', label: 'Admin Dashboard', accent: true }] : [])
+                                ...(currentUser && currentUser.role === 'admin' ? [{ to: '/', label: 'Admin Dashboard', accent: true }] : [])
                             ].map((link, idx) => (
                                 <Link
                                     key={idx}
@@ -136,6 +136,18 @@ const Navbar = React.forwardRef((props, ref) => {
 
                         {/* RIGHT: Cart + User Actions */}
                         <div className="flex items-center gap-6">
+                            {/* Refresh Button */}
+                            {currentUser && currentUser.role === 'admin' && (
+                                <button
+                                    onClick={() => window.dispatchEvent(new CustomEvent('endura_admin_refresh'))}
+                                    className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all group"
+                                >
+                                    <svg className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    System Sync
+                                </button>
+                            )}
 
                             {/* User Section */}
                             {currentUser ? (
@@ -143,7 +155,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                         <div className="relative group">
                                             <button className="flex items-center gap-3 group">
                                                 <div className="text-right hidden sm:block">
-                                                    <p className="text-[8px] text-accent uppercase font-black tracking-[0.2em]">Admin</p>
+                                                    <p className="text-[8px] text-accent uppercase font-black tracking-[0.2em]">{currentUser.role === 'admin' ? 'Security Master' : 'Operator'}</p>
                                                     <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">{(currentUser.username || currentUser.name || 'Admin').toUpperCase()}</p>
                                                 </div>
                                                 <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">

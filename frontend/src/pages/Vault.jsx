@@ -360,29 +360,68 @@ const Vault = () => {
     const { loginWithToken } = useStore();
     const { collectItem } = useVaultScore();
 
-    // Admin-created DB cards
     const [vaultItems, setDbCards] = useState([]);
-    useEffect(() => {
-        productService.getVaultCards()
-            .then(cards => setDbCards(cards.map(c => ({
-                id: c._id,
-                _id: c._id,
-                serialNumber: c.serialNumber,
-                batchId: c.batchId,
-                name: c.name,
-                description: c.description,
-                image: c.frontImage,   
-                backImageUrl: c.backImage,
-                tier: c.category,
-                _source: 'db'
-            }))))
-            .catch(() => { });
-    }, []);
-
-    // Local State
+    
+    // Server-side State
     const [unlockedIds, setUnlockedIds] = useState([]);
-    const [credits, setCredits] = useState(0);
     const [stats, setStats] = useState({ common: 0, rare: 0, epic: 0, legendary: 0 });
+
+    useEffect(() => {
+        const loadVaultData = async () => {
+            try {
+                // 1. Fetch all available Archive Templates
+                const cards = await productService.getVaultCards();
+                setDbCards(cards.map(c => ({
+                    id: c._id,
+                    _id: c._id,
+                    serialNumber: c.serialNumber || 0,
+                    batchId: c.batchId || 1,
+                    name: c.name,
+                    description: c.description,
+                    image: c.frontImage,   
+                    backImageUrl: c.backImage,
+                    tier: c.category,
+                    _source: 'db'
+                })));
+
+                // 2. Fetch User-specific Owned Assets
+                const userAssets = await vaultService.getUserVault();
+                if (userAssets && userAssets.protocols) {
+                    const ownedIds = userAssets.protocols.map(p => p._id);
+                    setUnlockedIds(ownedIds);
+                    
+                    // Update stats based on owned protocols
+                    const newStats = { common: 0, rare: 0, epic: 0, legendary: 0 };
+                    userAssets.protocols.forEach(p => {
+                        const tier = (p.category || 'rare').toLowerCase();
+                        if (newStats[tier] !== undefined) newStats[tier]++;
+                    });
+                    setStats(newStats);
+
+                    // Add owned protocols to the grid as distinct items
+                    const ownedProtocols = userAssets.protocols.map(p => ({
+                        id: p._id,
+                        _id: p._id,
+                        serialNumber: p.serialNumber,
+                        batchId: p.batchId,
+                        name: p.name,
+                        image: p.frontImage,
+                        backImageUrl: p.frontImage,
+                        tier: p.category,
+                        isUnlocked: true,
+                        _source: 'protocol'
+                    }));
+                    
+                    // Prepend owned items to the grid
+                    setDbCards(prev => [...ownedProtocols, ...prev]);
+                }
+            } catch (error) {
+                console.error("Failed to synchronize vault archive:", error);
+            }
+        };
+
+        loadVaultData();
+    }, []);
     const [ritualId, setRitualId] = useState(null);
     const [collectionFilter, setCollectionFilter] = useState('All');
     const [loadingDone, setLoadingDone] = useState(false);
@@ -406,34 +445,7 @@ const Vault = () => {
         setPreviewItem(item);
     };
 
-    useEffect(() => {
-        const savedData = localStorage.getItem('endura_vault_persistence');
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            setUnlockedIds(data.unlockedItems || []);
-            setCredits(data.credits || 50);
-            setStats({
-                common: data.commonCount || 0,
-                rare: data.rareCount || 0,
-                epic: data.epicCount || 0,
-                legendary: data.legendaryCount || 0
-            });
-        } else {
-            setCredits(50);
-        }
-    }, []);
 
-    const updatePersistence = (newUnlocked, newCredits, newStats) => {
-        const payload = {
-            unlockedItems: newUnlocked,
-            credits: newCredits,
-            commonCount: newStats.common,
-            rareCount: newStats.rare,
-            epicCount: newStats.epic,
-            legendaryCount: newStats.legendary
-        };
-        localStorage.setItem('endura_vault_persistence', JSON.stringify(payload));
-    };
 
     const handleUnlockRequest = (item, e) => {
         setTargetItem(item);
@@ -461,6 +473,7 @@ const Vault = () => {
                     setRitualId(matchedItem.id);
                     setIsModalOpen(false);
                     setUnlockCode('');
+                    setUnlockedIds(prev => [...prev, matchedItem.id]);
                     toast.success('DECRYPTION SUCCESSFUL', { 
                         style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' } 
                     });

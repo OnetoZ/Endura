@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { productService, userService, uploadService, getImageUrl, orderService, vaultService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useStore } from '../context/StoreContext';
@@ -70,54 +71,70 @@ const AdminDashboard = () => {
     const [activeBatch, setActiveBatch] = useState(1);
     const [redemptionCodes, setRedemptionCodes] = useState([]);
     const [isManagingCodes, setIsManagingCodes] = useState(false);
+    const [isVaultLoading, setIsVaultLoading] = useState(false);
     const [codeFilter, setCodeFilter] = useState('All');
     const [codeSearch, setCodeSearch] = useState('');
+    const [showBulkImport, setShowBulkImport] = useState(false);
+    const [editingCode, setEditingCode] = useState(null);
+    const [bulkData, setBulkData] = useState({
+        codes: '',
+        image: '',
+        type: 'Rare',
+        serialScale: '100',
+        batchId: 1,
+        clearBatch: false
+    });
 
-    // Fetch real data from backend
-    useEffect(() => {
-        const verifyAndLoad = async () => {
-            console.log('🚀 [ADMIN] Initializing Security Clearance...');
-            
-            // Phase 1: Verify current user profile (Quickest)
+    const verifyAndLoad = useCallback(async () => {
+        console.log('🚀 [ADMIN] Initializing Security Clearance...');
+        
+        // Phase 1: Verify current user profile (Quickest)
+        try {
+            const userData = await userService.getCurrentUser();
+            setCurrentUser(userData);
+            setIsAuthLoading(false); // Clear loading screen as soon as we have a profile
+        } catch (error) {
+            console.error('❌ [ADMIN] Auth Failure:', error);
+            setIsAuthLoading(false); // Clear screen anyway to show 'Access Denied' if needed
+        }
+
+        // Phase 2: Hydrate background data
+        const loadData = async () => {
+            setIsVaultLoading(true);
             try {
-                const userData = await userService.getCurrentUser();
-                setCurrentUser(userData);
-                setIsAuthLoading(false); // Clear loading screen as soon as we have a profile
+                const [productsData, ordersData, usersData, cardsData, codesData, vaultData] = await Promise.all([
+                    productService.getProducts().catch(e => ({ products: [] })),
+                    orderService.getAllOrders().catch(e => []),
+                    userService.getUsers().catch(e => []),
+                    productService.getVaultCards().catch(e => []),
+                    vaultService.getRedemptionCodes().catch(e => []),
+                    productService.getVaultItems().catch(e => [])
+                ]);
+
+                setProducts(productsData.products || []);
+                setOrders(ordersData || []);
+                setUsers(usersData || []);
+                setVaultCards(cardsData || []);
+                setRedemptionCodes(codesData || []);
+                setVaultItems(vaultData || []);
             } catch (error) {
-                console.error('❌ [ADMIN] Auth Failure:', error);
-                setIsAuthLoading(false); // Clear screen anyway to show 'Access Denied' if needed
+                console.error('❌ [ADMIN] Background Hydration Failure:', error);
+            } finally {
+                setIsVaultLoading(false);
             }
-
-            // Phase 2: Hydrate background data
-            const loadData = async () => {
-                try {
-                    const [productsData, ordersData, usersData, cardsData, codesData, vaultData] = await Promise.all([
-                        productService.getProducts().catch(e => ({ products: [] })),
-                        orderService.getAllOrders().catch(e => []),
-                        userService.getUsers().catch(e => []),
-                        productService.getVaultCards().catch(e => []),
-                        vaultService.getRedemptionCodes().catch(e => []),
-                        productService.getVaultItems().catch(e => [])
-                    ]);
-
-                    setProducts(productsData.products || []);
-                    setOrders(ordersData || []);
-                    setUsers(usersData || []);
-                    setVaultCards(cardsData || []);
-                    setRedemptionCodes(codesData || []);
-                    setVaultItems(vaultData || []);
-                } catch (error) {
-                    console.error('❌ [ADMIN] Background Hydration Failure:', error);
-                }
-            };
-
-            loadData();
         };
 
+        await loadData();
+    }, [setCurrentUser]);
+
+    // Initial load + Global Sync Listener
+    useEffect(() => {
         verifyAndLoad();
-        const interval = setInterval(verifyAndLoad, 60000);
-        return () => clearInterval(interval);
-    }, []);
+        
+        const handleGlobalRefresh = () => verifyAndLoad();
+        window.addEventListener('endura_admin_refresh', handleGlobalRefresh);
+        return () => window.removeEventListener('endura_admin_refresh', handleGlobalRefresh);
+    }, [verifyAndLoad]);
 
     // ── Products ──────────────────────────────────────────────────────────
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
@@ -167,13 +184,21 @@ const AdminDashboard = () => {
     }, [products, orders, users]);
 
 
-    // Show spinner while profile is being fetched
+    // Show premium loader while profile is being fetched
     if (isAuthLoading) {
         return (
-            <div className="h-screen bg-black flex items-center justify-center">
+            <div className="fixed inset-0 z-[300] bg-black/20 backdrop-blur-md flex flex-col items-center justify-center gap-8">
+                <div className="relative w-32 h-32">
+                    <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-4 border border-accent/30 rounded-full animate-[ping_2s_infinite]"></div>
+                    <div className="absolute inset-0 flex items-center justify-center font-oswald text-4xl font-bold text-primary">E</div>
+                </div>
                 <div className="text-center">
-                    <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Verifying Clearance...</p>
+                    <p className="text-[12px] font-black uppercase tracking-[0.5em] text-white mb-2">Verifying Protocol Clearance</p>
+                    <div className="h-1 w-48 bg-white/5 rounded-full overflow-hidden mx-auto">
+                        <div className="h-full bg-primary w-1/2 animate-[shimmer_2s_infinite_ease-in-out]"></div>
+                    </div>
                 </div>
             </div>
         );
@@ -460,7 +485,12 @@ const AdminDashboard = () => {
                                     {viewingOrder.items?.map((item, idx) => (
                                         <div key={idx} className="flex flex-col md:flex-row items-center gap-6 p-4 border border-white/5 hover:bg-white/[0.02] transition-all group">
                                             <div className="w-20 h-20 bg-neutral-800 border border-white/10 shrink-0 overflow-hidden">
-                                                <img src={getImageUrl(item.image)} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={item.name} />
+                                                <img 
+                                                    src={getImageUrl(item.image)} 
+                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
+                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                                                    alt={item.name} 
+                                                />
                                             </div>
                                             <div className="flex-1 text-center md:text-left">
                                                 <p className="text-sm font-black uppercase tracking-widest group-hover:text-primary transition-colors">{item.name}</p>
@@ -509,7 +539,7 @@ const AdminDashboard = () => {
                             Admin <span className="text-primary">Dashboard</span>
                         </h1>
                     </div>
-
+                    
                     <nav className="flex flex-wrap gap-2 glass p-1 border-white/5">
                         {[
                             { id: 'dashboard', label: 'Overview', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
@@ -818,11 +848,21 @@ const AdminDashboard = () => {
                                                 <td className="py-6">
                                                     <div className="flex gap-4 items-center">
                                                         <div className="flex flex-col items-center gap-1">
-                                                            <img src={getImageUrl(p.images?.[0] || p.image)} className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" alt="Physical" />
+                                                            <img 
+                                                                src={getImageUrl(p.images?.[0] || p.image)} 
+                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
+                                                                className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" 
+                                                                alt="Physical" 
+                                                            />
                                                             <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Physical</span>
                                                         </div>
                                                         <div className="flex flex-col items-center gap-1">
-                                                            <img src={getImageUrl(p.images?.[2] || p.digitalTwinImage)} className="w-10 h-10 object-cover border border-accent/30 p-0.5" alt="Digital Twin" />
+                                                            <img 
+                                                                src={getImageUrl(p.images?.[2] || p.digitalTwinImage)} 
+                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800' }}
+                                                                className="w-10 h-10 object-cover border border-accent/30 p-0.5" 
+                                                                alt="Digital Twin" 
+                                                            />
                                                             <span className="text-[8px] text-accent uppercase font-black tracking-widest">Digital Twin</span>
                                                         </div>
                                                     </div>
@@ -967,15 +1007,45 @@ const AdminDashboard = () => {
                                             onChange={(e) => setCodeSearch(e.target.value)}
                                         />
                                         <div className="flex gap-2">
-                                            {[1, 2, 3].map(id => (
-                                                <button
-                                                    key={id}
-                                                    onClick={() => setActiveBatch(id)}
-                                                    className={`w-10 h-10 flex items-center justify-center border border-white/10 text-[10px] font-black transition-all ${activeBatch === id ? 'bg-primary text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
-                                                >
-                                                    {id}
-                                                </button>
-                                            ))}
+                                            {(() => {
+                                                const uniqueBatches = Array.from(new Set(redemptionCodes.map(c => Number(c.batchId) || 1)));
+                                                if (uniqueBatches.length === 0) uniqueBatches.push(1);
+                                                return uniqueBatches.sort((a, b) => a - b).map(id => (
+                                                    <button
+                                                        key={id}
+                                                        onClick={() => setActiveBatch(id)}
+                                                        className={`w-10 h-10 flex items-center justify-center border border-white/10 text-[10px] font-black transition-all ${activeBatch === id ? 'bg-primary text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
+                                                    >
+                                                        {id}
+                                                    </button>
+                                                ));
+                                            })()}
+                                            <button 
+                                                onClick={async () => {
+                                                    setIsVaultLoading(true);
+                                                    try {
+                                                        const updated = await vaultService.getRedemptionCodes();
+                                                        setRedemptionCodes(updated);
+                                                        toast.success('ARCHIVE REFRESHED');
+                                                    } finally {
+                                                        setIsVaultLoading(false);
+                                                    }
+                                                }}
+                                                className={`w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all ${isVaultLoading ? 'animate-spin' : ''}`}
+                                                title="Refresh Archive"
+                                                disabled={isVaultLoading}
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                            </button>
+                                            <button
+                                                onClick={() => setShowBulkImport(true)}
+                                                className="w-10 h-10 flex items-center justify-center border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all"
+                                                title="Bulk Sync Protocols"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -991,62 +1061,84 @@ const AdminDashboard = () => {
                                                 <th className="pb-4">Status</th>
                                                 <th className="pb-4">Operative</th>
                                                 <th className="pb-4">Timestamp</th>
+                                                <th className="pb-4 text-right">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-white/5 text-sm">
                                             {redemptionCodes
-                                                .filter(c => c.batchId === activeBatch)
+                                                .filter(c => Number(c.batchId) === Number(activeBatch))
                                                 .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
                                                 .filter(c => !codeSearch || (c.code && c.code.toLowerCase().includes(codeSearch.toLowerCase())))
-                                                .map(c => (
-                                                    <tr key={c._id || c.serialNumber} className="group hover:bg-white/5 transition-all transition-colors duration-300">
+                                                .length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={8} className="py-20 text-center text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">No protocols found in Batch {activeBatch}</td>
+                                                    </tr>
+                                                ) : (
+                                                redemptionCodes
+                                                    .filter(c => Number(c.batchId) === Number(activeBatch))
+                                                    .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
+                                                    .filter(c => !codeSearch || (c.code && c.code.toLowerCase().includes(codeSearch.toLowerCase())))
+                                                    .map(c => (
+                                                    <tr key={c._id || c.id} className="group hover:bg-white/5 transition-all">
                                                         <td className="py-6">
-                                                            {c.image ? (
-                                                                <div className="w-12 h-12 border border-white/10 bg-black/40 overflow-hidden">
-                                                                    <img src={getImageUrl(c.image)} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-                                                                </div>
-                                                            ) : (
-                                                                <div className="w-12 h-12 border border-dashed border-white/5 bg-white/2 flex items-center justify-center text-[8px] font-black text-gray-700">NO_DATA</div>
-                                                            )}
+                                                            <div className="w-10 h-10 bg-white/5 border border-white/10 p-1 flex items-center justify-center">
+                                                                <img 
+                                                                    src={c.image || '/images/default-vault.png'} 
+                                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" 
+                                                                    alt="Asset" 
+                                                                />
+                                                            </div>
                                                         </td>
                                                         <td className="py-6">
                                                             <div className="flex items-center gap-2">
-                                                                <div 
-                                                                    className="w-2 h-2 rounded-full animate-pulse"
-                                                                    style={{ backgroundColor: CATEGORY_STYLES[(c.type || 'common').toLowerCase()]?.border || '#a3a3a3' }}
-                                                                />
-                                                                <span 
-                                                                    className="text-[9px] font-black tracking-tighter uppercase"
-                                                                    style={{ color: CATEGORY_STYLES[(c.type || 'common').toLowerCase()]?.border || '#a3a3a3' }}
-                                                                >
-                                                                    {c.type || 'Common'}
-                                                                </span>
+                                                                <div className={`w-1.5 h-1.5 rounded-full ${CATEGORY_STYLES[c.type?.toLowerCase()]?.glow ? 'animate-pulse' : ''}`} style={{ backgroundColor: CATEGORY_STYLES[c.type?.toLowerCase()]?.border || '#3b82f6' }}></div>
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-white/80">{c.type || 'RARE'}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="py-6 font-mono text-xs text-gray-400 font-bold">{c.serialNumber}/100</td>
+                                                        <td className="py-6 font-mono text-xs text-gray-400">
+                                                            {c.serialNumber} <span className="text-[9px] opacity-30">/ {c.serialScale || 100}</span>
+                                                        </td>
                                                         <td className="py-6">
-                                                            <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded font-mono text-primary text-xs uppercase select-all tracking-wider shadow-inner">
+                                                            <span className="font-mono text-[11px] bg-white/5 border border-white/10 px-3 py-1.5 text-primary group-hover:border-primary/30 transition-all font-bold">
                                                                 {c.code}
                                                             </span>
                                                         </td>
                                                         <td className="py-6">
-                                                            <span className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest border ${c.isRedeemed ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-green-500/10 border-green-500/30 text-green-500'}`}>
-                                                                {c.isRedeemed ? 'REDEEMED' : 'AVAILABLE'}
+                                                            <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border ${c.isRedeemed ? 'border-red-500/30 text-red-500/70 bg-red-500/5' : 'border-green-500/30 text-green-500/70 bg-green-500/5'}`}>
+                                                                {c.isRedeemed ? 'Redeemed' : 'Available'}
                                                             </span>
                                                         </td>
-                                                        <td className="py-6 uppercase font-bold text-[10px]">
-                                                            {c.redeemedBy ? (
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-white">{c.redeemedBy.username}</span>
-                                                                    <span className="text-[8px] text-gray-500 font-normal lowercase">{c.redeemedBy.email}</span>
-                                                                </div>
-                                                            ) : <span className="text-gray-700 font-mono tracking-tighter">-- PENDING REDEMPTION --</span>}
+                                                        <td className="py-6 text-[10px] uppercase font-bold text-gray-500">
+                                                            {c.isRedeemed ? (c.redeemedBy?.username || 'Authenticated Operative') : '-- PENDING REDEMPTION --'}
                                                         </td>
-                                                        <td className="py-6 font-mono text-[10px] text-gray-500">
-                                                            {c.redeemedAt ? new Date(c.redeemedAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '--'}
+                                                        <td className="py-6 font-mono text-[9px] text-gray-600">
+                                                            {c.isRedeemed ? new Date(c.redeemedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '--'}
+                                                        </td>
+                                                        <td className="py-6 text-right space-x-3">
+                                                            <button 
+                                                                onClick={() => setEditingCode(c)}
+                                                                className="text-gray-500 hover:text-white text-[9px] font-black uppercase tracking-widest transition-colors"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button 
+                                                                onClick={async () => {
+                                                                    if(window.confirm('IRREVERSIBLE: PURGE THIS PROTOCOL?')) {
+                                                                        try {
+                                                                            await vaultService.deleteRedemptionCode(c._id);
+                                                                            toast.success('PROTOCOL PURGED');
+                                                                            const updated = await vaultService.getRedemptionCodes({ batchId: activeBatch });
+                                                                            setRedemptionCodes(updated);
+                                                                        } catch (e) { toast.error('PURGE FAILED'); }
+                                                                    }
+                                                                }}
+                                                                className="text-red-500/50 hover:text-red-500 text-[9px] font-black uppercase tracking-widest transition-colors"
+                                                            >
+                                                                Delete
+                                                            </button>
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                )))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1164,7 +1256,331 @@ const AdminDashboard = () => {
                     animation: slideInUp 0.8s ease-out forwards;
                 }
             `}</style>
-        </div >
+            {/* Bulk Import Modal */}
+            <AnimatePresence>
+                {showBulkImport && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 p-10 relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
+                            
+                            <div className="flex justify-between items-start mb-8">
+                                <div>
+                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight text-white">Bulk Sync Terminal</h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-1">Mass Protocol Initialization</p>
+                                </div>
+                                <button onClick={() => setShowBulkImport(false)} className="text-gray-500 hover:text-white transition-colors">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8 mb-8">
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol Batch Number</label>
+                                        <input
+                                            type="number"
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
+                                            value={bulkData.batchId}
+                                            onChange={(e) => setBulkData({...bulkData, batchId: parseInt(e.target.value) || 1})}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Archive Tier</label>
+                                            <select
+                                                className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
+                                                value={bulkData.type}
+                                                onChange={(e) => setBulkData({...bulkData, type: e.target.value})}
+                                            >
+                                                <option value="Common">Common</option>
+                                                <option value="Rare">Rare</option>
+                                                <option value="Epic">Epic</option>
+                                                <option value="Legendary">Legendary</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Serial Scale</label>
+                                            <select
+                                                className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
+                                                value={bulkData.serialScale || '100'}
+                                                onChange={(e) => setBulkData({...bulkData, serialScale: e.target.value})}
+                                            >
+                                                <option value="25">1 / 25</option>
+                                                <option value="50">1 / 50</option>
+                                                <option value="75">1 / 75</option>
+                                                <option value="100">1 / 100</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Archive Image Asset</label>
+                                        <div className="flex gap-4">
+                                            <input
+                                                type="text"
+                                                placeholder="PASTE IMAGE URL..."
+                                                className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest"
+                                                value={bulkData.image}
+                                                onChange={(e) => setBulkData({...bulkData, image: e.target.value})}
+                                            />
+                                            <button 
+                                                className="px-4 bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                                                onClick={() => document.getElementById('bulk-img-upload').click()}
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                            </button>
+                                            <input 
+                                                type="file" 
+                                                id="bulk-img-upload" 
+                                                className="hidden" 
+                                                onChange={async (e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        const url = await uploadService.uploadImage(file);
+                                                        setBulkData({...bulkData, image: url});
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol Code Strings (Pasted)</label>
+                                    <textarea
+                                        placeholder="PASTE CODES HERE... (ONE PER LINE OR COMMA SEPARATED)"
+                                        className="w-full h-[240px] bg-white/5 border border-white/10 p-4 text-[11px] font-mono text-white outline-none focus:border-primary/50 resize-none overflow-y-auto"
+                                        value={bulkData.codes}
+                                        onChange={(e) => setBulkData({...bulkData, codes: e.target.value})}
+                                    />
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="clearBatch"
+                                            className="rounded border-white/10"
+                                            checked={bulkData.clearBatch}
+                                            onChange={(e) => setBulkData({...bulkData, clearBatch: e.target.checked})}
+                                        />
+                                        <label htmlFor="clearBatch" className="text-[8px] font-black uppercase tracking-widest text-red-500/60">Wipe Existing Batch Protocols</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={async () => {
+                                        const codeStrings = bulkData.codes
+                                            .split(/[\n,]/)
+                                            .map(c => c.trim())
+                                            .filter(c => c.length > 0);
+
+                                        if (codeStrings.length === 0) {
+                                            toast.error('NO VALID PROTOCOLS DETECTED');
+                                            return;
+                                        }
+
+                                        try {
+                                            setIsVaultLoading(true);
+                                            const syncData = {
+                                                codes: codeStrings.map((code, index) => ({ code, serialNumber: index + 1 })),
+                                                batchId: parseInt(bulkData.batchId),
+                                                image: bulkData.image,
+                                                type: bulkData.type,
+                                                serialScale: parseInt(bulkData.serialScale || 100),
+                                                clearBatch: bulkData.clearBatch
+                                            };
+                                            
+                                            console.log('--- INITIATING MASS SYNC ---');
+                                            console.log('Payload Type:', syncData.type);
+                                            console.log('Batch Number:', syncData.batchId);
+                                            console.log('Protocol Count:', codeStrings.length);
+                                            
+                                            const response = await vaultService.importRedemptionCodes(syncData);
+                                            
+                                            toast.success(`MASS INITIALIZATION COMPLETE: ${codeStrings.length} PROTOCOLS SYNCED`);
+                                            setShowBulkImport(false);
+                                            
+                                            // Pivot to the newly imported batch to show results immediately
+                                            setActiveBatch(syncData.batchId);
+                                            
+                                            // Full state refresh from source of truth (Global fetch to update batch list)
+                                            const allCodes = await vaultService.getRedemptionCodes(); 
+                                            setRedemptionCodes(allCodes);
+                                        } catch (error) {
+                                            console.error('MASS_SYNC_FAILURE:', error);
+                                            const errorMessage = error.response?.data?.message || error.message || 'Mass sync system failure';
+                                            toast.error(`INITIALIZATION FAILURE: ${errorMessage}`);
+                                        } finally {
+                                            setIsVaultLoading(false);
+                                        }
+                                    }}
+                                    className="flex-1 bg-primary text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all shadow-lg shadow-primary/20"
+                                >
+                                    Initiate Mass Synchronization
+                                </button>
+                                <button
+                                    onClick={() => setShowBulkImport(false)}
+                                    className="px-10 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:border-white transition-all"
+                                >
+                                    Abort
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Edit Code Modal */}
+            <AnimatePresence>
+                {editingCode && (
+                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 p-10 relative"
+                        >
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50" />
+                            
+                            <h3 className="text-xl font-oswald font-bold uppercase mb-8">Modify Protocol</h3>
+                            
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol String</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white/5 border border-white/10 px-4 py-3 text-xs font-mono text-white outline-none focus:border-primary/50 uppercase"
+                                        value={editingCode.code}
+                                        onChange={(e) => setEditingCode({...editingCode, code: e.target.value})}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Archive Tier</label>
+                                        <select
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
+                                            value={editingCode.type}
+                                            onChange={(e) => setEditingCode({...editingCode, type: e.target.value})}
+                                        >
+                                            <option value="Common">Common</option>
+                                            <option value="Rare">Rare</option>
+                                            <option value="Epic">Epic</option>
+                                            <option value="Legendary">Legendary</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Serial Scale</label>
+                                        <select
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
+                                            value={editingCode.serialScale || '100'}
+                                            onChange={(e) => setEditingCode({...editingCode, serialScale: parseInt(e.target.value)})}
+                                        >
+                                            <option value="25">1 / 25</option>
+                                            <option value="50">1 / 50</option>
+                                            <option value="75">1 / 75</option>
+                                            <option value="100">1 / 100</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Asset Image URL</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
+                                        value={editingCode.image}
+                                        onChange={(e) => setEditingCode({...editingCode, image: e.target.value})}
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-4 py-4 border-y border-white/5">
+                                    <input
+                                        type="checkbox"
+                                        id="isRedeemedEdit"
+                                        checked={editingCode.isRedeemed}
+                                        onChange={(e) => setEditingCode({...editingCode, isRedeemed: e.target.checked})}
+                                    />
+                                    <label htmlFor="isRedeemedEdit" className="text-[10px] font-black uppercase tracking-widest text-gray-400">Manual Redemption Override</label>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 mt-10">
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await vaultService.updateRedemptionCode(editingCode._id, editingCode);
+                                            toast.success('PROTOCOL UPDATED');
+                                            setEditingCode(null);
+                                            const updated = await vaultService.getRedemptionCodes({ batchId: activeBatch });
+                                            setRedemptionCodes(updated);
+                                        } catch (e) { toast.error('UPDATE FAILED'); }
+                                    }}
+                                    className="flex-1 bg-primary text-black py-4 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all"
+                                >
+                                    Confirm Update
+                                </button>
+                                <button
+                                    onClick={() => setEditingCode(null)}
+                                    className="px-10 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:border-white transition-all"
+                                >
+                                    Abort
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Global Data Sync Overlay */}
+            <AnimatePresence>
+                {isVaultLoading && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 backdrop-blur-md"
+                    >
+                        <div className="text-center relative">
+                            {/* Cinematic Ring Animation */}
+                            <div className="w-48 h-48 relative mx-auto mb-10">
+                                {/* Outer rotating rings */}
+                                <div className="absolute inset-0 border-2 border-primary/10 rounded-full"></div>
+                                <div className="absolute inset-0 border-2 border-primary border-t-transparent border-b-transparent rounded-full animate-[spin_3s_linear_infinite]"></div>
+                                <div className="absolute inset-4 border-2 border-accent/20 rounded-full"></div>
+                                <div className="absolute inset-4 border-2 border-accent border-l-transparent border-r-transparent rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
+                                
+                                {/* Inner pulse and emblem */}
+                                <div className="absolute inset-8 border border-white/5 rounded-full flex items-center justify-center bg-white/[0.02]">
+                                    <span className="font-oswald text-4xl font-bold text-primary animate-pulse drop-shadow-[0_0_10px_rgba(147,51,234,0.5)]">E</span>
+                                </div>
+                                
+                                {/* Scanning light effect */}
+                                <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent -translate-y-1/2 animate-[pulse_1.5s_infinite]"></div>
+                            </div>
+                            
+                            <h3 className="text-3xl font-oswald font-bold uppercase tracking-[0.2em] mb-4 text-white">
+                                Syncing <span className="text-primary">Admin Dash</span>
+                            </h3>
+                            <div className="flex flex-col items-center gap-4">
+                                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary/60">Establishing Secure Uplink</p>
+                                
+                                {/* Loading text progress-style dots */}
+                                <div className="flex gap-2">
+                                    <div className="w-1.5 h-1.5 bg-primary/20 rounded-full animate-bounce"></div>
+                                    <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                    <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 };
 

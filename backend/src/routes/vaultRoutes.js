@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getVaultCards, createVaultCard, updateVaultCard, deleteVaultCard } = require('../controllers/vaultCardController');
-const { getRedemptionCodes, importRedemptionCodes, redeemProvidedCode, bulkUpdateCodeImages } = require('../controllers/vaultCodeController');
+const { getRedemptionCodes, importRedemptionCodes, redeemProvidedCode, bulkUpdateCodeImages, updateRedemptionCode, deleteRedemptionCode } = require('../controllers/vaultCodeController');
 const { getUserVault, redeemVaultItem, collectVaultCard, getAllVaultItems } = require('../controllers/vaultController');
 const { protect, admin } = require('../middleware/auth');
 
@@ -14,6 +14,8 @@ router.get('/all', protect, admin, getAllVaultItems);
 router.get('/codes', protect, admin, getRedemptionCodes);
 router.post('/codes/import', protect, admin, importRedemptionCodes);
 router.put('/codes/bulk-update-image', protect, admin, bulkUpdateCodeImages);
+router.put('/codes/:id', protect, admin, updateRedemptionCode);
+router.delete('/codes/:id', protect, admin, deleteRedemptionCode);
 router.post('/redeem-code', protect, redeemProvidedCode);
 
 // ── Vault Cards (admin-created collectibles) ───────────────────────────────

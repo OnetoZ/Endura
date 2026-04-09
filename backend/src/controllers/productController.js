@@ -9,7 +9,7 @@ const asyncHandler = require('../utils/asyncHandler');
  * Query params: ?faction=Core&search=alpha&page=1&limit=12&category=gear
  */
 const getProducts = asyncHandler(async (req, res) => {
-    const { type, search, category, page = 1, limit = 12 } = req.query;
+    const { type, search, category, page = 1, limit = 100 } = req.query;
 
     const filter = { isActive: true };
 
@@ -21,7 +21,7 @@ const getProducts = asyncHandler(async (req, res) => {
     const total = await Product.countDocuments(filter);
 
     const products = await Product.find(filter)
-        .select('-images -digitalTwinMetadata') // Strictly exclude huge fields from list view
+        .select('-digitalTwinMetadata') // Strictly exclude huge fields from list view
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit))

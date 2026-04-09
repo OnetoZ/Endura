@@ -21,32 +21,47 @@ const resolveApiBaseUrl = () => {
 const API_BASE_URL = resolveApiBaseUrl();
 
 export const getImageUrl = (path) => {
-    if (!path) return '';
+    // Return placeholder if path is missing to prevent broken link icons
+    const placeholder = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800';
+    if (!path) return placeholder;
 
     // If it's already a Base64 string (stored in Mongo), return it as is
-    if (path.startsWith('data:image')) return path;
+    if (typeof path === 'string' && path.startsWith('data:image')) return path;
 
-    // Self-healing & Logic for absolute URLs
-    if (path.startsWith('http')) {
+    // Logical Healing for Absolute URLs
+    if (typeof path === 'string' && path.startsWith('http')) {
+        // Fix for hardcoded localhost URLs in DB during deployment
+        const baseUrl = API_BASE_URL.replace(/\/api$/, '');
+        const isProduction = !window.location.hostname.includes('localhost');
+        const isLocalPath = path.includes('localhost') || path.includes('127.0.0.1');
+
+        if (isProduction && isLocalPath && path.includes('/uploads/')) {
+            const fileName = path.split('/uploads/')[1];
+            return `${baseUrl}/uploads/${fileName}`;
+        }
+
+        // Standard healing for our own upload paths to match current environment
         if (path.includes('/uploads/')) {
-            const parts = path.split('/uploads/');
-            const fileName = parts[1];
-            const baseUrl = API_BASE_URL.replace(/\/api$/, '');
+            const fileName = path.split('/uploads/')[1];
             return `${baseUrl}/uploads/${fileName}`;
         }
         return path;
     }
 
     // Identify frontend public assets (Vite public folder)
-    // These should be served from the frontend server, hence stay relative.
     const frontendPrefixes = ['/cart page/', '/factions/', '/logo.png', '/video/', '/hero/'];
-    if (frontendPrefixes.some(prefix => path.startsWith(prefix))) {
+    if (typeof path === 'string' && frontendPrefixes.some(prefix => path.startsWith(prefix))) {
         return path;
     }
 
     // Otherwise, assume it's a relative path from the backend (e.g. 'uploads/...')
     const baseUrl = API_BASE_URL.replace(/\/api$/, '');
-    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    const cleanPath = typeof path === 'string' ? (path.startsWith('/') ? path : `/${path}`) : '';
+    
+    // Ensure we don't accidentally return 'baseUrl/' if cleanPath is empty or invalid
+    if (!cleanPath || cleanPath === '/') return placeholder;
+    
+    return `${baseUrl}${cleanPath}`;
 };
 
 const api = axios.create({
@@ -274,6 +289,17 @@ export const uploadService = {
             },
         });
         return response.data.url;
+    }
+};
+
+export const vaultService = {
+    getUserVault: async () => {
+        const response = await api.get('/vault');
+        return response.data;
+    },
+    redeemCode: async (code) => {
+        const response = await api.post('/vault/redeem-code', { code });
+        return response.data;
     }
 };
 
