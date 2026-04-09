@@ -1,9 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    ViteImageOptimizer({
+      png: { quality: 85 },
+      jpeg: { quality: 85 },
+      jpg: { quality: 85 },
+      webp: { lossless: true },
+      avif: { lossless: true },
+    })
+  ],
   server: {
     port: 5173,
     strictPort: true, // fail if 5173 is taken rather than auto-increment to a random port

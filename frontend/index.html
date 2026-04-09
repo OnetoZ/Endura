@@ -4,30 +4,56 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http://localhost:*; connect-src 'self' http://localhost:* ws://localhost:* https: wss: https://api.razorpay.com https://www.google-analytics.com https://stats.g.doubleclick.net; frame-src 'self' https://accounts.google.com https://checkout.razorpay.com https://api.razorpay.com; object-src 'none';" />
-  
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://checkout.razorpay.com https://cdn.razorpay.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http://localhost:* https://www.facebook.com; connect-src 'self' http://localhost:* ws://localhost:* https: wss: https://api.razorpay.com https://www.google-analytics.com https://stats.g.doubleclick.net https://www.facebook.com; frame-src 'self' https://accounts.google.com https://checkout.razorpay.com https://api.razorpay.com; object-src 'none';" />
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1271960297759625'); // Replace YOUR_PIXEL_ID_HERE with your actual Meta Pixel ID
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
   <!-- SEO Optimization -->
   <title>ENDURA official | Luxury Physical & Digital Streetwear India</title>
-  <meta name="description" content="ENDURA is a luxury physical and digital streetwear brand from India. Exclusive drops paired with digital collectibles—crafted for the chosen few." />
-  <meta name="keywords" content="Endura, Endura India, Luxury Streetwear India, Physical Streetwear, Premium Streetwear, Techwear India, Digital Collectibles, Cinematic Apparel, Exclusive Drops" />
-  
+  <meta name="description"
+    content="ENDURA is a luxury physical and digital streetwear brand from India. Exclusive drops paired with digital collectibles—crafted for the chosen few." />
+  <meta name="keywords"
+    content="Endura, Endura India, Luxury Streetwear India, Physical Streetwear, Premium Streetwear, Techwear India, Digital Collectibles, Cinematic Apparel, Exclusive Drops" />
+  <link rel="canonical" href="https://wearendura.com/" />
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://wearendura.com/" />
   <meta property="og:title" content="ENDURA official | Luxury Physical & Digital Streetwear India" />
-  <meta property="og:description" content="ENDURA is a luxury physical and digital streetwear brand from India. Exclusive drops paired with digital collectibles—crafted for the chosen few." />
+  <meta property="og:description"
+    content="ENDURA is a luxury physical and digital streetwear brand from India. Exclusive drops paired with digital collectibles—crafted for the chosen few." />
   <meta property="og:image" content="https://wearendura.com/image.png" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://wearendura.com/" />
   <meta property="twitter:title" content="ENDURA official | Luxury Physical & Digital Streetwear India" />
-  <meta property="twitter:description" content="ENDURA is a luxury physical and digital streetwear brand from India. Exclusive drops paired with digital collectibles—crafted for the chosen few." />
+  <meta property="twitter:description"
+    content="ENDURA is a luxury physical and digital streetwear brand from India. Exclusive drops paired with digital collectibles—crafted for the chosen few." />
   <meta property="twitter:image" content="https://wearendura.com/image.png" />
 
   <!-- Structured Data for Organization and Website -->
@@ -84,7 +110,7 @@
       z-index: 10000;
       font-family: 'Inter', monospace;
     }
-    
+
     .splash-bg-glow {
       position: absolute;
       inset: 0;
@@ -111,6 +137,7 @@
       animation: logoRise 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
       opacity: 0;
     }
+
     @media (min-width: 768px) {
       .splash-logo {
         width: 450px;
@@ -145,6 +172,7 @@
       margin-right: -1.8em;
       white-space: nowrap;
     }
+
     @media (min-width: 768px) {
       .splash-tagline {
         font-size: 11px;
@@ -161,13 +189,29 @@
     }
 
     @keyframes logoRise {
-      0% { opacity: 0; transform: translateY(30px); filter: blur(10px) brightness(1.25); }
-      100% { opacity: 1; transform: translateY(0); filter: blur(0px) brightness(1.25); }
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+        filter: blur(10px) brightness(1.25);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0px) brightness(1.25);
+      }
     }
 
     @keyframes taglineFade {
-      0% { opacity: 0; transform: scale(0.9); }
-      100% { opacity: 0.4; transform: scale(1); }
+      0% {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+
+      100% {
+        opacity: 0.4;
+        transform: scale(1);
+      }
     }
 
     /* Critical CSS for SEO Pre-render - Positioned behind splash */
@@ -180,11 +224,38 @@
       pointer-events: none;
       z-index: 1;
     }
-    #root-static-header { padding: 2rem; font-family: sans-serif; background: #000; color: #fff; }
-    #root-static-main { padding: 2rem; font-family: sans-serif; background: #111; color: #ddd; }
-    .static-nav { margin-top: 1rem; border-top: 1px solid #333; padding-top: 1rem; }
-    .static-nav a { color: #d4af37; margin-right: 1.5rem; text-decoration: none; font-weight: bold; }
-    .seo-text { line-height: 1.6; margin-bottom: 1.5rem; }
+
+    #root-static-header {
+      padding: 2rem;
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+    }
+
+    #root-static-main {
+      padding: 2rem;
+      font-family: sans-serif;
+      background: #111;
+      color: #ddd;
+    }
+
+    .static-nav {
+      margin-top: 1rem;
+      border-top: 1px solid #333;
+      padding-top: 1rem;
+    }
+
+    .static-nav a {
+      color: #d4af37;
+      margin-right: 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .seo-text {
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
   </style>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -195,17 +266,21 @@
 </head>
 
 <body>
+  <!-- Meta Pixel NoScript -->
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1271960297759625&ev=PageView&noscript=1" /></noscript>
+  <!-- End Meta Pixel NoScript -->
   <div id="root">
     <!-- Initial Splash Screen mimicking PageLoader -->
     <div id="initial-splash">
       <div class="splash-bg-glow"></div>
-      
+
       <div class="splash-content">
         <div class="splash-logo-container">
           <img src="/logo.png" class="splash-logo" alt="ENDURA">
           <div class="splash-logo-glow"></div>
         </div>
-        
+
         <div class="splash-tagline-container">
           <p class="splash-tagline">// DIGITAL_LEGACY_PROTOCOL</p>
         </div>
@@ -218,8 +293,12 @@
     <div id="seo-static-container" aria-hidden="true">
       <header id="root-static-header">
         <h1>ENDURA official | Luxury Physical & Digital Streetwear India</h1>
-        <p class="seo-text">Welcome to <strong>Endura</strong>, the premier luxury streetwear brand from India. Our mission is to bridge the gap between physical high-fashion and digital permanence through exclusive drops and rare physical and digital collectibles.</p>
-        <p class="seo-text">Explore our world of high-end aesthetics, where every garment is meticulously engineered to provide an unparalleled experience. Join thousands of visionaries who have already claimed their physical piece of the future.</p>
+        <p class="seo-text">Welcome to <strong>Endura</strong>, the premier luxury streetwear brand from India. Our
+          mission is to bridge the gap between physical high-fashion and digital permanence through exclusive drops and
+          rare physical and digital collectibles.</p>
+        <p class="seo-text">Explore our world of high-end aesthetics, where every garment is meticulously engineered to
+          provide an unparalleled experience. Join thousands of visionaries who have already claimed their physical
+          piece of the future.</p>
         <nav class="static-nav">
           <a href="/">Home</a>
           <a href="/shop">Shop Inventory</a>
@@ -231,14 +310,26 @@
       <main id="root-static-main">
         <section>
           <h2>Endura: India's Luxury Streetwear Revolution</h2>
-          <p class="seo-text">At wearendura.com, we define the future of premium streetwear in India. Our design philosophy merges technical engineering with premium fabrics, creating a unique aesthetic for the modern urban audience. From high-quality cinematic apparel to the latest exclusive drops, Endura redefines luxury urban wear by offering pieces that are crafted not for the masses, but for the chosen few.</p>
-          <p class="seo-text">Our collections feature oversized hoodies, tactical techwear, and luxury apparel that resonates with the bold and the visionary. Every piece is a statement of identity, designed to last both in the physical realm and within your digital archives.</p>
-          <img src="/logo.png" alt="Endura Streetwear India Logo - Premium Luxury Apparel & Digital Collectibles" width="150" height="150" />
+          <p class="seo-text">At wearendura.com, we define the future of premium streetwear in India. Our design
+            philosophy merges technical engineering with premium fabrics, creating a unique aesthetic for the modern
+            urban audience. From high-quality cinematic apparel to the latest exclusive drops, Endura redefines luxury
+            urban wear by offering pieces that are crafted not for the masses, but for the chosen few.</p>
+          <p class="seo-text">Our collections feature oversized hoodies, tactical techwear, and luxury apparel that
+            resonates with the bold and the visionary. Every piece is a statement of identity, designed to last both in
+            the physical realm and within your digital archives.</p>
+          <img src="/logo.png" alt="Endura Streetwear India Logo - Premium Luxury Apparel & Digital Collectibles"
+            width="150" height="150" />
         </section>
         <section>
           <h3>Exclusive Digital Collectibles & Virtual Assets</h3>
-          <p class="seo-text">Beyond our physical apparel, Endura offers unique digital collectibles and virtual assets. By merging digital art with premium lifestyle, we provide an unparalleled luxury experience. Our 'Vault' is a secure archive where your digital legacy is preserved, allowing you to collect rare assets that represent your status within the Endura network.</p>
-          <p class="seo-text">Join the evolution of fashion. Explore the factions, secure your archives, and become part of the Endura cult today. Experience the perfect synergy of physical luxury and digital innovation in India's first tech-forward streetwear brand. Our community is built on exclusivity, innovation, and uncompromising quality.</p>
+          <p class="seo-text">Beyond our physical apparel, Endura offers unique digital collectibles and virtual assets.
+            By merging digital art with premium lifestyle, we provide an unparalleled luxury experience. Our 'Vault' is
+            a secure archive where your digital legacy is preserved, allowing you to collect rare assets that represent
+            your status within the Endura network.</p>
+          <p class="seo-text">Join the evolution of fashion. Explore the factions, secure your archives, and become part
+            of the Endura cult today. Experience the perfect synergy of physical luxury and digital innovation in
+            India's first tech-forward streetwear brand. Our community is built on exclusivity, innovation, and
+            uncompromising quality.</p>
         </section>
       </main>
     </div>
@@ -247,7 +338,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-XXXXXXXXXX');
   </script>
