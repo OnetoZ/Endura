@@ -76,7 +76,7 @@ const DoppelPieceScene = () => {
                     {/* IRL Piece */}
                     <img
                         ref={solidPieceRef}
-                        src="/plain_shirt_model.png"
+                        src="/pic .jpeg"
                         alt="IRL Piece"
                         className="absolute w-full h-full object-contain border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] rounded-md"
                     />
@@ -87,46 +87,10 @@ const DoppelPieceScene = () => {
                         className="absolute w-full h-full opacity-0 rounded-md overflow-hidden shadow-[0_0_30px_rgba(168,85,247,0.4)]"
                     >
                         <img
-                            src="/plain_shirt_model.png"
+                            src="/pic 1.jpeg"
                             alt="Digital Twin"
                             className="w-full h-full object-contain"
                         />
-                        {/* The Overlay ENDURA Logo */}
-                        <div className="absolute top-[38%] left-[50%] -translate-x-[50%] flex items-center justify-center pointer-events-none mix-blend-multiply opacity-95">
-                            <span 
-                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
-                                style={{
-                                    background: "linear-gradient(to right, #e21ced, #6e02d6)",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent"
-                                }}
-                            >
-                                EN
-                            </span>
-                            <span 
-                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)] relative flex items-center justify-center"
-                                style={{
-                                    background: "linear-gradient(to right, #cf16db, #7500d1)",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                    marginLeft: '-2px',
-                                    marginRight: '-5px'
-                                }}
-                            >
-                                D
-                                <div className="absolute h-[140%] w-[3px] bg-gradient-to-b from-[#e21ced] to-[#6e02d6] drop-shadow-md z-10" />
-                            </span>
-                            <span 
-                                className="font-oswald text-4xl md:text-5xl font-black tracking-widest text-[#a81cff] drop-shadow-[0_0_15px_rgba(168,28,255,0.7)]"
-                                style={{
-                                    background: "linear-gradient(to right, #7500d1, #a81cff)",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent"
-                                }}
-                            >
-                                URA
-                            </span>
-                        </div>
                     </div>
                 </div>
 
@@ -135,7 +99,7 @@ const DoppelPieceScene = () => {
                         <span className="doppel-text doppel-text-1 text-[#d4af37] font-mono text-[11px] tracking-[0.6em] uppercase block">
                             THE ORDER
                         </span>
-                        
+
                         <div className="space-y-2">
                             <h2 className="doppel-text doppel-text-2 text-3xl md:text-6xl font-light text-white tracking-tight leading-none whitespace-nowrap">
                                 Every piece carries two forms.
