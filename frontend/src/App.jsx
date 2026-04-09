@@ -22,6 +22,7 @@ import SmoothScroll from './components/SmoothScroll';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useStore } from './context/StoreContext';
 import Onboarding from './pages/Onboarding';
+import Protocol from './pages/Protocol';
 
 // These must be inside BrowserRouter to use useLocation,
 // so they are defined here but rendered inside the Router tree.
@@ -106,6 +107,7 @@ function AppLayout() {
               <Onboarding />
             </ProtectedRoute>
           } />
+          <Route path="/protocol" element={<Protocol />} />
           <Route path="/collected" element={<CollectedPage />} />
           <Route path="/auth" element={
             currentUser && !location.search.includes('admin2fa') && !location.search.includes('tempToken') && !location.search.includes('token')

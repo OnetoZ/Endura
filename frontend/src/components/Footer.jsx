@@ -44,30 +44,22 @@ const Footer = () => {
                 <div>
                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Protocol</h4>
                     <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                        <li><a href="#" className="hover:text-primary transition-all">Terms and conditions</a></li>
-                        <li><a href="#" className="hover:text-primary transition-all">Exchange policy</a></li>
-                        <li><a href="#" className="hover:text-primary transition-all">Privacy policy</a></li>
-                        <li><a href="#" className="hover:text-primary transition-all">FAQ</a></li>
-                        <li><a href="#" className="hover:text-primary transition-all">Care</a></li>
-                        <li><a href="#" className="hover:text-primary transition-all">About us</a></li>
+                        <li><Link to="/protocol#terms" className="hover:text-primary transition-all">Terms</Link></li>
+                        <li><Link to="/protocol#exchange" className="hover:text-primary transition-all">Exchange Policy</Link></li>
+                        <li><Link to="/protocol#privacy" className="hover:text-primary transition-all">Privacy Policy</Link></li>
+                        <li><Link to="/protocol#faq" className="hover:text-primary transition-all">FAQ</Link></li>
+                        <li><Link to="/protocol#care" className="hover:text-primary transition-all">Care</Link></li>
+                        <li><Link to="/protocol#about" className="hover:text-primary transition-all">About Us</Link></li>
                     </ul>
                 </div>
 
                 {/* Contact Section */}
                 <div className="flex flex-col items-center md:items-start">
-                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Establish Link</h4>
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Connect</h4>
                     <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 text-center md:text-left">
-                        <li>
-                            <button 
-                                onClick={() => window.location.href = `mailto:${['enduraclothing', 'team', 'gmail.com'].join('.').replace('.team.', '.team@')}`}
-                                className="hover:text-accent transition-all normal-case tracking-normal md:text-left"
-                            >
-                                enduraclothing.team [at] gmail.com
-                            </button>
-                        </li>
-                        <li><a href="https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Instagram</a></li>
-                        <li><a href="https://gmail.com" className="hover:text-primary transition-all">Gmail</a></li>
-                        <li><a href="#" className="hover:text-primary transition-all">Socials</a></li>
+                        <li><a href="https://www.instagram.com/enduratheorder" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Instagram</a></li>
+                        <li><a href="mailto:help.endura@gmail.com" className="hover:text-primary transition-all normal-case tracking-normal md:text-left">Email</a></li>
+                        <li><a href="https://discord.gg/9mqNJxcgK" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Discord</a></li>
                     </ul>
                 </div>
             </div>
