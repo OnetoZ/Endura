@@ -57,10 +57,10 @@ export const getImageUrl = (path) => {
     // Otherwise, assume it's a relative path from the backend (e.g. 'uploads/...')
     const baseUrl = API_BASE_URL.replace(/\/api$/, '');
     const cleanPath = typeof path === 'string' ? (path.startsWith('/') ? path : `/${path}`) : '';
-    
+
     // Ensure we don't accidentally return 'baseUrl/' if cleanPath is empty or invalid
     if (!cleanPath || cleanPath === '/') return placeholder;
-    
+
     return `${baseUrl}${cleanPath}`;
 };
 
@@ -88,11 +88,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const isAuthRoute = error.config?.url?.includes('/auth/login') ||
-                            error.config?.url?.includes('/auth/register') ||
-                            error.config?.url?.includes('/auth/admin-check') ||
-                            error.config?.url?.includes('/auth/admin-verify-2fa') ||
-                            error.config?.url?.includes('/auth/google-verify-2fa');
-                            
+            error.config?.url?.includes('/auth/register') ||
+            error.config?.url?.includes('/auth/admin-check') ||
+            error.config?.url?.includes('/auth/admin-verify-2fa') ||
+            error.config?.url?.includes('/auth/google-verify-2fa');
+
         if (error.response?.status === 401 && !isAuthRoute) {
             // Token expired or invalid
             localStorage.removeItem('userInfo');
@@ -298,8 +298,8 @@ export const vaultService = {
         return response.data;
     },
     redeemCode: async (code) => {
-        const response = await api.post('/vault/redeem-code', { code });
-        return response.data;
+        // This system has been deprecated in favor of direct Vault Card ownership.
+        throw new Error('Redemption system is no longer active.');
     }
 };
 

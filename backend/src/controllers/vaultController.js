@@ -3,7 +3,7 @@ const VaultCard = require('../models/VaultCard');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 
-const RedemptionCode = require('../models/RedemptionCode');
+
 
 /**
  * @route   GET /api/vault
@@ -16,26 +16,9 @@ const getUserVault = asyncHandler(async (req, res) => {
         .populate('vaultCard', 'name frontImage category')
         .lean();
 
-    // 2. Get Unique Serialized Items (RedemptionCodes)
-    const protocols = await RedemptionCode.find({ redeemedBy: req.user._id })
-        .lean();
-
-    // 3. Transform protocols to match frontend card format
-    const protocolItems = protocols.map(p => ({
-        _id: p._id,
-        isProtocol: true,
-        serialNumber: p.serialNumber,
-        batchId: p.batchId,
-        name: `ENDURA ARCHIVE #${p.serialNumber}`,
-        frontImage: p.frontImage,
-        backImage: p.backImage,
-        category: p.type || 'rare',
-        redeemedAt: p.redeemedAt
-    }));
-
     res.json({
         collectibles: items,
-        protocols: protocolItems
+        protocols: []
     });
 });
 

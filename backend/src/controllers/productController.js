@@ -22,9 +22,7 @@ const getProducts = asyncHandler(async (req, res) => {
 
     const total = await Product.countDocuments(filter);
 
-    // Exclude heavy fields to prevent hanging on large Base64 data locally
     const products = await Product.find(filter)
-        .select('-digitalTwinMetadata -images -image -frontImage -backImage -digitalTwinImage') 
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNumber)
