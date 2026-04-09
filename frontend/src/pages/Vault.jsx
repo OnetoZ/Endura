@@ -392,49 +392,7 @@ const Vault = () => {
 
 
 
-    const handleUnlockRequest = (item, e) => {
-        setTargetItem(item);
-        setClickPos({ x: e.clientX, y: e.clientY });
-        setIsModalOpen(true);
-        setUnlockCode('');
-    };
 
-    const handleVerifyCode = async () => {
-        if (!unlockCode.trim()) return;
-
-        try {
-            const response = await vaultService.redeemCode(unlockCode);
-
-            if (response.success && response.protocol) {
-                const { serialNumber, batchId } = response.protocol;
-
-                // Find matching card in our loaded vault items
-                const matchedItem = vaultItems.find(it =>
-                    it.serialNumber === serialNumber && it.batchId === batchId
-                );
-
-                if (matchedItem) {
-                    setTargetItem(matchedItem);
-                    setRitualId(matchedItem.id);
-                    setIsModalOpen(false);
-                    setUnlockCode('');
-                    setUnlockedIds(prev => [...prev, matchedItem.id]);
-                    toast.success('DECRYPTION SUCCESSFUL', {
-                        style: { background: '#0a0a0a', color: '#d4af37', border: '1px solid #d4af37', fontFamily: 'Orbitron', fontSize: '10px' }
-                    });
-                } else {
-                    toast.error('ASSET NOT INITIALIZED IN ARCHIVE', {
-                        style: { background: '#0a0a0a', color: '#ff4444', border: '1px solid #ff4444', fontFamily: 'Orbitron', fontSize: '10px' }
-                    });
-                }
-            }
-        } catch (error) {
-            const errMsg = error.response?.data?.message || 'ACCESS DENIED: INVALID PROTOCOL';
-            toast.error(errMsg.toUpperCase(), {
-                style: { background: '#0a0a0a', color: '#ff4444', border: '1px solid #ff4444', fontFamily: 'Orbitron', fontSize: '10px' }
-            });
-        }
-    };
 
     const handleLoadingComplete = useCallback(() => {
         setLoadingDone(true);
@@ -529,93 +487,15 @@ const Vault = () => {
 
 
                         {/* ─── SECURITY HUB ENTRY (Side-by-Side) ─── */}
+                        {/* ─── VAULT COLLECTION HUD ─── */}
                         {unlockedIds.length === 0 && (
-                            <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 mt-12 md:mt-32 mb-24 relative w-full max-w-7xl mx-auto px-6 reveal">
-
-                                {/* LEFT SIDE: Identity Card Preview (Minimalist) */}
-                                <div
-                                    className="flex-1 w-full max-w-[300px] lg:max-w-xs cursor-pointer hover:scale-105 transition-transform duration-500"
-                                    onClick={() => setShowPurchasePopup(true)}
-                                >
-                                    <div className="space-y-4">
-                                        <VaultCard
-                                            item={{
-                                                name: "",
-                                                description: "",
-                                                tier: "Legendary",
-                                                image: "/tarot-card-13.png"
-                                            }}
-                                            isUnlocked={true}
-                                            vaultReady={true}
-                                            onUnlockRequest={() => { }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* RIGHT SIDE: High-Fidelity Terminal Interface */}
-                                <div className="flex-1 w-full max-w-lg relative">
-                                    {/* Decorative Outer HUD Glow */}
-                                    <div className="absolute -inset-4 bg-accent/5 blur-[80px] rounded-full pointer-events-none" />
-
-                                    <div className="relative group overflow-hidden border-2 border-white/10 bg-black/60 rounded-3xl backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
-
-                                        {/* Main content grid */}
-                                        <div className="p-12 md:p-16 relative">
-                                            {/* Technical SVG decals */}
-                                            <svg className="absolute inset-x-0 top-0 w-full h-full opacity-[0.03] pointer-events-none" viewBox="0 0 400 400">
-                                                <circle cx="200" cy="200" r="180" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="10 20" />
-                                                <path d="M50 200 L350 200 M200 50 L200 350" stroke="white" strokeWidth="0.2" />
-                                                <rect x="180" y="180" width="40" height="40" fill="none" stroke="white" strokeWidth="1" />
-                                            </svg>
-
-                                            <div className="relative z-10 space-y-10 text-center">
-                                                <div className="space-y-4">
-                                                    <motion.div
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        className="inline-block px-4 py-1 border-2 border-accent/20 bg-accent/5 rounded-full"
-                                                    >
-                                                        <span className="text-[8px] font-mono text-accent tracking-[0.5em] uppercase">Authorization Required</span>
-                                                    </motion.div>
-                                                    <h3 className="text-2xl md:text-4xl font-heading font-black text-white tracking-[0.1em] md:tracking-widest uppercase leading-none">
-                                                        Encryption <span className="text-accent">Override</span>
-                                                    </h3>
-                                                    <p className="text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-[0.1em] md:tracking-[0.2em] max-w-sm mx-auto leading-relaxed">
-                                                        Deploy designated decryption protocol to access restricted luxury assets in the archive.
-                                                    </p>
-                                                </div>
-
-                                                <div className="relative inline-block group/btn cursor-pointer">
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        onClick={() => {
-                                                            setTargetItem(null);
-                                                            setIsModalOpen(true);
-                                                            setUnlockCode('');
-                                                        }}
-                                                        className="relative z-10 px-10 md:px-12 py-4 md:py-5 bg-accent text-black font-heading font-black text-[9px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] shadow-[0_0_60px_rgba(212,175,55,0.2)] hover:shadow-[0_0_100px_rgba(212,175,55,0.4)] transition-all duration-500 overflow-hidden"
-                                                    >
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 skew-x-12" />
-                                                        Initialize Protocol
-                                                    </motion.button>
-                                                </div>
-
-                                                <div className="pt-8 border-t border-white/5 flex items-center justify-between md:justify-center gap-4 md:gap-12">
-                                                    <div className="space-y-1 text-left md:text-center">
-                                                        <div className="text-[6px] md:text-[7px] font-mono text-white/20 uppercase tracking-[0.1em] md:tracking-[0.2em]">Signal_Status</div>
-                                                        <div className="text-[7px] md:text-[8px] font-mono text-green-500/60 uppercase tracking-[0.1em] md:tracking-[0.3em]">Encrypted_Link</div>
-                                                    </div>
-                                                    <div className="w-px h-8 bg-white/5 hidden md:block" />
-                                                    <div className="space-y-1 text-right md:text-center">
-                                                        <div className="text-[6px] md:text-[7px] font-mono text-white/20 uppercase tracking-[0.1em] md:tracking-[0.2em]">Archive_Sync</div>
-                                                        <div className="text-[7px] md:text-[8px] font-mono text-accent/60 uppercase tracking-[0.1em] md:tracking-[0.3em]">Stable_99.8%</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="mt-32 mb-24 text-center reveal">
+                                <h3 className="text-2xl md:text-4xl font-heading font-black text-white tracking-widest uppercase mb-4">
+                                    Archive <span className="text-accent">Locked</span>
+                                </h3>
+                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest max-w-sm mx-auto">
+                                    Own exclusive digital cards to unlock the archive and claim luxury rewards.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -714,36 +594,7 @@ const Vault = () => {
                     )}
                 </AnimatePresence>
 
-                <AnimatePresence>
-                    {isModalOpen && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/60">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                className="glass p-10 max-w-sm w-full border-white/10 text-center space-y-8 rounded-xl"
-                            >
-                                <div className="space-y-2">
-                                    <h3 className="text-xl font-heading font-black tracking-widest text-[#d4af37]">ENTER ACCESS CODE</h3>
-                                    <p className="text-[10px] font-mono text-white/40 uppercase">Archived Asset Security clearance required</p>
-                                </div>
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    placeholder="ACCESS CODE"
-                                    className="w-full bg-black/50 border border-white/10 p-4 text-center font-mono text-sm tracking-widest text-white outline-none focus:border-accent/40"
-                                    value={unlockCode}
-                                    onChange={(e) => setUnlockCode(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
-                                />
-                                <div className="flex gap-4">
-                                    <button onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-[10px] font-mono text-white/20 hover:text-white transition-all uppercase tracking-widest">Abort</button>
-                                    <button onClick={handleVerifyCode} className="flex-1 py-3 bg-accent text-black font-heading font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)]">Verify</button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
+
 
                 {rewardUnlockItem && (
                     <RewardUnlockOverlay

@@ -91,11 +91,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const isAuthRoute = error.config?.url?.includes('/auth/login') ||
-                            error.config?.url?.includes('/auth/register') ||
-                            error.config?.url?.includes('/auth/admin-check') ||
-                            error.config?.url?.includes('/auth/admin-verify-2fa') ||
-                            error.config?.url?.includes('/auth/google-verify-2fa');
-                            
+            error.config?.url?.includes('/auth/register') ||
+            error.config?.url?.includes('/auth/admin-check') ||
+            error.config?.url?.includes('/auth/admin-verify-2fa') ||
+            error.config?.url?.includes('/auth/google-verify-2fa');
+
         if (error.response?.status === 401 && !isAuthRoute) {
             // Token expired or invalid
             localStorage.removeItem('userInfo');
@@ -207,32 +207,7 @@ export const productService = {
 
 
 
-export const vaultService = {
-    getRedemptionCodes: async (filters = {}) => {
-        const response = await api.get('/vault/codes', { params: filters });
-        return response.data;
-    },
-    importRedemptionCodes: async (data) => {
-        const response = await api.post('/vault/codes/import', data);
-        return response.data;
-    },
-    redeemCode: async (code) => {
-        const response = await api.post('/vault/redeem-code', { code });
-        return response.data;
-    },
-    bulkUpdateCodeImages: async (image) => {
-        const response = await api.put('/vault/codes/bulk-update-image', { image });
-        return response.data;
-    },
-    updateRedemptionCode: async (id, data) => {
-        const response = await api.put(`/vault/codes/${id}`, data);
-        return response.data;
-    },
-    deleteRedemptionCode: async (id) => {
-        const response = await api.delete(`/vault/codes/${id}`);
-        return response.data;
-    }
-};
+
 
 export const orderService = {
     placeOrder: async (orderData) => {

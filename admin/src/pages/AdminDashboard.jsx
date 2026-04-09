@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { productService, userService, uploadService, getImageUrl, orderService, vaultService } from '../services/api';
+import { productService, userService, uploadService, getImageUrl, orderService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useStore } from '../context/StoreContext';
 
@@ -19,10 +19,10 @@ const INITIAL_PRODUCT_STATE = {
     description: '',
     price: '',
     stock: '',
-    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800',
-    backImage: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&q=80&w=800',
+    image: '',
+    backImage: '',
     additionalImages: [],
-    digitalTwinImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
+    digitalTwinImage: '',
     type: 'Common',
     shortAtmosphericLine: ''
 };
@@ -56,27 +56,10 @@ const AdminDashboard = () => {
     const [productSearch, setProductSearch] = useState('');
     const [orderFilter, setOrderFilter] = useState('All');
 
-    // ── Redemption Codes ───────────────────────────────────────────────────
-    const [activeBatch, setActiveBatch] = useState(1);
-    const [redemptionCodes, setRedemptionCodes] = useState([]);
-    const [isManagingCodes, setIsManagingCodes] = useState(false);
-    const [isVaultLoading, setIsVaultLoading] = useState(false);
-    const [codeFilter, setCodeFilter] = useState('All');
-    const [codeSearch, setCodeSearch] = useState('');
-    const [showBulkImport, setShowBulkImport] = useState(false);
-    const [editingCode, setEditingCode] = useState(null);
-    const [bulkData, setBulkData] = useState({
-        codes: '',
-        frontImage: '',
-        backImage: '',
-        type: 'Rare',
-        serialScale: '100',
-        batchId: 1,
-        clearBatch: false
-    });
+
 
     useEffect(() => {
-        if (viewingOrder || showBulkImport || editingCode) {
+        if (viewingOrder) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -84,11 +67,11 @@ const AdminDashboard = () => {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [viewingOrder, showBulkImport, editingCode]);
+    }, [viewingOrder]);
 
     const verifyAndLoad = useCallback(async () => {
         console.log('🚀 [ADMIN] Initializing Security Clearance...');
-        
+
         // Phase 1: Verify current user profile (Quickest)
         try {
             const userData = await userService.getCurrentUser();
@@ -101,14 +84,12 @@ const AdminDashboard = () => {
 
         // Phase 2: Hydrate background data
         const loadData = async () => {
-            setIsVaultLoading(true);
             try {
-                const [productsData, ordersData, usersData, cardsData, codesData, vaultData] = await Promise.all([
+                const [productsData, ordersData, usersData, cardsData, vaultData] = await Promise.all([
                     productService.getProducts().catch(e => ({ products: [] })),
                     orderService.getAllOrders().catch(e => []),
                     userService.getUsers().catch(e => []),
                     productService.getVaultCards().catch(e => []),
-                    vaultService.getRedemptionCodes().catch(e => []),
                     productService.getVaultItems().catch(e => [])
                 ]);
 
@@ -116,12 +97,9 @@ const AdminDashboard = () => {
                 setOrders(ordersData || []);
                 setUsers(usersData || []);
                 setVaultCards(cardsData || []);
-                setRedemptionCodes(codesData || []);
                 setVaultItems(vaultData || []);
             } catch (error) {
                 console.error('❌ [ADMIN] Background Hydration Failure:', error);
-            } finally {
-                setIsVaultLoading(false);
             }
         };
 
@@ -131,7 +109,7 @@ const AdminDashboard = () => {
     // Initial load + Global Sync Listener
     useEffect(() => {
         verifyAndLoad();
-        
+
         const handleGlobalRefresh = () => verifyAndLoad();
         window.addEventListener('endura_admin_refresh', handleGlobalRefresh);
         return () => window.removeEventListener('endura_admin_refresh', handleGlobalRefresh);
@@ -348,6 +326,62 @@ const AdminDashboard = () => {
         setIsAdding(true);
     };
 
+    const handleResetForm = () => {
+        setNewProduct(INITIAL_PRODUCT_STATE);
+        setEditingProductId(null);
+        setIsAdding(false);
+    };
+
+    const handleVaultCardSave = async (e) => {
+        e.preventDefault();
+        if (!newCard.frontImage || !newCard.backImage) {
+            toast.error('Both images are required');
+            return;
+        }
+        setCardSaving(true);
+        try {
+            if (editingCardId) {
+                const updated = await productService.updateVaultCard(editingCardId, newCard);
+                setVaultCards(prev => prev.map(c => (c._id === editingCardId ? updated : c)));
+                toast.success('Card updated!');
+            } else {
+                const created = await productService.createVaultCard(newCard);
+                setVaultCards(prev => [created, ...prev]);
+                toast.success('Card created!');
+            }
+            setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
+            setEditingCardId(null);
+            setIsAddingCard(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to save card');
+        } finally {
+            setCardSaving(false);
+        }
+    };
+
+    const handleDeleteCard = async (id) => {
+        if (!window.confirm('Confirm deletion of this archived asset?')) return;
+        try {
+            await productService.deleteVaultCard(id);
+            setVaultCards(prev => prev.filter(c => c._id !== id));
+            toast.success('Asset purged from archive');
+        } catch (error) {
+            toast.error('Purge failed');
+        }
+    };
+
+    const handleEditCard = (card) => {
+        setNewCard({
+            name: card.name,
+            description: card.description || '',
+            frontImage: card.frontImage,
+            backImage: card.backImage,
+            category: card.category || 'common'
+        });
+        setEditingCardId(card._id);
+        setIsAddingCard(true);
+    };
+
     const handleDeleteProduct = async (id) => {
         if (!window.confirm('Are you certain you wish to purge this product?')) return;
         try {
@@ -486,11 +520,11 @@ const AdminDashboard = () => {
                                     {viewingOrder.items?.map((item, idx) => (
                                         <div key={idx} className="flex flex-col md:flex-row items-center gap-6 p-4 border border-white/5 hover:bg-white/[0.02] transition-all group">
                                             <div className="w-20 h-20 bg-neutral-800 border border-white/10 shrink-0 overflow-hidden">
-                                                <img 
-                                                    src={getImageUrl(item.image)} 
+                                                <img
+                                                    src={getImageUrl(item.image)}
                                                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
-                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
-                                                    alt={item.name} 
+                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                                    alt={item.name}
                                                 />
                                             </div>
                                             <div className="flex-1 text-center md:text-left">
@@ -540,7 +574,7 @@ const AdminDashboard = () => {
                             Admin <span className="text-primary">Dashboard</span>
                         </h1>
                     </div>
-                    
+
                     <nav className="flex flex-wrap gap-2 glass p-1 border-white/5">
                         {[
                             { id: 'dashboard', label: 'Overview', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
@@ -858,20 +892,20 @@ const AdminDashboard = () => {
                                                     <td className="py-6">
                                                         <div className="flex gap-4 items-center">
                                                             <div className="flex flex-col items-center gap-1">
-                                                                <img 
-                                                                    src={getImageUrl(p.images?.[0] || p.image)} 
+                                                                <img
+                                                                    src={getImageUrl(p.images?.[0] || p.image)}
                                                                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
-                                                                    className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10" 
-                                                                    alt="Physical" 
+                                                                    className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10"
+                                                                    alt="Physical"
                                                                 />
                                                                 <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Physical</span>
                                                             </div>
                                                             <div className="flex flex-col items-center gap-1">
-                                                                <img 
-                                                                    src={getImageUrl(p.images?.[2] || p.digitalTwinImage)} 
+                                                                <img
+                                                                    src={getImageUrl(p.images?.[2] || p.digitalTwinImage)}
                                                                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800' }}
-                                                                    className="w-10 h-10 object-cover border border-accent/30 p-0.5" 
-                                                                    alt="Digital Twin" 
+                                                                    className="w-10 h-10 object-cover border border-accent/30 p-0.5"
+                                                                    alt="Digital Twin"
                                                                 />
                                                                 <span className="text-[8px] text-accent uppercase font-black tracking-widest">Digital Twin</span>
                                                             </div>
@@ -989,177 +1023,152 @@ const AdminDashboard = () => {
 
                     {activeTab === 'vault' && (
                         <div className="animate-in fade-in duration-500">
-
-                            {/* Header */}
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-4">
                                 <div>
-                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Redemption Protocol</h3>
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage and monitor secure redemption codes</p>
+                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Vault Management</h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Configure administrative collectible templates</p>
                                 </div>
+                                <button
+                                    onClick={() => {
+                                        setIsAddingCard(!isAddingCard);
+                                        if (!isAddingCard) {
+                                            setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
+                                            setEditingCardId(null);
+                                        }
+                                    }}
+                                    className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-white text-black' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                                >
+                                    {isAddingCard ? 'Cancel Action' : 'Deploy New Asset'}
+                                </button>
                             </div>
 
-                            <div className="space-y-8 animate-in fade-in duration-500">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                    <div className="flex gap-4">
-                                        <select
-                                            className="bg-black border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
-                                            value={codeFilter}
-                                            onChange={(e) => setCodeFilter(e.target.value)}
-                                        >
-                                            <option value="All">All Statuses</option>
-                                            <option value="available">Available Only</option>
-                                            <option value="redeemed">Redeemed Only</option>
-                                        </select>
-                                        <input
-                                            type="text"
-                                            placeholder="SEARCH CODE..."
-                                            className="bg-black/50 border border-white/10 px-5 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest w-64"
-                                            value={codeSearch}
-                                            onChange={(e) => setCodeSearch(e.target.value)}
-                                        />
-                                        <div className="flex gap-2">
-                                            {(() => {
-                                                const uniqueBatches = Array.from(new Set(redemptionCodes.map(c => Number(c.batchId) || 1)));
-                                                if (uniqueBatches.length === 0) uniqueBatches.push(1);
-                                                return uniqueBatches.sort((a, b) => a - b).map(id => (
-                                                    <button
-                                                        key={id}
-                                                        onClick={() => setActiveBatch(id)}
-                                                        className={`w-10 h-10 flex items-center justify-center border border-white/10 text-[10px] font-black transition-all ${activeBatch === id ? 'bg-primary text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
-                                                    >
-                                                        {id}
-                                                    </button>
-                                                ));
-                                            })()}
-                                            <button 
-                                                onClick={async () => {
-                                                    setIsVaultLoading(true);
-                                                    try {
-                                                        const updated = await vaultService.getRedemptionCodes();
-                                                        setRedemptionCodes(updated);
-                                                        toast.success('ARCHIVE REFRESHED');
-                                                    } finally {
-                                                        setIsVaultLoading(false);
-                                                    }
-                                                }}
-                                                className={`w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all ${isVaultLoading ? 'animate-spin' : ''}`}
-                                                title="Refresh Archive"
-                                                disabled={isVaultLoading}
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                            </button>
-                                            <button
-                                                onClick={() => setShowBulkImport(true)}
-                                                className="w-10 h-10 flex items-center justify-center border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all"
-                                                title="Bulk Sync Protocols"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                            {/* Add/Edit Form */}
+                            <AnimatePresence>
+                                {isAddingCard && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden mb-12"
+                                    >
+                                        <div className="glass border-primary/20 p-8 bg-primary/[0.02]">
+                                            <form onSubmit={handleVaultCardSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                                <div className="space-y-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Asset Name</label>
+                                                        <input
+                                                            className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
+                                                            value={newCard.name}
+                                                            onChange={e => setNewCard({...newCard, name: e.target.value})}
+                                                            placeholder="ASSET_IDENTIFIER"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Asset Class</label>
+                                                        <select
+                                                            className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
+                                                            value={newCard.category}
+                                                            onChange={e => setNewCard({...newCard, category: e.target.value})}
+                                                        >
+                                                            <option value="common">Common</option>
+                                                            <option value="rare">Rare</option>
+                                                            <option value="epic">Epic</option>
+                                                            <option value="legendary">Legendary</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
 
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
-                                            <tr>
-                                                <th className="pb-4">Image</th>
-                                                <th className="pb-4">Category</th>
-                                                <th className="pb-4">Serial (Out of 100)</th>
-                                                <th className="pb-4">Redemption Code</th>
-                                                <th className="pb-4">Status</th>
-                                                <th className="pb-4">Operative</th>
-                                                <th className="pb-4">Timestamp</th>
-                                                <th className="pb-4 text-right">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-white/5 text-sm">
-                                            {redemptionCodes
-                                                .filter(c => Number(c.batchId) === Number(activeBatch))
-                                                .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
-                                                .filter(c => !codeSearch || (c.code && c.code.toLowerCase().includes(codeSearch.toLowerCase())))
-                                                .length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan={8} className="py-20 text-center text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">No protocols found in Batch {activeBatch}</td>
-                                                    </tr>
-                                                ) : (
-                                                redemptionCodes
-                                                    .filter(c => Number(c.batchId) === Number(activeBatch))
-                                                    .filter(c => codeFilter === 'All' || (codeFilter === 'redeemed' ? c.isRedeemed : !c.isRedeemed))
-                                                    .filter(c => !codeSearch || (c.code && c.code.toLowerCase().includes(codeSearch.toLowerCase())))
-                                                    .map(c => (
-                                                    <tr key={c._id || c.id} className="group hover:bg-white/5 transition-all">
-                                                        <td className="py-6">
-                                                            <div className="w-10 h-10 bg-white/5 border border-white/10 p-1 flex items-center justify-center">
-                                                                <img 
-                                                                    src={c.frontImage || '/images/default-vault.png'} 
-                                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" 
-                                                                    alt="Front" 
-                                                                />
-                                                            </div>
-                                                            <div className="w-10 h-10 bg-white/5 border border-white/10 p-1 flex items-center justify-center mt-1">
-                                                                <img 
-                                                                    src={c.backImage || '/images/default-vault.png'} 
-                                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" 
-                                                                    alt="Back" 
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td className="py-6">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className={`w-1.5 h-1.5 rounded-full ${CATEGORY_STYLES[c.type?.toLowerCase()]?.glow ? 'animate-pulse' : ''}`} style={{ backgroundColor: CATEGORY_STYLES[c.type?.toLowerCase()]?.border || '#3b82f6' }}></div>
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-white/80">{c.type || 'RARE'}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="py-6 font-mono text-xs text-gray-400">
-                                                            {c.serialNumber} <span className="text-[9px] opacity-30">/ {c.serialScale || 100}</span>
-                                                        </td>
-                                                        <td className="py-6">
-                                                            <span className="font-mono text-[11px] bg-white/5 border border-white/10 px-3 py-1.5 text-primary group-hover:border-primary/30 transition-all font-bold">
-                                                                {c.code}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-6">
-                                                            <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border ${c.isRedeemed ? 'border-red-500/30 text-red-500/70 bg-red-500/5' : 'border-green-500/30 text-green-500/70 bg-green-500/5'}`}>
-                                                                {c.isRedeemed ? 'Redeemed' : 'Available'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-6 text-[10px] uppercase font-bold text-gray-500">
-                                                            {c.isRedeemed ? (c.redeemedBy?.username || 'Authenticated Operative') : '-- PENDING REDEMPTION --'}
-                                                        </td>
-                                                        <td className="py-6 font-mono text-[9px] text-gray-600">
-                                                            {c.isRedeemed ? new Date(c.redeemedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '--'}
-                                                        </td>
-                                                        <td className="py-6 text-right space-x-3">
-                                                            <button 
-                                                                onClick={() => setEditingCode(c)}
-                                                                className="text-gray-500 hover:text-white text-[9px] font-black uppercase tracking-widest transition-colors"
-                                                            >
-                                                                Edit
-                                                            </button>
-                                                            <button 
-                                                                onClick={async () => {
-                                                                    if(window.confirm('IRREVERSIBLE: PURGE THIS PROTOCOL?')) {
-                                                                        try {
-                                                                            await vaultService.deleteRedemptionCode(c._id);
-                                                                            toast.success('PROTOCOL PURGED');
-                                                                            const updated = await vaultService.getRedemptionCodes({ batchId: activeBatch });
-                                                                            setRedemptionCodes(updated);
-                                                                        } catch (e) { toast.error('PURGE FAILED'); }
-                                                                    }
-                                                                }}
-                                                                className="text-red-500/50 hover:text-red-500 text-[9px] font-black uppercase tracking-widest transition-colors"
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                )))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                <div className="space-y-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image (Tarot)</label>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="w-full bg-black/50 border border-white/10 p-4 text-[10px] text-gray-500 file:bg-primary file:border-0 file:text-white file:px-4 file:py-1 file:uppercase file:font-black file:text-[9px] cursor-pointer"
+                                                            onChange={e => handleCardImageUpload(e, 'frontImage')}
+                                                        />
+                                                        {newCard.frontImage && <p className="text-[8px] text-accent mt-1 uppercase">Link: {newCard.frontImage.slice(-20)}</p>}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image (Product)</label>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="w-full bg-black/50 border border-white/10 p-4 text-[10px] text-gray-500 file:bg-primary file:border-0 file:text-white file:px-4 file:py-1 file:uppercase file:font-black file:text-[9px] cursor-pointer"
+                                                            onChange={e => handleCardImageUpload(e, 'backImage')}
+                                                        />
+                                                        {newCard.backImage && <p className="text-[8px] text-accent mt-1 uppercase">Link: {newCard.backImage.slice(-20)}</p>}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Description</label>
+                                                        <textarea
+                                                            className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary h-[85px]"
+                                                            value={newCard.description}
+                                                            onChange={e => setNewCard({...newCard, description: e.target.value})}
+                                                            placeholder="ATMOSPHERIC_INTEL"
+                                                        />
+                                                    </div>
+                                                    <button 
+                                                        disabled={cardSaving}
+                                                        type="submit" 
+                                                        className="w-full py-4 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
+                                                    >
+                                                        {cardSaving ? 'Syncing...' : (editingCardId ? 'Update Asset' : 'Commit to Archive')}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Cards List */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {vaultCards.length === 0 ? (
+                                    <div className="col-span-full py-20 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] glass border-white/5">
+                                        No assets detected in archive
+                                    </div>
+                                ) : (
+                                    vaultCards.map(card => (
+                                        <div key={card._id} className="glass border-white/10 overflow-hidden group">
+                                            <div className="aspect-[3/4] relative overflow-hidden">
+                                                <img 
+                                                    src={getImageUrl(card.frontImage)} 
+                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                                                    alt={card.name}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                                                <div className="absolute top-4 right-4">
+                                                    <span className={`px-2 py-1 text-[8px] font-black uppercase tracking-widest border border-white/20 bg-black/40 backdrop-blur-md text-white`}>
+                                                        {card.category}
+                                                    </span>
+                                                </div>
+                                                <div className="absolute bottom-4 left-4 right-4">
+                                                    <p className="text-sm font-black uppercase tracking-widest text-white truncate">{card.name}</p>
+                                                    <p className="text-[8px] text-gray-400 uppercase tracking-tighter mt-1 truncate">{card.description || 'SECURE_ASSET'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="p-4 flex justify-between border-t border-white/5 bg-white/[0.02]">
+                                                <button 
+                                                    onClick={() => handleEditCard(card)}
+                                                    className="text-[9px] font-black uppercase text-gray-400 hover:text-primary transition-colors"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteCard(card._id)}
+                                                    className="text-[9px] font-black uppercase text-red-500/50 hover:text-red-500 transition-colors"
+                                                >
+                                                    Purge
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     )}
@@ -1274,398 +1283,7 @@ const AdminDashboard = () => {
                     animation: slideInUp 0.8s ease-out forwards;
                 }
             `}</style>
-            {/* Bulk Import Modal */}
-            <AnimatePresence>
-                {showBulkImport && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 bg-black/90 backdrop-blur-xl overflow-y-auto">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="w-full max-w-2xl bg-[#0a0a0a] border border-white/10 p-6 md:p-12 relative overflow-hidden my-auto"
-                        >
-                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
-                            
-                            <div className="flex justify-between items-start mb-8">
-                                <div>
-                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight text-white">Bulk Sync Terminal</h3>
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-1">Mass Protocol Initialization</p>
-                                </div>
-                                <button onClick={() => setShowBulkImport(false)} className="text-gray-500 hover:text-white transition-colors">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-8 mb-8">
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol Batch Number</label>
-                                        <input
-                                            type="number"
-                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
-                                            value={bulkData.batchId}
-                                            onChange={(e) => setBulkData({...bulkData, batchId: parseInt(e.target.value) || 1})}
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Archive Tier</label>
-                                            <select
-                                                className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
-                                                value={bulkData.type}
-                                                onChange={(e) => setBulkData({...bulkData, type: e.target.value})}
-                                            >
-                                                <option value="Common">Common</option>
-                                                <option value="Rare">Rare</option>
-                                                <option value="Epic">Epic</option>
-                                                <option value="Legendary">Legendary</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Serial Scale</label>
-                                            <select
-                                                className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
-                                                value={bulkData.serialScale || '100'}
-                                                onChange={(e) => setBulkData({...bulkData, serialScale: e.target.value})}
-                                            >
-                                                <option value="25">1 / 25</option>
-                                                <option value="50">1 / 50</option>
-                                                <option value="75">1 / 75</option>
-                                                <option value="100">1 / 100</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Front Side Asset</label>
-                                            <div className="flex gap-4">
-                                                <input
-                                                    type="text"
-                                                    placeholder="FRONT ASSET URL..."
-                                                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest"
-                                                    value={bulkData.frontImage}
-                                                    onChange={(e) => setBulkData({...bulkData, frontImage: e.target.value})}
-                                                />
-                                                <button 
-                                                    className="px-4 bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all"
-                                                    onClick={() => document.getElementById('bulk-front-upload').click()}
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                                </button>
-                                                <input 
-                                                    type="file" 
-                                                    id="bulk-front-upload" 
-                                                    className="hidden" 
-                                                    onChange={async (e) => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            const url = await uploadService.uploadImage(file);
-                                                            setBulkData({...bulkData, frontImage: url});
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Back Side Asset</label>
-                                            <div className="flex gap-4">
-                                                <input
-                                                    type="text"
-                                                    placeholder="BACK ASSET URL..."
-                                                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50 uppercase tracking-widest"
-                                                    value={bulkData.backImage}
-                                                    onChange={(e) => setBulkData({...bulkData, backImage: e.target.value})}
-                                                />
-                                                <button 
-                                                    className="px-4 bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white transition-all"
-                                                    onClick={() => document.getElementById('bulk-back-upload').click()}
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                                </button>
-                                                <input 
-                                                    type="file" 
-                                                    id="bulk-back-upload" 
-                                                    className="hidden" 
-                                                    onChange={async (e) => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            const url = await uploadService.uploadImage(file);
-                                                            setBulkData({...bulkData, backImage: url});
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol Code Strings (Pasted)</label>
-                                    <textarea
-                                        placeholder="PASTE CODES HERE... (ONE PER LINE OR COMMA SEPARATED)"
-                                        className="w-full h-[280px] bg-white/5 border border-white/10 p-4 text-[11px] font-mono text-white outline-none focus:border-primary/50 overflow-y-scroll custom-scrollbar resize-y"
-                                        style={{ 
-                                            scrollbarWidth: 'auto',
-                                            scrollbarColor: '#9370DB rgba(255,255,255,0.05)',
-                                            whiteSpace: 'pre',
-                                            wordWrap: 'normal'
-                                        }}
-                                        value={bulkData.codes}
-                                        onChange={(e) => setBulkData({...bulkData, codes: e.target.value})}
-                                    />
-                                    <style>{`
-                                        .custom-scrollbar::-webkit-scrollbar {
-                                            width: 8px !important;
-                                            display: block !important;
-                                        }
-                                        .custom-scrollbar::-webkit-scrollbar-track {
-                                            background: rgba(255, 255, 255, 0.05) !important;
-                                        }
-                                        .custom-scrollbar::-webkit-scrollbar-thumb {
-                                            background: #9370DB !important;
-                                            border-radius: 4px !important;
-                                            border: 2px solid rgba(0,0,0,0.2) !important;
-                                        }
-                                        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                                            background: #b194e8 !important;
-                                        }
-                                    `}</style>
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <input
-                                            type="checkbox"
-                                            id="clearBatch"
-                                            className="rounded border-white/10"
-                                            checked={bulkData.clearBatch}
-                                            onChange={(e) => setBulkData({...bulkData, clearBatch: e.target.checked})}
-                                        />
-                                        <label htmlFor="clearBatch" className="text-[8px] font-black uppercase tracking-widest text-red-500/60">Wipe Existing Batch Protocols</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 mt-8 pb-4">
-                                <button
-                                    onClick={async () => {
-                                        const codeStrings = bulkData.codes
-                                            .split(/[\n,]/)
-                                            .map(c => c.trim())
-                                            .filter(c => c.length > 0);
-
-                                        if (codeStrings.length === 0) {
-                                            toast.error('NO VALID PROTOCOLS DETECTED');
-                                            return;
-                                        }
-
-                                        try {
-                                            setIsVaultLoading(true);
-                                            const syncData = {
-                                                codes: codeStrings.map((code, index) => ({ code, serialNumber: index + 1 })),
-                                                batchId: parseInt(bulkData.batchId),
-                                                frontImage: bulkData.frontImage,
-                                                backImage: bulkData.backImage,
-                                                type: bulkData.type,
-                                                serialScale: parseInt(bulkData.serialScale || 100),
-                                                clearBatch: bulkData.clearBatch
-                                            };
-                                            
-                                            console.log('--- INITIATING MASS SYNC ---');
-                                            console.log('Payload Type:', syncData.type);
-                                            console.log('Batch Number:', syncData.batchId);
-                                            console.log('Protocol Count:', codeStrings.length);
-                                            
-                                            const response = await vaultService.importRedemptionCodes(syncData);
-                                            
-                                            toast.success(`MASS INITIALIZATION COMPLETE: ${codeStrings.length} PROTOCOLS SYNCED`);
-                                            setShowBulkImport(false);
-                                            
-                                            // Pivot to the newly imported batch to show results immediately
-                                            setActiveBatch(syncData.batchId);
-                                            
-                                            // Full state refresh from source of truth (Global fetch to update batch list)
-                                            const allCodes = await vaultService.getRedemptionCodes(); 
-                                            setRedemptionCodes(allCodes);
-                                        } catch (error) {
-                                            console.error('MASS_SYNC_FAILURE:', error);
-                                            const errorMessage = error.response?.data?.message || error.message || 'Mass sync system failure';
-                                            toast.error(`INITIALIZATION FAILURE: ${errorMessage}`);
-                                        } finally {
-                                            setIsVaultLoading(false);
-                                        }
-                                    }}
-                                    className="flex-1 bg-primary text-black py-5 text-[10px] font-black uppercase tracking-[0.5em] hover:bg-white transition-all shadow-[0_0_50px_rgba(147,112,219,0.3)]"
-                                    disabled={isVaultLoading}
-                                >
-                                    {isVaultLoading ? 'Syncing...' : 'Initiate Mass Synchronization'}
-                                </button>
-                                <button
-                                    onClick={() => setShowBulkImport(false)}
-                                    className="px-12 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:border-white transition-all"
-                                >
-                                    Abort
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-            {/* Edit Code Modal */}
-            <AnimatePresence>
-                {editingCode && (
-                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="w-full max-w-lg bg-[#0a0a0a] border border-white/10 p-10 relative"
-                        >
-                            <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50" />
-                            
-                            <h3 className="text-xl font-oswald font-bold uppercase mb-8">Modify Protocol</h3>
-                            
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Protocol String</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-white/5 border border-white/10 px-4 py-3 text-xs font-mono text-white outline-none focus:border-primary/50 uppercase"
-                                        value={editingCode.code}
-                                        onChange={(e) => setEditingCode({...editingCode, code: e.target.value})}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Archive Tier</label>
-                                        <select
-                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
-                                            value={editingCode.type}
-                                            onChange={(e) => setEditingCode({...editingCode, type: e.target.value})}
-                                        >
-                                            <option value="Common">Common</option>
-                                            <option value="Rare">Rare</option>
-                                            <option value="Epic">Epic</option>
-                                            <option value="Legendary">Legendary</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Serial Scale</label>
-                                        <select
-                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50"
-                                            value={editingCode.serialScale || '100'}
-                                            onChange={(e) => setEditingCode({...editingCode, serialScale: parseInt(e.target.value)})}
-                                        >
-                                            <option value="25">1 / 25</option>
-                                            <option value="50">1 / 50</option>
-                                            <option value="75">1 / 75</option>
-                                            <option value="100">1 / 100</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Front Side URL</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
-                                            value={editingCode.frontImage}
-                                            onChange={(e) => setEditingCode({...editingCode, frontImage: e.target.value})}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">Back Side URL</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 text-[10px] font-mono text-white outline-none focus:border-primary/50"
-                                            value={editingCode.backImage}
-                                            onChange={(e) => setEditingCode({...editingCode, backImage: e.target.value})}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 py-4 border-y border-white/5">
-                                    <input
-                                        type="checkbox"
-                                        id="isRedeemedEdit"
-                                        checked={editingCode.isRedeemed}
-                                        onChange={(e) => setEditingCode({...editingCode, isRedeemed: e.target.checked})}
-                                    />
-                                    <label htmlFor="isRedeemedEdit" className="text-[10px] font-black uppercase tracking-widest text-gray-400">Manual Redemption Override</label>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 mt-10">
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            await vaultService.updateRedemptionCode(editingCode._id, editingCode);
-                                            toast.success('PROTOCOL UPDATED');
-                                            setEditingCode(null);
-                                            const updated = await vaultService.getRedemptionCodes({ batchId: activeBatch });
-                                            setRedemptionCodes(updated);
-                                        } catch (e) { toast.error('UPDATE FAILED'); }
-                                    }}
-                                    className="flex-1 bg-primary text-black py-4 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all"
-                                >
-                                    Confirm Update
-                                </button>
-                                <button
-                                    onClick={() => setEditingCode(null)}
-                                    className="px-10 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:border-white transition-all"
-                                >
-                                    Abort
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-            {/* Global Data Sync Overlay */}
-            <AnimatePresence>
-                {isVaultLoading && (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 backdrop-blur-md"
-                    >
-                        <div className="text-center relative">
-                            {/* Cinematic Ring Animation */}
-                            <div className="w-48 h-48 relative mx-auto mb-10">
-                                {/* Outer rotating rings */}
-                                <div className="absolute inset-0 border-2 border-primary/10 rounded-full"></div>
-                                <div className="absolute inset-0 border-2 border-primary border-t-transparent border-b-transparent rounded-full animate-[spin_3s_linear_infinite]"></div>
-                                <div className="absolute inset-4 border-2 border-accent/20 rounded-full"></div>
-                                <div className="absolute inset-4 border-2 border-accent border-l-transparent border-r-transparent rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
-                                
-                                {/* Inner pulse and emblem */}
-                                <div className="absolute inset-8 border border-white/5 rounded-full flex items-center justify-center bg-white/[0.02]">
-                                    <span className="font-oswald text-4xl font-bold text-primary animate-pulse drop-shadow-[0_0_10px_rgba(147,51,234,0.5)]">E</span>
-                                </div>
-                                
-                                {/* Scanning light effect */}
-                                <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent -translate-y-1/2 animate-[pulse_1.5s_infinite]"></div>
-                            </div>
-                            
-                            <h3 className="text-3xl font-oswald font-bold uppercase tracking-[0.2em] mb-4 text-white">
-                                Syncing <span className="text-primary">Admin Dash</span>
-                            </h3>
-                            <div className="flex flex-col items-center gap-4">
-                                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary/60">Establishing Secure Uplink</p>
-                                
-                                {/* Loading text progress-style dots */}
-                                <div className="flex gap-2">
-                                    <div className="w-1.5 h-1.5 bg-primary/20 rounded-full animate-bounce"></div>
-                                    <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                                    <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 };
