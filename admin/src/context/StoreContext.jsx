@@ -41,13 +41,16 @@ export const AppProvider = ({ children }) => {
                 if (parsed?.token) {
                     try {
                         const fresh = await authService.getProfile();
-                        setCurrentUser(fresh);
-                        localStorage.setItem('userInfo', JSON.stringify(fresh));
+                        const updated = { ...parsed, ...fresh };
+                        setCurrentUser(updated);
+                        localStorage.setItem('userInfo', JSON.stringify(updated));
                     } catch (e) {
                         console.error('Failed to hydrate user profile:', e);
-                        // If token is invalid, clear it
-                        localStorage.removeItem('userInfo');
-                        setCurrentUser(null);
+                        // Only log out if it's explicitly an authentication error (401/403)
+                        if (e.response?.status === 401 || e.response?.status === 403) {
+                            localStorage.removeItem('userInfo');
+                            setCurrentUser(null);
+                        }
                     }
                 }
             }
@@ -260,7 +263,7 @@ export const AppProvider = ({ children }) => {
 
     return (
         <StoreContext.Provider value={{
-            products, currentUser, setCurrentUser, cart, orders, vaultItems, users,
+            products, currentUser, setCurrentUser, cart, orders, vaultItems, users, isLoading,
             login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             placeRazorpayOrder, verifyRazorpayPayment,
             addProduct, removeProduct, unlockVaultItem

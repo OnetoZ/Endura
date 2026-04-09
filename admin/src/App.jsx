@@ -30,7 +30,7 @@ function ScrollToTop() {
 
 function AppLayout() {
   const location = useLocation();
-  const { currentUser } = useStore();
+  const { currentUser, isLoading } = useStore();
   const lenis = useLenis();
 
   // Only play intro on a fresh session (new tab). Reloads skip it.
@@ -58,6 +58,15 @@ function AppLayout() {
     }
   }, [introDone, lenis]);
 
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-black flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary animate-pulse">Initializing System...</p>
+      </div>
+    );
+  }
+
   const hideLayoutRoutes = ['/', '/onboarding'];
   // Show navbar/footer on root '/' ONLY if intro is done
   const isIntroPage = location.pathname === '/' && !introDone;
@@ -71,7 +80,7 @@ function AppLayout() {
       <main key={location.pathname} className="flex-grow">
         <Routes>
           <Route path="/auth" element={
-            currentUser ? <Navigate to="/" replace /> : <Auth />
+            currentUser && currentUser.role === 'admin' ? <Navigate to="/" replace /> : <Auth />
           } />
           <Route path="/auth/success" element={<AuthSuccess />} />
           <Route path="/*" element={

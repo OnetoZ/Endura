@@ -32,26 +32,40 @@ const getRedemptionCodes = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const importRedemptionCodes = asyncHandler(async (req, res) => {
-    const { codes } = req.body; // Expecting array of { serialNumber, code }
+    const { codes, batchId, image, type, serialScale, clearBatch } = req.body; 
 
     if (!Array.isArray(codes) || codes.length === 0) {
         res.status(400);
         throw new Error('Please provide an array of codes to import');
     }
 
-    // Optional: Clear existing codes before bulk import if user wants a clean set
-    // await RedemptionCode.deleteMany({});
+    if (!batchId) {
+        res.status(400);
+        throw new Error('Batch ID is required for import');
+    }
 
-    const results = await Promise.all(codes.map(async (c) => {
+    // Optional: Clear existing codes for this specific batch before re-importing
+    if (clearBatch) {
+        await RedemptionCode.deleteMany({ batchId: Number(batchId) });
+    }
+
+    const results = await Promise.all(codes.map(async (c, index) => {
         return RedemptionCode.findOneAndUpdate(
-            { serialNumber: c.serialNumber },
-            { code: c.code, isRedeemed: false },
+            { serialNumber: c.serialNumber || (index + 1), batchId: Number(batchId) },
+            { 
+                code: c.code.trim().toUpperCase(), 
+                isRedeemed: false,
+                image: image || '/images/default-vault.png',
+                type: type || 'Rare',
+                serialScale: Number(serialScale) || 100
+            },
             { upsert: true, new: true }
         );
     }));
 
     res.json({
-        message: `Successfully imported ${results.length} codes`,
+        success: true,
+        message: `Successfully synchronized ${results.length} protocols for Batch ${batchId}`,
         count: results.length
     });
 });
@@ -117,9 +131,51 @@ const bulkUpdateCodeImages = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @route   PUT /api/vault/codes/:id
+ * @desc    Update a specific redemption code
+ * @access  Private/Admin
+ */
+const updateRedemptionCode = asyncHandler(async (req, res) => {
+    const { code, image, type, isRedeemed } = req.body;
+    const redemptionCode = await RedemptionCode.findById(req.params.id);
+
+    if (redemptionCode) {
+        redemptionCode.code = code || redemptionCode.code;
+        redemptionCode.image = image || redemptionCode.image;
+        redemptionCode.type = type || redemptionCode.type;
+        if (isRedeemed !== undefined) redemptionCode.isRedeemed = isRedeemed;
+        
+        const updated = await redemptionCode.save();
+        res.json(updated);
+    } else {
+        res.status(404);
+        throw new Error('Protocol not found');
+    }
+});
+
+/**
+ * @route   DELETE /api/vault/codes/:id
+ * @desc    Delete a specific redemption code
+ * @access  Private/Admin
+ */
+const deleteRedemptionCode = asyncHandler(async (req, res) => {
+    const redemptionCode = await RedemptionCode.findById(req.params.id);
+
+    if (redemptionCode) {
+        await redemptionCode.deleteOne();
+        res.json({ message: 'Protocol purged from archive' });
+    } else {
+        res.status(404);
+        throw new Error('Protocol not found');
+    }
+});
+
 module.exports = {
     getRedemptionCodes,
     importRedemptionCodes,
     redeemProvidedCode,
-    bulkUpdateCodeImages
+    bulkUpdateCodeImages,
+    updateRedemptionCode,
+    deleteRedemptionCode
 };

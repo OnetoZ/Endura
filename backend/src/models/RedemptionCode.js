@@ -9,9 +9,12 @@ const redemptionCodeSchema = new mongoose.Schema({
     },
     serialNumber: {
         type: Number,
-        required: [true, 'Serial number is required (1-100)'],
-        min: 1,
-        max: 100,
+        required: [true, 'Serial identity is required'],
+        min: 1
+    },
+    serialScale: {
+        type: Number,
+        default: 100
     },
     batchId: {
         type: Number,
