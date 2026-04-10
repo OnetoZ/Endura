@@ -37,14 +37,14 @@ const allowedOrigins = Array.from(new Set([
   'https://admin.wearendura.com',
 ]));
 
-console.log('✅ CORS allowed origins:', allowedOrigins);
+console.log('✅ [Server] CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g. mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    console.error(`❌ CORS blocked origin: ${origin}`);
+    console.error(`❌ [Server] CORS blocked origin: ${origin}`);
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
@@ -52,7 +52,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ── Body Parsers ──────────────────────────────────────────────────────────────
+// ── Body Parsers (CRITICAL: MUST be before routes to prevent empty req.body) ──
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

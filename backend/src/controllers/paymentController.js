@@ -151,7 +151,7 @@ const createOrder = asyncHandler(async (req, res) => {
         receipt: receiptId.slice(0, 40),
     };
 
-    console.log('[payment/create-order] Requesting Razorpay order', options);
+    console.log('[payment/create-order] STEP 3: Requesting Razorpay order', options);
 
     let razorpayOrder;
     try {
@@ -204,7 +204,7 @@ const createOrder = asyncHandler(async (req, res) => {
         db_order_id: order._id,
     });
 
-    console.log('[payment/create-order] Order created successfully', {
+    console.log('[payment/create-order] STEP 4: Order created successfully in DB', {
         userId: req.user?._id?.toString?.() || null,
         dbOrderId: order._id.toString(),
         razorpayOrderId: razorpayOrder.id,
@@ -250,7 +250,7 @@ const verifyPayment = asyncHandler(async (req, res) => {
         .update(body.toString())
         .digest('hex');
 
-    console.log('[payment/verify] Generated signature for comparison', {
+    console.log('[payment/verify] STEP 2: Generated signature for comparison', {
         userId,
         dbOrderId: db_order_id || null,
     });
