@@ -85,8 +85,9 @@ export const handlePayment = async ({
             color: themeColor,
         },
         handler: async (response) => {
+            console.log('[Payment] STEP 4/4: User completed modal. Received response from Razorpay:', response);
             try {
-                console.log('[Payment] Step 4/4: verifying payment signature', response);
+                console.log('[Payment] Initiating backend verification...');
                 const verifyPayload = {
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
@@ -95,10 +96,10 @@ export const handlePayment = async ({
                 };
 
                 const verifyResponse = await verifyPayment(verifyPayload);
-                console.log('[Payment] Verification success:', verifyResponse);
+                console.log('[Payment] ✅ Verification SUCCESS:', verifyResponse);
                 onSuccess?.({ orderResponse, verifyResponse, verifyPayload });
             } catch (error) {
-                console.error('[Payment] Verification failed:', error);
+                console.error('[Payment] ❌ Verification FAILED:', error);
                 onFailure?.({
                     stage: 'verify',
                     error,
@@ -107,7 +108,7 @@ export const handlePayment = async ({
         },
         modal: {
             ondismiss: () => {
-                console.log('[Payment] Razorpay modal dismissed by user');
+                console.log('[Payment] ⚠️ Modal dismissed by user before completion');
                 onDismiss?.();
             },
         },
