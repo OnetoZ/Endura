@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 
 import SEO from '../components/SEO';
@@ -14,6 +15,7 @@ const ProductDetail = () => {
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedSize, setSelectedSize] = useState('M');
+    const [showSizeGuide, setShowSizeGuide] = useState(false);
     const [activeTab, setActiveTab] = useState('Specs');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const collectedItem = location.state?.item;
@@ -115,12 +117,34 @@ const ProductDetail = () => {
                     {/* Visual Interface */}
                     <div className="relative group reveal active flex flex-col justify-center">
                         <div className="absolute inset-0 bg-primary/10 blur-[100px] -z-10 group-hover:bg-primary/20 transition-all"></div>
-                        <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden relative">
-                            <img
-                                src={getImageUrl(allImages[currentImageIndex])}
-                                className="w-full h-full object-cover transition-all duration-1000 scale-105 group-hover:scale-100"
-                                alt={`${product.name} - view ${currentImageIndex + 1}`}
-                            />
+                        <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden relative touch-none">
+                            <AnimatePresence initial={false} mode="wait">
+                                <motion.div
+                                    key={currentImageIndex}
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    dragElastic={0.7}
+                                    onDragEnd={(e, { offset, velocity }) => {
+                                        const swipe = Math.abs(offset.x) * velocity.x;
+                                        if (offset.x > 100 || velocity.x > 500) {
+                                            prevImage();
+                                        } else if (offset.x < -100 || velocity.x < -500) {
+                                            nextImage();
+                                        }
+                                    }}
+                                    initial={{ opacity: 0, x: 100 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -100 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    className="w-full h-full cursor-grab active:cursor-grabbing"
+                                >
+                                    <img
+                                        src={getImageUrl(allImages[currentImageIndex])}
+                                        className="w-full h-full object-cover transition-all duration-1000 scale-105 group-hover:scale-100 pointer-events-none"
+                                        alt={`${product.name} - view ${currentImageIndex + 1}`}
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
 
                             {hasMultipleImages && (
                                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 bg-black/80 backdrop-blur-md px-6 py-3 border border-white/10 z-20">
@@ -134,7 +158,7 @@ const ProductDetail = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="absolute top-6 right-6 md:top-auto md:bottom-8 md:right-8 z-30 pointer-events-none">
+                        <div className="hidden md:block absolute top-6 right-6 md:top-auto md:bottom-8 md:right-8 z-30 pointer-events-none">
                             <div className="glass p-3 md:p-4 border-white/10 relative min-w-max">
                                 <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1 whitespace-nowrap">Status</p>
                                 <div className="flex items-center gap-2 md:gap-3 whitespace-nowrap">
@@ -156,8 +180,19 @@ const ProductDetail = () => {
 
                     {/* Data Intel */}
                     <div className="reveal active" style={{ transitionDelay: '200ms' }}>
-                        <p className="text-primary font-bold uppercase tracking-[0.5em] text-xs mb-4">{product.category} // {product.type}</p>
-                        <h1 className="text-3xl md:text-5xl font-oswald font-bold uppercase mb-8 leading-none tracking-tighter">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <p className="text-primary font-bold uppercase tracking-[0.5em] text-xs">{product.category} // {product.type}</p>
+                            
+                            {/* Mobile Stock Indicator */}
+                            <div className="md:hidden flex items-center gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                    {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <h1 className="text-4xl md:text-5xl font-oswald font-bold uppercase mb-8 leading-none tracking-tighter">
                             {product.name}
                         </h1>
 
@@ -230,7 +265,15 @@ const ProductDetail = () => {
                                 )}
                                 {activeTab === 'Sizes' && (
                                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-6 italic">Prototype_Selection</label>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Prototype_Selection</label>
+                                            <button 
+                                                onClick={() => setShowSizeGuide(true)}
+                                                className="text-[9px] font-black text-primary hover:text-primary-light uppercase tracking-widest border-b border-primary/30 pb-0.5 transition-all"
+                                            >
+                                                Size Guide
+                                            </button>
+                                        </div>
                                         <div className="flex flex-wrap gap-4">
                                             {['S', 'M', 'L', 'XL'].map((size) => (
                                                 <button
@@ -246,16 +289,85 @@ const ProductDetail = () => {
                                         </div>
                                     </div>
                                 )}
-                                {/* {activeTab === 'Digital Mirror' && (
-                                    <p>This item includes a 1:1 digital twin skin. Upon purchase, a sync code will be delivered to your operator node (vault). Compatible with major meta-dimension protocols.</p>
-                                )}
-                                {activeTab === 'Shipping' && (
-                                    <p>Global quantum logistics enabled. Real-time tracking through the operator dashboard. Est. delivery: 3-5 standard temporal cycles.</p>
-                                )} */}
-                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Size Guide Modal */}
+                <AnimatePresence>
+                    {showSizeGuide && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowSizeGuide(false)}
+                                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="relative w-full max-w-4xl bg-[#0a0a0a] border border-white/10 p-6 md:p-10 shadow-2xl overflow-y-auto max-h-[90vh]"
+                            >
+                                <div className="flex justify-between items-start mb-8 border-b border-white/5 pb-6">
+                                    <div>
+                                        <h2 className="text-2xl font-oswald font-bold uppercase tracking-widest text-white mb-2">Technical Specification</h2>
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Size Guide // Protocol Synchronization</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setShowSizeGuide(false)}
+                                        className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white/5 transition-all text-white"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse min-w-[600px]">
+                                        <thead>
+                                            <tr className="border-b border-white/10">
+                                                <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-gray-500 bg-white/5">Measurement</th>
+                                                {['S', 'M', 'L', 'XL'].map(size => (
+                                                    <th key={size} className="py-4 px-4 text-[12px] font-black uppercase tracking-widest text-white text-center bg-white/5">{size}</th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/5">
+                                            {[
+                                                { label: 'UK', values: ['34R-36R', '38R-40R', '42R-44R', '46R-48R'] },
+                                                { label: 'EUR', values: ['44-46', '48-50', '52-54', '56-58'] },
+                                                { label: 'Chest cm', values: ['86-90', '94-98', '102-106', '110-114'] },
+                                                { label: 'Chest inch', values: ['33 3/4 - 35 1/2', '37 - 38 1/2', '40 1/4 - 41 3/4', '43 1/4 - 44 3/4'] },
+                                                { label: 'Waist cm', values: ['74-78', '82-86', '90-94', '98.5-103'] },
+                                                { label: 'Waist inch', values: ['29 1/4 - 30 3/4', '32 1/4 - 33 3/4', '35 1/2 - 37', '38 3/4 - 40 1/2'] },
+                                                { label: 'Arm length cm', values: ['59-60', '60-61', '61-62', '62-62.5'] },
+                                                { label: 'Arm length inch', values: ['23 1/4 - 23 3/4', '23 3/4 - 24', '24 1/4 - 24 1/2', '24 1/2'] },
+                                                { label: 'Neckline cm', values: ['36', '38', '40', '42'] },
+                                                { label: 'Neckline inch', values: ['14', '15', '15 3/4', '16 1/2'] },
+                                            ].map((row, i) => (
+                                                <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                                                    <td className="py-4 px-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">{row.label}</td>
+                                                    {row.values.map((v, j) => (
+                                                        <td key={j} className="py-4 px-4 text-center font-mono text-xs text-white/80">{v}</td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="mt-8 p-4 bg-primary/5 border border-primary/20 flex items-start gap-4">
+                                    <svg className="w-5 h-5 text-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-relaxed">
+                                        Measurements provided in the protocol grid are standard approximations. For a precision silhouette, we recommend verifying against your own anatomical dimensions.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
                 {/* Digital Twin Showcase */}
                 {(product.images?.[2] || product.digitalTwinImage) && (

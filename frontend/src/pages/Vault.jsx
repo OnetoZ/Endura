@@ -386,6 +386,10 @@ const Vault = () => {
     const [showCongrats, setShowCongrats] = useState(false);
     const [congratsData, setCongratsData] = useState(null);
     const [showPurchasePopup, setShowPurchasePopup] = useState(false);
+    const [showSyncOverlay, setShowSyncOverlay] = useState(false);
+    const [syncCode, setSyncCode] = useState('');
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncError, setSyncError] = useState(false);
 
     const handlePreview = (item) => {
         setPreviewItem(item);
@@ -489,17 +493,79 @@ const Vault = () => {
                             </h1>
                         </div>
 
-
-                        {/* ─── SECURITY HUB ENTRY (Side-by-Side) ─── */}
-                        {/* ─── VAULT COLLECTION HUD ─── */}
+                        {/* ─── ENCRYPTION OVERRIDE HUD ─── */}
                         {unlockedIds.length === 0 && (
-                            <div className="mt-32 mb-24 text-center reveal">
-                                <h3 className="text-2xl md:text-4xl font-heading font-black text-white tracking-widest uppercase mb-4">
-                                    Archive <span className="text-accent">Locked</span>
-                                </h3>
-                                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest max-w-sm mx-auto">
-                                    Own exclusive digital cards to unlock the archive and claim luxury rewards.
-                                </p>
+                            <div className="flex items-center justify-center pt-8 pb-32 px-4 reveal">
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="relative w-full max-w-[360px] glass border border-white/10 rounded-[30px] p-8 md:p-12 flex flex-col items-center justify-center text-center overflow-hidden"
+                                >
+                                    {/* Geometric Circles / Radar Effect */}
+                                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center -z-10 opacity-10">
+                                        <div className="w-[80%] aspect-square border-2 border-dashed border-white/20 rounded-full animate-[spin_60s_linear_infinite]" />
+                                    </div>
+
+                                    {/* Background Grid */}
+                                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                                        style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+                                    />
+                                    
+                                    {/* Authorization Pill */}
+                                    <div className="inline-block px-6 py-1.5 border border-[#d4af37]/30 rounded-full bg-[#d4af37]/5 mb-8">
+                                        <span className="text-[10px] font-mono font-bold tracking-[0.3em] text-[#d4af37] uppercase">
+                                            Auth Required
+                                        </span>
+                                    </div>
+
+                                    {/* Heading Group */}
+                                    <div className="space-y-1 mb-8">
+                                        <h2 className="text-3xl md:text-5xl font-oswald font-black text-white leading-tight tracking-tight uppercase">
+                                            Encryption
+                                        </h2>
+                                        <h2 className="text-3xl md:text-5xl font-oswald font-black text-[#d4af37] leading-tight tracking-tight uppercase">
+                                            Override
+                                        </h2>
+                                    </div>
+
+                                    {/* Protocol Description */}
+                                    <p className="text-[9px] font-mono text-gray-500 uppercase tracking-[0.15em] leading-relaxed max-w-[240px] mb-12">
+                                        Deploy decryption protocol to access restricted luxury assets.
+                                    </p>
+
+                                    {/* Action Trigger */}
+                                    <button 
+                                        onClick={() => setShowSyncOverlay(true)}
+                                        className="w-full max-w-[280px] py-4 bg-[#d4af37] text-black font-oswald font-black text-xs uppercase tracking-[0.4em] hover:bg-white transition-all duration-700 shadow-[0_15px_30px_rgba(212,175,55,0.15)]"
+                                    >
+                                        Initialize Protocol
+                                    </button>
+
+                                    {/* System Telemetry */}
+                                    <div className="grid grid-cols-2 gap-8 w-full max-w-[280px] pt-8 mt-8 border-t border-white/5 relative">
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-full bg-white/5" />
+                                        
+                                        <div className="text-left space-y-1">
+                                            <p className="text-[8px] font-mono text-gray-400 uppercase tracking-[0.2em]">Signal</p>
+                                            <p className="text-[10px] font-mono text-green-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                                <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                                                Stable
+                                            </p>
+                                        </div>
+                                        <div className="text-right space-y-1">
+                                            <p className="text-[8px] font-mono text-gray-400 uppercase tracking-[0.2em]">Sync</p>
+                                            <p className="text-[10px] font-mono text-[#d4af37] font-bold uppercase tracking-widest">
+                                                99.8%
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Edge Anchors */}
+                                    <div className="absolute top-8 left-8 w-3 h-3 border-t border-l border-white/20" />
+                                    <div className="absolute top-8 right-8 w-3 h-3 border-t border-r border-white/20" />
+                                    <div className="absolute bottom-8 left-8 w-3 h-3 border-b border-l border-white/20" />
+                                    <div className="absolute bottom-8 right-8 w-3 h-3 border-b border-r border-white/20" />
+                                </motion.div>
                             </div>
                         )}
                     </div>
@@ -699,6 +765,90 @@ const Vault = () => {
                         </VaultCongratsOverlay>
                     )}
                 </AnimatePresence>
+                <AnimatePresence>
+                    {showSyncOverlay && (
+                        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="relative w-full max-w-md glass border border-white/10 p-12 overflow-hidden"
+                            >
+                                {/* Diagonal scanning line */}
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-accent/20 animate-[scan_3s_linear_infinite]" />
+                                
+                                <div className="relative z-10 space-y-8">
+                                    <div className="text-center space-y-2">
+                                        <h3 className="text-2xl font-oswald font-black text-white tracking-[0.2em] uppercase">Manual Override</h3>
+                                        <p className="text-[9px] font-mono text-gray-500 tracking-widest uppercase">Enter Decryption Protocol</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="relative">
+                                            <input 
+                                                type="text"
+                                                value={syncCode}
+                                                onChange={(e) => {
+                                                    setSyncCode(e.target.value.toUpperCase());
+                                                    setSyncError(false);
+                                                }}
+                                                placeholder="PROTOCOL_CODE"
+                                                className="w-full bg-white/5 border border-white/10 p-5 font-mono text-center text-accent tracking-[0.5em] outline-none focus:border-accent transition-all uppercase placeholder:text-white/10"
+                                            />
+                                            {syncError && (
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="absolute -top-6 left-0 right-0 text-center text-red-500 font-mono text-[8px] uppercase tracking-widest"
+                                                >
+                                                    Error: Invalid Decryption Protocol
+                                                </motion.p>
+                                            )}
+                                        </div>
+
+                                        <button 
+                                            disabled={isSyncing || !syncCode}
+                                            onClick={() => {
+                                                setIsSyncing(true);
+                                                setTimeout(() => {
+                                                    setIsSyncing(false);
+                                                    setSyncError(true);
+                                                }, 1500);
+                                            }}
+                                            className="w-full py-5 bg-accent text-black font-oswald font-black text-xs uppercase tracking-[0.4em] hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all relative overflow-hidden group"
+                                        >
+                                            {isSyncing ? (
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" />
+                                                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-bounce [animation-delay:0.2s]" />
+                                                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-bounce [animation-delay:0.4s]" />
+                                                </div>
+                                            ) : (
+                                                'Deploy Sync'
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => {
+                                            setShowSyncOverlay(false);
+                                            setSyncCode('');
+                                            setSyncError(false);
+                                        }}
+                                        className="w-full text-center py-2 text-[8px] font-mono text-white/30 hover:text-white uppercase tracking-widest transition-colors"
+                                    >
+                                        Cancel Uplink
+                                    </button>
+                                </div>
+
+                                {/* Decorative corner details */}
+                                <div className="absolute top-4 left-4 w-2 h-2 border-t border-l border-white/20" />
+                                <div className="absolute bottom-4 right-4 w-2 h-2 border-b border-r border-white/20" />
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
                 <AnimatePresence>
                     {showPurchasePopup && (
                         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 backdrop-blur-3xl bg-black/80">

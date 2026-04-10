@@ -174,9 +174,9 @@ export const AppProvider = ({ children }) => {
         }
     };
 
-    const removeFromCart = async (productId) => {
+    const removeFromCart = async (productId, size = null) => {
         setCart(prev => {
-            const newCart = prev.filter(item => item.id !== productId);
+            const newCart = prev.filter(item => !(item.id === productId && item.selectedSize === size));
             localStorage.setItem('endura_cart', JSON.stringify(newCart));
             return newCart;
         });
@@ -192,10 +192,10 @@ export const AppProvider = ({ children }) => {
         }
     };
 
-    const updateCartQuantity = (productId, delta) => {
+    const updateCartQuantity = async (productId, delta, size = null) => {
         setCart(prev => {
             const newCart = prev.map(item => {
-                if (item.id === productId) {
+                if (item.id === productId && item.selectedSize === size) {
                     const newQty = Math.max(1, item.quantity + delta);
                     return { ...item, quantity: newQty };
                 }

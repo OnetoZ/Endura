@@ -132,17 +132,17 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                         <div className="flex items-center justify-between pt-4 border-t border-white/5">
                             <div className="flex items-center gap-4 bg-white/5 rounded-full px-4 py-1.5 border border-white/5">
                                 <button
-                                    onClick={() => onUpdateQuantity(item.id, -1)}
+                                    onClick={() => onUpdateQuantity(item._id || item.id, -1, item.selectedSize)}
                                     className="text-primary-light hover:text-white transition-colors"
                                 >-</button>
                                 <span className="font-mono text-xs w-4 text-center text-white">{item.quantity}</span>
                                 <button
-                                    onClick={() => onUpdateQuantity(item.id, 1)}
+                                    onClick={() => onUpdateQuantity(item._id || item.id, 1, item.selectedSize)}
                                     className="text-primary-light hover:text-white transition-colors"
                                 >+</button>
                             </div>
                             <button
-                                onClick={() => onRemove(item.id)}
+                                onClick={() => onRemove(item._id || item.id, item.selectedSize)}
                                 className="group/btn relative px-4 py-2 overflow-hidden"
                             >
                                 <span className="relative z-10 text-[9px] font-mono text-red-500/80 group-hover/btn:text-white transition-colors uppercase tracking-widest">Terminate</span>
@@ -278,14 +278,14 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                     >
                         <div className="flex items-center gap-6">
                             <button
-                                onClick={() => onUpdateQuantity(item._id || item.id, -1)}
+                                onClick={() => onUpdateQuantity(item._id || item.id, -1, item.selectedSize)}
                                 className="text-gray-600 hover:text-accent transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M20 12H4" /></svg>
                             </button>
                             <span className="font-heading text-sm text-white/80">{item.quantity}</span>
                             <button
-                                onClick={() => onUpdateQuantity(item._id || item.id, 1)}
+                                onClick={() => onUpdateQuantity(item._id || item.id, 1, item.selectedSize)}
                                 className="text-gray-600 hover:text-accent transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 4v16m8-8H4" /></svg>
@@ -295,7 +295,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onRemove(item._id || item.id);
+                                onRemove(item._id || item.id, item.selectedSize);
                             }}
                             className="group/remove flex items-center gap-2"
                         >

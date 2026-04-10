@@ -114,12 +114,12 @@ const Cart = () => {
 
             const shippingAddr = getSelectedAddress();
             const orderItems = checkoutItems.map(item => ({
-                product: item._id || item.id,
+                asset: item._id || item.id,
                 name: item.name,
                 image: item.image || '',
                 quantity: item.quantity,
                 price: item.price,
-                size: item.selectedSize
+                selectedSize: item.selectedSize
             }));
 
             const shippingData = {
@@ -355,11 +355,11 @@ const Cart = () => {
                                         <AnimatePresence mode='popLayout'>
                                             {checkoutItems.map(item => (
                                                 <CollectionCard
-                                                    key={item._id || item.id}
+                                                    key={`${item._id || item.id}-${item.selectedSize}`}
                                                     item={{ ...item, image: item.image || item.frontImage }}
                                                     type={isDigitalCartItem(item) ? 'digital' : 'physical'}
                                                     onRemove={removeFromCart}
-                                                    onUpdateQuantity={(id, delta) => updateCartQuantity(id, delta)}
+                                                    onUpdateQuantity={(id, delta, size) => updateCartQuantity(id, delta, size)}
                                                 />
                                             ))}
                                         </AnimatePresence>

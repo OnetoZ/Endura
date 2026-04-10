@@ -220,8 +220,9 @@ export const orderService = {
     createRazorpayOrder: async (orderData) => {
         const normalizedOrderItems = Array.isArray(orderData?.orderItems)
             ? orderData.orderItems.map((item) => ({
-                product: item?.product || item?._id || item?.id,
+                asset: item?.asset || item?.product || item?._id || item?.id,
                 quantity: Number(item?.quantity || 0),
+                selectedSize: item?.selectedSize || item?.size || '',
             }))
             : [];
 
