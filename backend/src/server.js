@@ -59,7 +59,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ── Logger ────────────────────────────────────────────────────────────────────
 app.use(morgan('dev'));
 
-// ── Session (Production Ready with MongoDB Store) ─────────────────────────────
+// ── Session (Assetion Ready with MongoDB Store) ─────────────────────────────
 app.use(session({
   secret: process.env.JWT_SECRET || 'endura_session_secret',
   resave: false,
@@ -97,7 +97,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/assets', require('./routes/assetRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/wishlist', require('./routes/wishlistRoutes'));

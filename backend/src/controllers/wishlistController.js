@@ -6,10 +6,10 @@ const asyncHandler = require('../utils/asyncHandler');
  * @access  Private
  */
 const getWishlist = asyncHandler(async (req, res) => {
-    let wishlist = await Wishlist.findOne({ user: req.user._id }).populate('products');
+    let wishlist = await Wishlist.findOne({ user: req.user._id }).populate('assets');
 
     if (!wishlist) {
-        wishlist = await Wishlist.create({ user: req.user._id, products: [] });
+        wishlist = await Wishlist.create({ user: req.user._id, assets: [] });
     }
 
     res.json(wishlist);
@@ -20,28 +20,28 @@ const getWishlist = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const addToWishlist = asyncHandler(async (req, res) => {
-    const { productId } = req.body;
+    const { assetId } = req.body;
 
     let wishlist = await Wishlist.findOne({ user: req.user._id });
 
     if (!wishlist) {
-        wishlist = new Wishlist({ user: req.user._id, products: [] });
+        wishlist = new Wishlist({ user: req.user._id, assets: [] });
     }
 
-    const alreadyAdded = wishlist.products.includes(productId);
+    const alreadyAdded = wishlist.assets.includes(assetId);
     if (alreadyAdded) {
-        return res.status(400).json({ message: 'Product already in wishlist' });
+        return res.status(400).json({ message: 'Asset already in wishlist' });
     }
 
-    wishlist.products.push(productId);
+    wishlist.assets.push(assetId);
     await wishlist.save();
 
-    const populated = await Wishlist.findOne({ user: req.user._id }).populate('products');
+    const populated = await Wishlist.findOne({ user: req.user._id }).populate('assets');
     res.status(201).json(populated);
 });
 
 /**
- * @route   DELETE /api/wishlist/:productId
+ * @route   DELETE /api/wishlist/:assetId
  * @access  Private
  */
 const removeFromWishlist = asyncHandler(async (req, res) => {
@@ -52,12 +52,12 @@ const removeFromWishlist = asyncHandler(async (req, res) => {
         throw new Error('Wishlist not found');
     }
 
-    wishlist.products = wishlist.products.filter(
-        p => p.toString() !== req.params.productId
+    wishlist.assets = wishlist.assets.filter(
+        p => p.toString() !== req.params.assetId
     );
 
     await wishlist.save();
-    const populated = await Wishlist.findOne({ user: req.user._id }).populate('products');
+    const populated = await Wishlist.findOne({ user: req.user._id }).populate('assets');
     res.json(populated);
 });
 

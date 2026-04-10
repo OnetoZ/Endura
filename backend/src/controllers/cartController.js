@@ -8,7 +8,7 @@ const asyncHandler = require('../utils/asyncHandler');
  * @access  Private
  */
 const getCart = asyncHandler(async (req, res) => {
-    let cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+    let cart = await Cart.findOne({ user: req.user._id }).populate('items.asset');
 
     if (!cart) {
         cart = await Cart.create({ user: req.user._id, items: [] });
@@ -24,7 +24,7 @@ const getCart = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const addToCart = asyncHandler(async (req, res) => {
-    const { productId, quantity = 1 } = req.body;
+    const { assetId, quantity = 1 } = req.body;
 
     let cart = await Cart.findOne({ user: req.user._id });
 
@@ -32,16 +32,16 @@ const addToCart = asyncHandler(async (req, res) => {
         cart = new Cart({ user: req.user._id, items: [] });
     }
 
-    const itemIndex = cart.items.findIndex(p => p.product.toString() === productId);
+    const itemIndex = cart.items.findIndex(p => p.asset.toString() === assetId);
 
     if (itemIndex > -1) {
         cart.items[itemIndex].quantity += Number(quantity);
     } else {
-        cart.items.push({ product: productId, quantity: Number(quantity) });
+        cart.items.push({ asset: assetId, quantity: Number(quantity) });
     }
 
     await cart.save();
-    const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+    const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.asset');
     res.status(200).json(updatedCart);
 });
 
@@ -52,7 +52,7 @@ const addToCart = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const updateCartItem = asyncHandler(async (req, res) => {
-    const { productId, quantity } = req.body;
+    const { assetId, quantity } = req.body;
 
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) {
@@ -60,7 +60,7 @@ const updateCartItem = asyncHandler(async (req, res) => {
         throw new Error('Cart not found');
     }
 
-    const itemIndex = cart.items.findIndex(p => p.product.toString() === productId);
+    const itemIndex = cart.items.findIndex(p => p.asset.toString() === assetId);
     if (itemIndex === -1) {
         res.status(404);
         throw new Error('Item not found in cart');
@@ -73,14 +73,14 @@ const updateCartItem = asyncHandler(async (req, res) => {
     }
 
     await cart.save();
-    const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+    const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.asset');
     res.json(updatedCart);
 });
 
 // ─── Remove Single Item ────────────────────────────────────────────────────────
 
 /**
- * @route   DELETE /api/cart/item/:productId
+ * @route   DELETE /api/cart/item/:assetId
  * @access  Private
  */
 const removeFromCart = asyncHandler(async (req, res) => {
@@ -90,10 +90,10 @@ const removeFromCart = asyncHandler(async (req, res) => {
         throw new Error('Cart not found');
     }
 
-    cart.items = cart.items.filter(item => item.product.toString() !== req.params.productId);
+    cart.items = cart.items.filter(item => item.asset.toString() !== req.params.assetId);
     await cart.save();
 
-    const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+    const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.asset');
     res.json(updatedCart);
 });
 

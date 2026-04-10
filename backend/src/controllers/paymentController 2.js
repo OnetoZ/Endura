@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Asset = require('../models/Asset');
 const Payment = require('../models/Payment');
 const Cart = require('../models/Cart');
 const VaultItem = require('../models/VaultItem');
@@ -10,14 +10,14 @@ const asyncHandler = require('../utils/asyncHandler');
 // Helper: generate vault items after payment
 const generateVaultItems = async (order) => {
     const vaultPromises = order.items
-        .filter(item => item.product) // only items with digital twin
+        .filter(item => item.asset) // only items with digital twin
         .map(item =>
             VaultItem.create({
                 user: order.user,
                 order: order._id,
-                product: item.product,
-                productName: item.name,
-                productImage: item.image,
+                asset: item.asset,
+                assetName: item.name,
+                assetImage: item.image,
             })
         );
     await Promise.all(vaultPromises);
@@ -55,7 +55,7 @@ const createOrder = asyncHandler(async (req, res) => {
     }
 
     const invalidItemIndex = orderItems.findIndex(
-        (item) => !item || !item.product || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0
+        (item) => !item || !item.asset || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0
     );
     if (invalidItemIndex !== -1) {
         console.error('[payment/create-order] Rejected: invalid order item payload', {
@@ -64,7 +64,7 @@ const createOrder = asyncHandler(async (req, res) => {
             invalidItem: orderItems[invalidItemIndex],
         });
         res.status(400);
-        throw new Error(`Invalid order item at index ${invalidItemIndex}. Each item must include product and quantity > 0`);
+        throw new Error(`Invalid order item at index ${invalidItemIndex}. Each item must include asset and quantity > 0`);
     }
 
     const requiredAddressFields = ['fullName', 'address', 'city', 'postalCode', 'country'];
@@ -94,33 +94,33 @@ const createOrder = asyncHandler(async (req, res) => {
 
     // Validate cart data & calculate total
     for (const item of orderItems) {
-        const product = await Product.findById(item.product);
-        if (!product) {
-            console.error('[payment/create-order] Rejected: product not found', {
-                productId: item.product,
+        const asset = await Asset.findById(item.asset);
+        if (!asset) {
+            console.error('[payment/create-order] Rejected: asset not found', {
+                assetId: item.asset,
             });
             res.status(404);
-            throw new Error(`Product not found: ${item.product}`);
+            throw new Error(`Asset not found: ${item.asset}`);
         }
-        if (product.stock < item.quantity) {
+        if (asset.stock < item.quantity) {
             console.error('[payment/create-order] Rejected: insufficient stock', {
-                productId: item.product,
-                productName: product.name,
+                assetId: item.asset,
+                assetName: asset.name,
                 requestedQuantity: item.quantity,
-                availableStock: product.stock,
+                availableStock: asset.stock,
             });
             res.status(400);
-            throw new Error(`Insufficient stock for: ${product.name}`);
+            throw new Error(`Insufficient stock for: ${asset.name}`);
         }
-        calculatedTotal += product.price * item.quantity;
+        calculatedTotal += asset.price * item.quantity;
         
         itemsForDB.push({
-            product: product._id,
-            name: product.name,
-            image: product.images && product.images.length > 0 ? product.images[0] : '',
+            asset: asset._id,
+            name: asset.name,
+            image: asset.images && asset.images.length > 0 ? asset.images[0] : '',
             quantity: item.quantity,
-            price: product.price,
-            editionNumber: product.sold, // We will increment stock and sold later on verify
+            price: asset.price,
+            editionNumber: asset.sold, // We will increment stock and sold later on verify
         });
     }
 
@@ -254,8 +254,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
         // Decrement stock and increment sold count
         for (const item of order.items) {
-            await Product.findByIdAndUpdate(
-                item.product,
+            await Asset.findByIdAndUpdate(
+                item.asset,
                 { $inc: { stock: -item.quantity, sold: item.quantity } }
             );
         }
@@ -340,8 +340,8 @@ const webhook = asyncHandler(async (req, res) => {
             });
 
             for (const item of order.items) {
-                await Product.findByIdAndUpdate(
-                    item.product,
+                await Asset.findByIdAndUpdate(
+                    item.asset,
                     { $inc: { stock: -item.quantity, sold: item.quantity } }
                 );
             }

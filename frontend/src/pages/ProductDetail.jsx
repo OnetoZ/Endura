@@ -167,16 +167,22 @@ const ProductDetail = () => {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 mb-12">
-                            <div className="flex border border-white/10 w-full sm:w-auto overflow-hidden">
+                            <div className="flex border border-white/10 w-[140px] sm:w-auto overflow-hidden shrink-0">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="flex-1 sm:px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
-                                >-</button>
-                                <div className="flex-1 sm:px-8 py-4 bg-white/5 font-bold text-sm flex items-center justify-center">{quantity}</div>
+                                    className="flex-1 px-4 sm:px-6 py-4 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
+                                >
+                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"/></svg>
+                                </button>
+                                <div className="px-4 sm:px-6 py-4 bg-white/5 font-bold text-sm flex items-center justify-center min-w-[3rem] text-white">
+                                    {quantity}
+                                </div>
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
-                                    className="flex-1 sm:px-6 py-4 hover:bg-white/5 transition-all text-gray-500 font-bold"
-                                >+</button>
+                                    className="flex-1 px-4 sm:px-6 py-4 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
+                                >
+                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+                                </button>
                             </div>
 
                             <button

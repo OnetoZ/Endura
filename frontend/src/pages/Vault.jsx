@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 import { useStore } from '../context/StoreContext';
-import { productService, getImageUrl, vaultService } from '../services/api';
+import { assetService, getImageUrl, vaultService } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
 import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
@@ -314,7 +314,7 @@ const Vault = () => {
         const loadVaultData = async () => {
             try {
                 // 1. Fetch all available Archive Templates
-                const cards = await productService.getVaultCards();
+                const cards = await vaultService.getVaultCards();
                 setDbCards(cards.map(c => ({
                     id: c._id,
                     _id: c._id,
@@ -324,7 +324,7 @@ const Vault = () => {
                     description: c.description,
                     image: c.frontImage,
                     backImageUrl: c.backImage,
-                    tier: c.category,
+                    tier: c.tier,
                     _source: 'db'
                 })));
 
@@ -337,7 +337,8 @@ const Vault = () => {
                     // Update stats based on owned protocols
                     const newStats = { common: 0, rare: 0, epic: 0, legendary: 0 };
                     userAssets.protocols.forEach(p => {
-                        const tier = (p.category || 'rare').toLowerCase();
+                        // Protocol uses `p.vaultCard.tier` now
+                        const tier = (p.vaultCard?.tier || 'rare').toLowerCase();
                         if (newStats[tier] !== undefined) newStats[tier]++;
                     });
                     setStats(newStats);
@@ -347,11 +348,11 @@ const Vault = () => {
                         id: p._id,
                         _id: p._id,
                         serialNumber: p.serialNumber,
-                        batchId: p.batchId,
-                        name: p.name,
-                        image: p.frontImage,
-                        backImageUrl: p.backImage,
-                        tier: p.category,
+                        batchId: p.vaultCard?.batchId || 1,
+                        name: p.vaultCard?.name || 'Unknown Protocol',
+                        image: p.vaultCard?.frontImage,
+                        backImageUrl: p.vaultCard?.backImage,
+                        tier: p.vaultCard?.tier || 'rare',
                         isUnlocked: true,
                         _source: 'protocol'
                     }));
@@ -390,9 +391,14 @@ const Vault = () => {
         setPreviewItem(item);
     };
 
-
-
-
+    const handleUnlockRequest = (item, e) => {
+        if (e) {
+            e.stopPropagation();
+            setClickPos({ x: e.clientX, y: e.clientY });
+        }
+        setTargetItem(item);
+        setShowPurchasePopup(true);
+    };
 
     const handleLoadingComplete = useCallback(() => {
         setLoadingDone(true);
@@ -550,7 +556,7 @@ const Vault = () => {
 
                                     setTimeout(() => {
                                         if (it._source === 'db') {
-                                            productService.collectVaultCard(it.id)
+                                            vaultService.collectVaultCard(it.id)
                                                 .then(d => {
                                                     setCongratsData(d);
                                                     setCredits(d.newScore);

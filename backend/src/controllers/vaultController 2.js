@@ -9,7 +9,7 @@ const asyncHandler = require('../utils/asyncHandler');
  */
 const getUserVault = asyncHandler(async (req, res) => {
     const items = await VaultItem.find({ user: req.user._id })
-        .populate('product', 'name images type')
+        .populate('asset', 'name images type')
         .populate('vaultCard', 'name frontImage category')
         .sort({ createdAt: -1 });
 
@@ -82,8 +82,8 @@ const collectVaultCard = asyncHandler(async (req, res) => {
     const vaultItem = await VaultItem.create({
         user: req.user._id,
         vaultCard: card._id,
-        productName: card.name,
-        productImage: card.frontImage
+        assetName: card.name,
+        assetImage: card.frontImage
     });
 
     // Increase credit score
@@ -116,7 +116,7 @@ const collectVaultCard = asyncHandler(async (req, res) => {
 const getAllVaultItems = asyncHandler(async (req, res) => {
     const items = await VaultItem.find({})
         .populate('user', 'username email')
-        .populate('product', 'name')
+        .populate('asset', 'name')
         .populate('vaultCard', 'name')
         .sort({ createdAt: -1 });
 

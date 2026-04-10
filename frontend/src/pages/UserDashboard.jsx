@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Package, MapPin, Phone, User, Mail, Save, Image as ImageIcon } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
-import { authService, productService, orderService, getImageUrl } from '../services/api';
+import { authService, assetService, orderService, getImageUrl } from '../services/api';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
@@ -114,7 +114,7 @@ const UserDashboard = () => {
                 const { unlockedItems } = JSON.parse(savedData);
                 if (!unlockedItems || !unlockedItems.length) return;
 
-                const dbCards = await productService.getVaultCards().catch(() => []);
+                const dbCards = await assetService.getVaultCards().catch(() => []);
                 const mappedDbCards = dbCards.map(c => ({
                     id: c._id,
                     _id: c._id,

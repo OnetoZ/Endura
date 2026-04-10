@@ -6,32 +6,29 @@ const vaultItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-    },
-    order: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Order',
-        required: false,
+        index: true
     },
     vaultCard: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'VaultCard',
-        required: false,
+        required: true,
+        index: true
     },
-    product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: false,
+    serialNumber: {
+        type: Number,
+        required: true
     },
-    productName: { type: String, required: true },
-    productImage: { type: String },
-    // Unique redemption code generated on creation
     code: {
         type: String,
         default: () => crypto.randomBytes(8).toString('hex').toUpperCase(),
         unique: true,
+        index: true
     },
-    isRedeemed: { type: Boolean, default: false },
+    isRedeemed: { type: Boolean, default: false, index: true },
     redeemedAt: { type: Date },
-}, { timestamps: true });
+}, { 
+    timestamps: true,
+    collection: 'vault_items' 
+});
 
 module.exports = mongoose.model('VaultItem', vaultItemSchema);
