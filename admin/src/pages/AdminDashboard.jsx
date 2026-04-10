@@ -526,7 +526,7 @@ const AdminDashboard = () => {
                                             <div className="w-20 h-20 bg-neutral-800 border border-white/10 shrink-0 overflow-hidden">
                                                 <img
                                                     src={getImageUrl(item.image)}
-                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
+                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800' }}
                                                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                                                     alt={item.name}
                                                 />
@@ -918,7 +918,7 @@ const AdminDashboard = () => {
                                                             <div className="flex flex-col items-center gap-1">
                                                                 <img
                                                                     src={getImageUrl(p.images?.[0] || p.image)}
-                                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800' }}
+                                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800' }}
                                                                     className="w-10 h-10 object-cover grayscale group-hover:grayscale-0 transition-all border border-white/10"
                                                                     alt="Physical"
                                                                 />
@@ -927,7 +927,7 @@ const AdminDashboard = () => {
                                                             <div className="flex flex-col items-center gap-1">
                                                                 <img
                                                                     src={getImageUrl(p.images?.[2] || p.digitalTwinImage)}
-                                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800' }}
+                                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800' }}
                                                                     className="w-10 h-10 object-cover border border-accent/30 p-0.5"
                                                                     alt="Digital Twin"
                                                                 />

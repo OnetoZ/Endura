@@ -82,16 +82,18 @@ export const AppProvider = ({ children }) => {
             const { getImageUrl } = await import('../services/api');
             const data = await cartService.getCart();
             // Map backend structure (product object) to frontend expected flat structure
-            const mappedItems = (data.items || []).map(item => ({
-                id: item.product._id || item.product.id,
-                _id: item.product._id || item.product.id,
-                name: item.product.name,
-                price: item.product.price,
-                // Backend uses 'images' array. [0] is the front image.
-                image: getImageUrl(item.product.images?.[0] || item.product.frontImage || item.product.image),
-                category: item.product.category,
-                quantity: item.quantity
-            }));
+            const mappedItems = (data.items || [])
+                .filter(item => item.product && (item.product.name || item.product._id)) // Protect against ghost items
+                .map(item => ({
+                    id: item.product._id || item.product.id,
+                    _id: item.product._id || item.product.id,
+                    name: item.product.name,
+                    price: item.product.price,
+                    // Backend uses 'images' array. [0] is the front image.
+                    image: getImageUrl(item.product.images?.[0] || item.product.frontImage || item.product.image),
+                    category: item.product.category,
+                    quantity: item.quantity
+                }));
             setCart(mappedItems);
             localStorage.setItem('endura_cart', JSON.stringify(mappedItems));
         } catch (error) {
@@ -135,6 +137,12 @@ export const AppProvider = ({ children }) => {
     };
 
     const addToCart = async (product, qty = 1, size = null) => {
+        // Guard against invalid products
+        if (!product || (!product.name && !product._id && !product.id)) {
+            console.error('Refusing to add invalid product to cart:', product);
+            return;
+        }
+
         const { getImageUrl } = await import('../services/api');
         // Optimistic local update
         const productWithImage = {

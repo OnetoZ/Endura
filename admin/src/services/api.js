@@ -27,7 +27,7 @@ const API_BASE_URL = resolveApiBaseUrl();
 
 export const getImageUrl = (path) => {
     // Return placeholder if path is missing to prevent broken link icons
-    const placeholder = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=800';
+    const placeholder = 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800';
     if (!path) return placeholder;
 
     // If it's already a Base64 string (stored in Mongo), return it as is
