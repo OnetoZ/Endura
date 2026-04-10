@@ -265,7 +265,7 @@ export const AppProvider = ({ children }) => {
             products, currentUser, setCurrentUser, cart, orders, vaultItems, users, isLoading,
             login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             placeRazorpayOrder, verifyRazorpayPayment,
-            addProduct, removeProduct, unlockVaultItem
+            addProduct, removeProduct, setAssets, unlockVaultItem
         }}>
             {children}
         </StoreContext.Provider>
