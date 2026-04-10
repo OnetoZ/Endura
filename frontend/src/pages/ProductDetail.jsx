@@ -43,7 +43,7 @@ const ProductDetail = () => {
 
     if (!product && collectedItem) return (
         <div className="min-h-screen bg-black pt-32 pb-20 px-6 text-white">
-            <SEO 
+            <SEO
                 title={`${collectedItem.name} | View Collected Asset`}
                 description={`Viewing ${collectedItem.name} from the Endura Digital Vault. Cinematic streetwear asset ownership.`}
             />
@@ -91,30 +91,30 @@ const ProductDetail = () => {
     const prevImage = () => setCurrentImageIndex(prev => (prev - 1 + allImages.length) % allImages.length);
 
     return (
-        <div className="min-h-screen bg-black pt-32 pb-20 px-6">
-            <SEO 
+        <div className="min-h-screen bg-black pt-24 pb-20 px-6">
+            <SEO
                 title={product.name}
                 description={product.description}
                 canonical={`/product/${id}`}
                 image={getImageUrl(product.images?.[0] || product.image)}
                 schema={productSchema}
             />
-            <div className="container mx-auto max-w-7xl">
-                <Link to="/collections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-12 transition-all">
+            <div className="container mx-auto max-w-6xl">
+                <Link to="/collections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary mb-8 transition-all">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                     </svg>
                     Back to Inventory
                 </Link>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
                     {/* Visual Interface */}
                     <div className="relative group reveal active flex flex-col justify-center">
                         <div className="absolute inset-0 bg-primary/10 blur-[100px] -z-10 group-hover:bg-primary/20 transition-all"></div>
                         <div className="aspect-[4/5] bg-neutral-900 border border-white/5 overflow-hidden relative">
                             <img
                                 src={getImageUrl(allImages[currentImageIndex])}
-                                className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 scale-105 group-hover:scale-100"
+                                className="w-full h-full object-cover transition-all duration-1000 scale-105 group-hover:scale-100"
                                 alt={`${product.name} - view ${currentImageIndex + 1}`}
                             />
 
@@ -172,7 +172,7 @@ const ProductDetail = () => {
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                     className="flex-1 px-4 sm:px-6 py-4 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
                                 >
-                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"/></svg>
+                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" /></svg>
                                 </button>
                                 <div className="px-4 sm:px-6 py-4 bg-white/5 font-bold text-sm flex items-center justify-center min-w-[3rem] text-white">
                                     {quantity}
@@ -181,7 +181,7 @@ const ProductDetail = () => {
                                     onClick={() => setQuantity(quantity + 1)}
                                     className="flex-1 px-4 sm:px-6 py-4 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
                                 >
-                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                                 </button>
                             </div>
 
@@ -214,11 +214,11 @@ const ProductDetail = () => {
                                     <ul className="space-y-4">
                                         <li className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-3 sm:pb-2 gap-1 sm:gap-0">
                                             <span className="uppercase text-[10px] font-bold tracking-widest text-gray-500">Weight</span>
-                                            <span className="text-white font-mono text-sm sm:text-base break-words">350GSM</span>
+                                            <span className="text-white font-mono text-sm sm:text-base break-words">240-260 gsm</span>
                                         </li>
                                         <li className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-3 sm:pb-2 gap-1 sm:gap-0">
                                             <span className="uppercase text-[10px] font-bold tracking-widest text-gray-500">Composition</span>
-                                            <span className="text-white font-mono text-sm sm:text-base break-words">100% Endura-Tech Fiber</span>
+                                            <span className="text-white font-mono text-sm sm:text-base break-words">French terry loopknit</span>
                                         </li>
                                     </ul>
                                 )}
