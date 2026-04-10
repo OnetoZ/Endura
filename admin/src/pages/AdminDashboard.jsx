@@ -1059,7 +1059,7 @@ const AdminDashboard = () => {
                                                         <input
                                                             className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
                                                             value={newCard.name}
-                                                            onChange={e => setNewCard({...newCard, name: e.target.value})}
+                                                            onChange={e => setNewCard({ ...newCard, name: e.target.value })}
                                                             placeholder="ASSET_IDENTIFIER"
                                                             required
                                                         />
@@ -1069,7 +1069,7 @@ const AdminDashboard = () => {
                                                         <select
                                                             className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
                                                             value={newCard.tier}
-                                                            onChange={e => setNewCard({...newCard, tier: e.target.value})}
+                                                            onChange={e => setNewCard({ ...newCard, tier: e.target.value })}
                                                         >
                                                             <option value="common">Common</option>
                                                             <option value="rare">Rare</option>
@@ -1108,13 +1108,13 @@ const AdminDashboard = () => {
                                                         <textarea
                                                             className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary h-[85px]"
                                                             value={newCard.description}
-                                                            onChange={e => setNewCard({...newCard, description: e.target.value})}
+                                                            onChange={e => setNewCard({ ...newCard, description: e.target.value })}
                                                             placeholder="ATMOSPHERIC_INTEL"
                                                         />
                                                     </div>
-                                                    <button 
+                                                    <button
                                                         disabled={cardSaving}
-                                                        type="submit" 
+                                                        type="submit"
                                                         className="w-full py-4 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
                                                     >
                                                         {cardSaving ? 'Syncing...' : (editingCardId ? 'Update Asset' : 'Commit to Archive')}
@@ -1136,8 +1136,8 @@ const AdminDashboard = () => {
                                     vaultCards.map(card => (
                                         <div key={card._id} className="glass border-white/10 overflow-hidden group">
                                             <div className="aspect-[3/4] relative overflow-hidden">
-                                                <img 
-                                                    src={getImageUrl(card.frontImage)} 
+                                                <img
+                                                    src={getImageUrl(card.frontImage)}
                                                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                                                     alt={card.name}
                                                 />
@@ -1153,13 +1153,13 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="p-4 flex justify-between border-t border-white/5 bg-white/[0.02]">
-                                                <button 
+                                                <button
                                                     onClick={() => handleEditCard(card)}
                                                     className="text-[9px] font-black uppercase text-gray-400 hover:text-primary transition-colors"
                                                 >
                                                     Edit
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handleDeleteCard(card._id)}
                                                     className="text-[9px] font-black uppercase text-red-500/50 hover:text-red-500 transition-colors"
                                                 >

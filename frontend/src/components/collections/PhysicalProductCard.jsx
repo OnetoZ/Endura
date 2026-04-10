@@ -109,7 +109,7 @@ const PhysicalProductCard = ({ product }) => {
                 {/* Product Image with Parallax & Glitch Overlay */}
                 <motion.div
                     style={{
-                        transform: isHovered ? "translateZ(60px) scale(1.1)" : "translateZ(0px) scale(1)",
+                        transform: isHovered ? "translateZ(60px) scale(1.15)" : "translateZ(0px) scale(1.05)",
                         transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
                     }}
                     className="w-full h-full relative"
@@ -123,7 +123,7 @@ const PhysicalProductCard = ({ product }) => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="w-full h-full object-contain p-8 md:p-12 transition-all duration-1000 grayscale-[0.4] group-hover:grayscale-0 group-hover:contrast-[1.1]"
+                            className="w-full h-full object-cover transition-all duration-1000 group-hover:contrast-[1.1]"
                         />
                     </AnimatePresence>
                     {/* Subtle Overlay Glow */}
