@@ -47,6 +47,7 @@ const createAsset = asyncHandler(async (req, res) => {
         type,
         category,
         stock,
+        sizes,
         digitalTwinImage,
         shortAtmosphericLine
     } = req.body;
@@ -59,6 +60,7 @@ const createAsset = asyncHandler(async (req, res) => {
         type: type || 'Common',
         category,
         stock: stock || 0,
+        sizes: sizes || { S: 0, M: 0, L: 0, XL: 0 },
         digitalTwinImage,
         shortAtmosphericLine
     });
@@ -81,6 +83,7 @@ const updateAsset = asyncHandler(async (req, res) => {
         type,
         category,
         stock,
+        sizes,
         digitalTwinImage,
         shortAtmosphericLine
     } = req.body;
@@ -95,6 +98,7 @@ const updateAsset = asyncHandler(async (req, res) => {
         asset.type = type || asset.type;
         asset.category = category || asset.category;
         asset.stock = stock !== undefined ? stock : asset.stock;
+        asset.sizes = sizes || asset.sizes;
         asset.digitalTwinImage = digitalTwinImage !== undefined ? digitalTwinImage : asset.digitalTwinImage;
         asset.shortAtmosphericLine = shortAtmosphericLine !== undefined ? shortAtmosphericLine : asset.shortAtmosphericLine;
 

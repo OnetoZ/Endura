@@ -15,6 +15,7 @@ const generateVaultItems = async (order) => {
                 asset: item.asset,
                 assetName: item.name,
                 assetImage: item.image,
+                size: item.size
             })
         );
     await Promise.all(vaultPromises);
@@ -52,9 +53,14 @@ const addOrderItems = asyncHandler(async (req, res) => {
         const qty = Number(item.quantity);
         if (!qty || qty <= 0) return;
 
+        const updateObj = { $inc: { stock: -qty, sold: qty } };
+        if (item.size && ['S', 'M', 'L', 'XL'].includes(item.size)) {
+            updateObj.$inc[`sizes.${item.size}`] = -qty;
+        }
+
         const asset = await Asset.findByIdAndUpdate(
             item.asset,
-            { $inc: { stock: -qty, sold: qty } },
+            updateObj,
             { new: true, runValidators: true }
         );
         

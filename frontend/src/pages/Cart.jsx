@@ -119,6 +119,7 @@ const Cart = () => {
                 image: item.image || '',
                 quantity: item.quantity,
                 price: item.price,
+                size: item.selectedSize
             }));
 
             const shippingData = {
@@ -564,7 +565,9 @@ const Cart = () => {
                                                 )}
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-bold truncate">{item.name}</p>
-                                                    <p className="text-[10px] text-gray-500">Qty: {item.quantity}</p>
+                                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest italic">
+                                                        Qty: {item.quantity} {item.selectedSize ? `| Size: ${item.selectedSize}` : ''}
+                                                    </p>
                                                 </div>
                                                 <p className="text-sm font-mono text-accent">₹{item.price * item.quantity}</p>
                                             </div>

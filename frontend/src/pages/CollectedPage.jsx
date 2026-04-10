@@ -211,6 +211,12 @@ const ItemDetailModal = ({ item, onClose }) => {
                                     <Shield className="w-3 h-3" style={{ color: accent }} /> {item.tier}
                                 </p>
                             </div>
+                            {item.size && (
+                                <div className="space-y-2">
+                                    <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Archive.Size</p>
+                                    <p className="text-xs font-heading font-black tracking-widest text-accent uppercase">{item.size}</p>
+                                </div>
+                            )}
                             <div className="space-y-2 text-right">
                                 <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Auth.Status</p>
                                 <p className="text-xs font-heading font-black tracking-widest text-accent uppercase">AUTHENTICATED</p>

@@ -11,12 +11,18 @@ const vaultItemSchema = new mongoose.Schema({
     vaultCard: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'VaultCard',
-        required: true,
         index: true
     },
+    asset: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Asset',
+        index: true
+    },
+    assetName: { type: String },
+    assetImage: { type: String },
+    size: { type: String },
     serialNumber: {
         type: Number,
-        required: true
     },
     code: {
         type: String,

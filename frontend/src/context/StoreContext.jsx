@@ -134,22 +134,23 @@ export const AppProvider = ({ children }) => {
         localStorage.removeItem('userInfo');
     };
 
-    const addToCart = async (product) => {
+    const addToCart = async (product, qty = 1, size = null) => {
         const { getImageUrl } = await import('../services/api');
         // Optimistic local update
         const productWithImage = {
             ...product,
             image: getImageUrl(product.images?.[0] || product.image || product.frontImage),
-            id: product.id || product._id
+            id: product.id || product._id,
+            selectedSize: size
         };
         
         setCart(prev => {
-            const existing = prev.find(item => item.id === productWithImage.id);
+            const existing = prev.find(item => item.id === productWithImage.id && item.selectedSize === size);
             let nextCart;
             if (existing) {
-                nextCart = prev.map(item => item.id === productWithImage.id ? { ...item, quantity: item.quantity + 1 } : item);
+                nextCart = prev.map(item => (item.id === productWithImage.id && item.selectedSize === size) ? { ...item, quantity: item.quantity + qty } : item);
             } else {
-                nextCart = [...prev, { ...productWithImage, quantity: 1 }];
+                nextCart = [...prev, { ...productWithImage, quantity: qty }];
             }
             localStorage.setItem('endura_cart', JSON.stringify(nextCart));
             return nextCart;
@@ -158,7 +159,7 @@ export const AppProvider = ({ children }) => {
         // Backend sync if logged in
         if (currentUser) {
             try {
-                await cartService.addToCart(productWithImage.id, 1);
+                await cartService.addToCart(productWithImage.id, qty);
             } catch (error) {
                 console.error('Failed to sync addToCart to backend:', error);
             }
