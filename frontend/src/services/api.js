@@ -231,8 +231,36 @@ export const orderService = {
             shippingAddress: orderData?.shippingAddress || {},
         };
 
-        const response = await api.post('/payment/create-order', payload);
-        return response.data;
+        // ── Pre-flight diagnostics ──
+        console.log('%c[PAYMENT DEBUG] create-order payload:', 'color: #d4af37; font-weight: bold;', JSON.stringify(payload, null, 2));
+        const problems = [];
+        if (normalizedOrderItems.length === 0) problems.push('orderItems is empty');
+        normalizedOrderItems.forEach((item, i) => {
+            if (!item.asset) problems.push(`item[${i}].asset is falsy`);
+            if (!Number.isFinite(item.quantity) || item.quantity <= 0) problems.push(`item[${i}].quantity invalid: ${item.quantity}`);
+        });
+        ['fullName', 'address', 'city', 'postalCode', 'country'].forEach(f => {
+            if (!payload.shippingAddress[f] || String(payload.shippingAddress[f]).trim() === '') {
+                problems.push(`shippingAddress.${f} is missing`);
+            }
+        });
+        if (problems.length > 0) {
+            console.error('%c[PAYMENT DEBUG] Pre-flight FAILED:', 'color: red; font-weight: bold;', problems);
+        } else {
+            console.log('%c[PAYMENT DEBUG] Pre-flight PASSED ✅', 'color: lime; font-weight: bold;');
+        }
+
+        try {
+            const response = await api.post('/payment/create-order', payload);
+            return response.data;
+        } catch (err) {
+            console.error('%c[PAYMENT DEBUG] REJECTED:', 'color: red; font-weight: bold;', {
+                status: err?.response?.status,
+                serverMessage: err?.response?.data?.message || 'Unknown',
+                sentPayload: payload,
+            });
+            throw err;
+        }
     },
     verifyPayment: async (paymentData) => {
         const response = await api.post('/payment/verify', paymentData);

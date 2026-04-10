@@ -26,13 +26,21 @@ const getCart = asyncHandler(async (req, res) => {
 const addToCart = asyncHandler(async (req, res) => {
     const { assetId, quantity = 1 } = req.body;
 
+    if (!assetId) {
+        res.status(400);
+        throw new Error('assetId is required');
+    }
+
     let cart = await Cart.findOne({ user: req.user._id });
 
     if (!cart) {
         cart = new Cart({ user: req.user._id, items: [] });
     }
 
-    const itemIndex = cart.items.findIndex(p => p.asset.toString() === assetId);
+    // Filter out any ghost items with null/undefined asset refs
+    cart.items = cart.items.filter(p => p.asset != null);
+
+    const itemIndex = cart.items.findIndex(p => p.asset && p.asset.toString() === assetId);
 
     if (itemIndex > -1) {
         cart.items[itemIndex].quantity += Number(quantity);

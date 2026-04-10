@@ -140,7 +140,10 @@ const Cart = () => {
                 address: shippingAddr.address,
                 city: shippingAddr.city,
                 postalCode: shippingAddr.postalCode,
-                country: shippingAddr.country || 'India',
+                // Guard: if country looks like a postal code (all digits), reset to India
+                country: (shippingAddr.country && !/^\d+$/.test(shippingAddr.country.trim()))
+                    ? shippingAddr.country
+                    : 'India',
                 phone: shippingAddr.phone || currentUser?.phone || '',
             };
 

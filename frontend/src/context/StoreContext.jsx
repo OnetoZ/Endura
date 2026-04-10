@@ -81,19 +81,25 @@ export const AppProvider = ({ children }) => {
         try {
             const { getImageUrl } = await import('../services/api');
             const data = await cartService.getCart();
-            // Map backend structure (product object) to frontend expected flat structure
+            // Backend Cart model populates 'items.asset' (not 'items.product')
             const mappedItems = (data.items || [])
-                .filter(item => item.product && (item.product.name || item.product._id)) // Protect against ghost items
-                .map(item => ({
-                    id: item.product._id || item.product.id,
-                    _id: item.product._id || item.product.id,
-                    name: item.product.name,
-                    price: item.product.price,
-                    // Backend uses 'images' array. [0] is the front image.
-                    image: getImageUrl(item.product.images?.[0] || item.product.frontImage || item.product.image),
-                    category: item.product.category,
-                    quantity: item.quantity
-                }));
+                .filter(item => {
+                    const prod = item.asset || item.product;
+                    return prod && (prod.name || prod._id);
+                })
+                .map(item => {
+                    const prod = item.asset || item.product;
+                    return {
+                        id: prod._id || prod.id,
+                        _id: prod._id || prod.id,
+                        name: prod.name,
+                        price: prod.price,
+                        image: getImageUrl(prod.images?.[0] || prod.frontImage || prod.image),
+                        category: prod.category,
+                        quantity: item.quantity,
+                        selectedSize: item.selectedSize || item.size || '',
+                    };
+                });
             setCart(mappedItems);
             localStorage.setItem('endura_cart', JSON.stringify(mappedItems));
         } catch (error) {
@@ -151,7 +157,7 @@ export const AppProvider = ({ children }) => {
             id: product.id || product._id,
             selectedSize: size
         };
-        
+
         setCart(prev => {
             const existing = prev.find(item => item.id === productWithImage.id && item.selectedSize === size);
             let nextCart;
