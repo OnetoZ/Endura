@@ -121,7 +121,7 @@ const createOrder = asyncHandler(async (req, res) => {
             throw new Error(`Insufficient stock for "${asset.name}". Available: ${asset.stock}`);
         }
         calculatedTotal += asset.price * item.quantity;
-        
+
         itemsForDB.push({
             asset: asset._id,
             name: asset.name,
@@ -148,8 +148,9 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new Error('The minimum transaction amount is ₹1.00 (100 paise).');
     }
 
-    // Limit receipt to 40 characters
-    const receiptId = `rcpt_${Date.now()}_${req.user._id.toString().slice(-6)}`;
+    // Generate a truly unique receipt (rcpt_ + timestamp + random hex)
+    const randomHex = crypto.randomBytes(4).toString('hex');
+    const receiptId = `rcpt_${Date.now()}_${randomHex}`;
 
     const options = {
         amount: amountInPaise,
@@ -195,6 +196,7 @@ const createOrder = asyncHandler(async (req, res) => {
         totalAmount: calculatedTotal,
         currency: 'INR',
         razorpayOrderId: razorpayOrder.id,
+        orderId: razorpayOrder.id, // satisfying stale unique index
         paymentStatus: 'pending',
         status: 'Pending',
     });
@@ -303,9 +305,9 @@ const verifyPayment = asyncHandler(async (req, res) => {
         const stockPromises = order.items.map(async (item) => {
             const qty = Number(item.quantity);
             if (!qty || qty <= 0) return;
-            
+
             console.log(`[payment/verify] Reducing stock for asset ${item.asset} by ${qty}`);
-            
+
             const updatedAsset = await Asset.findByIdAndUpdate(
                 item.asset,
                 { $inc: { stock: -qty, sold: qty } },
@@ -318,12 +320,12 @@ const verifyPayment = asyncHandler(async (req, res) => {
                 console.log(`[payment/verify] Asset ${item.asset} stock updated. New stock: ${updatedAsset.stock}`);
             }
         });
-        
+
         await Promise.all(stockPromises);
 
         // Clear the user's cart
         await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
-        
+
         // Auto-generate vault items
         await generateVaultItems(order);
 
@@ -392,7 +394,7 @@ const webhook = asyncHandler(async (req, res) => {
             order.status = 'Confirmed';
             order.razorpayPaymentId = razorpayPaymentId;
             await order.save();
-            
+
             console.log('[payment/webhook] Event payment.captured: status updated to PAID, starting stock reduction');
 
             await Payment.create({
@@ -408,7 +410,7 @@ const webhook = asyncHandler(async (req, res) => {
             const stockPromises = order.items.map(async (item) => {
                 const qty = Number(item.quantity);
                 if (!qty || qty <= 0) return;
-                
+
                 await Asset.findByIdAndUpdate(
                     item.asset,
                     { $inc: { stock: -qty, sold: qty } },

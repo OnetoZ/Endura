@@ -68,6 +68,8 @@ const orderSchema = new mongoose.Schema({
         default: 'Pending',
         index: true
     },
+    // Satisfy stale unique index in DB if present
+    orderId: { type: String },
 }, { 
     timestamps: true,
     collection: 'orders'
