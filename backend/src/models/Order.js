@@ -1,23 +1,27 @@
 const mongoose = require('mongoose');
 
+const orderItemSchema = new mongoose.Schema({
+    asset: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Asset',
+        required: true,
+        index: true
+    },
+    name: { type: String, required: true },
+    image: { type: String },
+    quantity: { type: Number, required: true, min: 1 },
+    price: { type: Number, required: true },
+    editionNumber: { type: Number },
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true
     },
-    items: [{
-        product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true,
-        },
-        name: { type: String, required: true },
-        image: { type: String },
-        quantity: { type: Number, required: true, min: 1 },
-        price: { type: Number, required: true },
-        editionNumber: { type: Number },
-    }],
+    items: [orderItemSchema],
     shippingAddress: {
         fullName: { type: String, required: true },
         address: { type: String, required: true },
@@ -48,19 +52,27 @@ const orderSchema = new mongoose.Schema({
     trackingId: { type: String },
     
     // Razorpay Integration Fields
-    razorpayOrderId: { type: String },
-    razorpayPaymentId: { type: String },
+    razorpayOrderId: { type: String, index: true },
+    razorpayPaymentId: { type: String, index: true },
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed'],
-        default: 'pending'
+        default: 'pending',
+        index: true
     },
     
     status: {
         type: String,
         enum: ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
         default: 'Pending',
+        index: true
     },
-}, { timestamps: true });
+}, { 
+    timestamps: true,
+    collection: 'orders'
+});
+
+// Indexes to speed up queries
+orderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Order', orderSchema);

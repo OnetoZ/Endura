@@ -1,19 +1,21 @@
 const mongoose = require('mongoose');
 
 const vaultCardSchema = new mongoose.Schema({
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true, index: true },
     description: { type: String, default: '' },
     frontImage: { type: String, required: true },
     backImage: { type: String, required: true },
-    category: {
+    tier: {
         type: String,
         enum: ['common', 'rare', 'epic', 'legendary'],
         default: 'common',
+        index: true
     },
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-    },
-}, { timestamps: true });
+    isActive: { type: Boolean, default: true, index: true },
+    totalMinted: { type: Number, default: 0 }
+}, { 
+    timestamps: true,
+    collection: 'vault_cards' 
+});
 
 module.exports = mongoose.model('VaultCard', vaultCardSchema);

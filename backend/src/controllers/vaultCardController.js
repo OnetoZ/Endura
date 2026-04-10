@@ -15,7 +15,7 @@ const getVaultCards = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const createVaultCard = asyncHandler(async (req, res) => {
-    const { name, description, frontImage, backImage, category } = req.body;
+    const { name, description, frontImage, backImage, tier } = req.body;
 
     if (!name || !frontImage || !backImage) {
         res.status(400);
@@ -27,7 +27,7 @@ const createVaultCard = asyncHandler(async (req, res) => {
         description,
         frontImage,
         backImage,
-        category: category || 'common',
+        tier: tier || 'common',
         createdBy: req.user._id,
     });
 
@@ -53,7 +53,7 @@ const deleteVaultCard = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const updateVaultCard = asyncHandler(async (req, res) => {
-    const { name, description, frontImage, backImage, category } = req.body;
+    const { name, description, frontImage, backImage, tier } = req.body;
 
     const card = await VaultCard.findById(req.params.id);
 
@@ -62,7 +62,7 @@ const updateVaultCard = asyncHandler(async (req, res) => {
         card.description = description !== undefined ? description : card.description;
         card.frontImage = frontImage || card.frontImage;
         card.backImage = backImage || card.backImage;
-        card.category = category || card.category;
+        card.tier = tier || card.tier;
 
         const updatedCard = await card.save();
         res.json(updatedCard);

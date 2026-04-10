@@ -8,7 +8,7 @@ router.use(protect); // All cart routes require authentication
 router.get('/', getCart);
 router.post('/add', addToCart);
 router.put('/update', updateCartItem);
-router.delete('/item/:productId', removeFromCart);
+router.delete('/item/:assetId', removeFromCart);
 router.delete('/', clearCart);
 
 module.exports = router;

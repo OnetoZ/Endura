@@ -6,12 +6,14 @@ const cartSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
         unique: true,
+        index: true
     },
     items: [{
-        product: {
+        asset: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
+            ref: 'Asset',
             required: true,
+            index: true
         },
         quantity: {
             type: Number,
@@ -20,6 +22,9 @@ const cartSchema = new mongoose.Schema({
             default: 1,
         },
     }],
-}, { timestamps: true });
+}, { 
+    timestamps: true,
+    collection: 'carts' 
+});
 
 module.exports = mongoose.model('Cart', cartSchema);

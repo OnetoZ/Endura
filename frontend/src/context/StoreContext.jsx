@@ -1,12 +1,12 @@
 
 // StoreContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService, cartService, userService, productService } from '../services/api';
+import { authService, cartService, userService, assetService } from '../services/api';
 
 const StoreContext = createContext(undefined);
 
 export const AppProvider = ({ children }) => {
-    const [products, setProducts] = useState([]);
+    const [products, setAssets] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [cart, setCart] = useState(() => {
         const saved = localStorage.getItem('endura_cart');
@@ -22,11 +22,11 @@ export const AppProvider = ({ children }) => {
         const init = async () => {
             try {
                 // Fetch real products from backend
-                const productsData = await productService.getProducts();
+                const productsData = await assetService.getAssets();
                 console.log('📦 [StoreContext] Raw products data:', productsData);
                 const items = Array.isArray(productsData) ? productsData : (productsData?.products || []);
                 console.log('📦 [StoreContext] Resolved products:', items);
-                setProducts(items);
+                setAssets(items);
             } catch (err) {
                 console.error('Failed to load products from backend:', err);
             }
@@ -255,8 +255,8 @@ export const AppProvider = ({ children }) => {
         return false;
     };
 
-    const addProduct = (p) => setProducts(prev => [p, ...prev]);
-    const removeProduct = (id) => setProducts(prev => prev.filter(p => p.id !== id));
+    const addProduct = (p) => setAssets(prev => [p, ...prev]);
+    const removeProduct = (id) => setAssets(prev => prev.filter(p => p.id !== id));
 
     return (
         <StoreContext.Provider value={{

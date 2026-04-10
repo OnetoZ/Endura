@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Asset = require('../models/Asset');
 const asyncHandler = require('../utils/asyncHandler');
 
 /**
@@ -66,10 +66,10 @@ const deleteUser = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const getDashboardStats = asyncHandler(async (req, res) => {
-    const [totalUsers, totalOrders, totalProducts, orders] = await Promise.all([
+    const [totalUsers, totalOrders, totalAssets, orders] = await Promise.all([
         User.countDocuments(),
         Order.countDocuments(),
-        Product.countDocuments({ isActive: true }),
+        Asset.countDocuments({ isActive: true }),
         Order.find({ isPaid: true }).lean(),
     ]);
 
@@ -84,7 +84,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     res.json({
         totalUsers,
         totalOrders,
-        totalProducts,
+        totalAssets,
         totalRevenue,
         recentOrders,
     });

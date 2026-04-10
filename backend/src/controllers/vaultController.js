@@ -3,22 +3,18 @@ const VaultCard = require('../models/VaultCard');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 
-
-
 /**
  * @route   GET /api/vault
  * @access  Private
  */
 const getUserVault = asyncHandler(async (req, res) => {
-    // 1. Get Template Items (VaultItems)
+    // 1. Get User's Collectibles
     const items = await VaultItem.find({ user: req.user._id })
-        .populate('product', 'name images type')
-        .populate('vaultCard', 'name frontImage category')
+        .populate('vaultCard', 'name frontImage backImage tier')
         .lean();
 
     res.json({
-        collectibles: items,
-        protocols: []
+        protocols: items
     });
 });
 
@@ -53,7 +49,7 @@ const redeemVaultItem = asyncHandler(async (req, res) => {
 
 /**
  * @route   POST /api/vault/:id/collect
- * @desc    Collect a vault card, update credit score. Returns existing if already collected.
+ * @desc    Collect a vault card, update credits
  * @access  Private
  */
 const collectVaultCard = asyncHandler(async (req, res) => {
@@ -73,31 +69,34 @@ const collectVaultCard = asyncHandler(async (req, res) => {
     });
 
     if (existingCollection) {
-        // Already collected, just return success and current score to avoid 400 error
+        // Already collected
         return res.json({
             success: true,
-            oldScore: user.creditScore,
-            newScore: user.creditScore,
+            oldScore: user.credits,
+            newScore: user.credits,
             creditDelta: 0,
             alreadyCollected: true,
             vaultItem: existingCollection
         });
     }
 
+    // Increment vaultCard mint count
+    card.totalMinted += 1;
+    await card.save();
+
     // Add to user archive
     const vaultItem = await VaultItem.create({
         user: req.user._id,
         vaultCard: card._id,
-        productName: card.name,
-        productImage: card.frontImage
+        serialNumber: card.totalMinted
     });
 
     // Increase credit score
-    const oldScore = user.creditScore || 0;
-    const creditDelta = card.creditValue || 10;
+    const oldScore = user.credits || 0;
+    const creditDelta = 10; // Base credit value
     const newScore = oldScore + creditDelta;
 
-    user.creditScore = newScore;
+    user.credits = newScore;
     user.creditHistory.push({
         delta: creditDelta,
         reason: `Collected ${card.name}`,
@@ -122,8 +121,7 @@ const collectVaultCard = asyncHandler(async (req, res) => {
 const getAllVaultItems = asyncHandler(async (req, res) => {
     const items = await VaultItem.find({})
         .populate('user', 'username email')
-        .populate('product', 'name')
-        .populate('vaultCard', 'name')
+        .populate('vaultCard', 'name category tier')
         .sort({ createdAt: -1 })
         .lean();
 

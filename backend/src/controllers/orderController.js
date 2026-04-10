@@ -1,5 +1,5 @@
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Asset = require('../models/Asset');
 const Cart = require('../models/Cart');
 const VaultItem = require('../models/VaultItem');
 const asyncHandler = require('../utils/asyncHandler');
@@ -7,14 +7,14 @@ const asyncHandler = require('../utils/asyncHandler');
 // Helper: generate vault items after payment
 const generateVaultItems = async (order) => {
     const vaultPromises = order.items
-        .filter(item => item.product) // only items with digital twin
+        .filter(item => item.asset) // only items with digital twin
         .map(item =>
             VaultItem.create({
                 user: order.user,
                 order: order._id,
-                product: item.product,
-                productName: item.name,
-                productImage: item.image,
+                asset: item.asset,
+                assetName: item.name,
+                assetImage: item.image,
             })
         );
     await Promise.all(vaultPromises);
@@ -36,14 +36,14 @@ const addOrderItems = asyncHandler(async (req, res) => {
 
     // Validate stock for each item
     for (const item of orderItems) {
-        const product = await Product.findById(item.product);
-        if (!product) {
+        const asset = await Asset.findById(item.asset);
+        if (!asset) {
             res.status(404);
-            throw new Error(`Product not found: ${item.product}`);
+            throw new Error(`Asset not found: ${item.asset}`);
         }
-        if (product.stock < item.quantity) {
+        if (asset.stock < item.quantity) {
             res.status(400);
-            throw new Error(`Insufficient stock for: ${product.name}`);
+            throw new Error(`Insufficient stock for: ${asset.name}`);
         }
     }
 
@@ -52,15 +52,15 @@ const addOrderItems = asyncHandler(async (req, res) => {
         const qty = Number(item.quantity);
         if (!qty || qty <= 0) return;
 
-        const product = await Product.findByIdAndUpdate(
-            item.product,
+        const asset = await Asset.findByIdAndUpdate(
+            item.asset,
             { $inc: { stock: -qty, sold: qty } },
             { new: true, runValidators: true }
         );
         
-        if (product) {
+        if (asset) {
             // Edition number = total sold (after this purchase)
-            item.editionNumber = product.sold;
+            item.editionNumber = asset.sold;
         }
     });
 

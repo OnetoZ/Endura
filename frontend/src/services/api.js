@@ -150,54 +150,48 @@ export const authService = {
     },
 };
 
-export const productService = {
-    getProducts: async () => {
-        const response = await api.get('/products');
+export const assetService = {
+    getAssets: async () => {
+        const response = await api.get('/assets');
         return response.data;
     },
-    getProductById: async (id) => {
-        const response = await api.get(`/products/${id}`);
+    getAssetById: async (id) => {
+        const response = await api.get(`/assets/${id}`);
         return response.data;
     },
-    createProduct: async (productData) => {
-        const response = await api.post('/products', productData);
+    createAsset: async (assetData) => {
+        const response = await api.post('/assets', assetData);
         return response.data;
     },
-    updateProduct: async (id, productData) => {
-        const response = await api.put(`/products/${id}`, productData);
+    updateAsset: async (id, assetData) => {
+        const response = await api.put(`/assets/${id}`, assetData);
         return response.data;
     },
-    deleteProduct: async (id) => {
-        const response = await api.delete(`/products/${id}`);
+    deleteAsset: async (id) => {
+        const response = await api.delete(`/assets/${id}`);
         return response.data;
     },
     getDigitalCars: async () => {
-        const response = await api.get('/products?type=digital&category=Digital Car');
+        const response = await api.get('/assets?type=digital&category=Digital Car');
         return response.data;
     },
-    getPhysicalProducts: async () => {
-        const response = await api.get('/products?type=physical');
+    getPhysicalAssets: async () => {
+        const response = await api.get('/assets?type=physical');
+        return response.data;
+    }
+};
+
+export const vaultService = {
+    getUserVault: async () => {
+        const response = await api.get('/vault');
         return response.data;
     },
     getVaultItems: async () => {
         const response = await api.get('/vault/all');
         return response.data;
     },
-
     getVaultCards: async () => {
         const response = await api.get('/vault/cards');
-        return response.data;
-    },
-    createVaultCard: async (cardData) => {
-        const response = await api.post('/vault/cards', cardData);
-        return response.data;
-    },
-    updateVaultCard: async (id, cardData) => {
-        const response = await api.put(`/vault/cards/${id}`, cardData);
-        return response.data;
-    },
-    deleteVaultCard: async (id) => {
-        const response = await api.delete(`/vault/cards/${id}`);
         return response.data;
     },
     collectVaultCard: async (id) => {
@@ -250,12 +244,12 @@ export const cartService = {
         const response = await api.get('/cart');
         return response.data;
     },
-    addToCart: async (productId, quantity) => {
-        const response = await api.post('/cart/add', { productId, quantity });
+    addToCart: async (assetId, quantity) => {
+        const response = await api.post('/cart/add', { assetId, quantity });
         return response.data;
     },
-    updateCart: async (productId, quantity) => {
-        const response = await api.put('/cart/update', { productId, quantity });
+    updateCart: async (assetId, quantity) => {
+        const response = await api.put('/cart/update', { assetId, quantity });
         return response.data;
     },
 };
@@ -292,15 +286,6 @@ export const uploadService = {
     }
 };
 
-export const vaultService = {
-    getUserVault: async () => {
-        const response = await api.get('/vault');
-        return response.data;
-    },
-    redeemCode: async (code) => {
-        // This system has been deprecated in favor of direct Vault Card ownership.
-        throw new Error('Redemption system is no longer active.');
-    }
-};
+
 
 export default api;

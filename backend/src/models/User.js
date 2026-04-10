@@ -9,13 +9,20 @@ const addressSchema = new mongoose.Schema({
     country: { type: String, required: true, default: 'India' },
     phone: { type: String },
     isDefault: { type: Boolean, default: false },
-});
+}, { _id: false });
+
+const creditHistorySchema = new mongoose.Schema({
+    delta: { type: Number, required: true },
+    reason: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
+}, { _id: false });
 
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: [true, 'Username is required'],
         trim: true,
+        index: true
     },
     email: {
         type: String,
@@ -23,11 +30,12 @@ const userSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
+        index: true
     },
     password: {
         type: String,
         required: function () {
-            return this.role !== 'admin'; // Password not required for admin users
+            return this.role !== 'admin' && !this.googleId;
         },
         minlength: [6, 'Password must be at least 6 characters'],
     },
@@ -35,8 +43,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user',
+        index: true
     },
-    // Google OAuth
     googleId: {
         type: String,
         sparse: true,
@@ -50,7 +58,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-    // 2-Factor Authentication
     twoFactorEnabled: {
         type: Boolean,
         default: false,
@@ -62,28 +69,26 @@ const userSchema = new mongoose.Schema({
     },
     twoFactorSecret: {
         type: String,
-        select: false, // Never return in queries
+        select: false,
     },
     twoFactorCode: {
         type: String,
-        select: false, // Never return in queries
+        select: false,
     },
     twoFactorCodeExpires: {
         type: Date,
-        select: false, // Never return in queries
+        select: false,
     },
     isVerified: {
         type: Boolean,
         default: false,
     },
     addresses: [addressSchema],
-    // Credits system
     credits: {
         type: Number,
         default: 0,
         min: 0,
     },
-    // User preferences
     preferences: {
         notifications: {
             email: { type: Boolean, default: true },
@@ -100,7 +105,6 @@ const userSchema = new mongoose.Schema({
             default: 'en',
         },
     },
-    // User activity tracking
     lastLogin: {
         type: Date,
         default: Date.now,
@@ -109,20 +113,18 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    // Profile completion
     profileCompletion: {
         type: Number,
         default: 0,
         min: 0,
         max: 100,
     },
-    // Account status
     status: {
         type: String,
         enum: ['active', 'inactive', 'suspended'],
         default: 'active',
+        index: true
     },
-    // Referral system
     referralCode: {
         type: String,
         unique: true,
@@ -133,7 +135,6 @@ const userSchema = new mongoose.Schema({
         ref: 'User',
         sparse: true,
     },
-    // Wishlist and cart references (for quick access)
     wishlistCount: {
         type: Number,
         default: 0,
@@ -142,7 +143,6 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    // Order statistics
     totalOrders: {
         type: Number,
         default: 0,
@@ -151,32 +151,33 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    // Credit system
     creditScore: {
         type: Number,
         default: 0,
         min: 0,
     },
-    creditHistory: [{
-        delta: Number,
-        reason: String,
-        timestamp: { type: Date, default: Date.now }
-    }],
-}, { timestamps: true });
+    creditHistory: [creditHistorySchema],
+}, { 
+    timestamps: true,
+    collection: 'users'
+});
 
-// Hash password before saving (skip if it's a Google OAuth placeholder or admin without password)
-userSchema.pre('save', async function () {
-    if (!this.isModified('password') || !this.password) return;
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password') || !this.password) return next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err);
+    }
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
-    if (!this.password) return false; // Admin users without passwords
+    if (!this.password) return false;
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Calculate user tier based on credits
 userSchema.methods.getTier = function () {
     if (this.credits >= 2000) return { name: 'Legendary', level: 4 };
     if (this.credits >= 1000) return { name: 'Epic', level: 3 };
@@ -184,7 +185,6 @@ userSchema.methods.getTier = function () {
     return { name: 'Common', level: 1 };
 };
 
-// Calculate profile completion percentage
 userSchema.methods.calculateProfileCompletion = function () {
     let completion = 0;
     const fields = [

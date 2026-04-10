@@ -7,6 +7,6 @@ router.use(protect); // All wishlist routes require authentication
 
 router.get('/', getWishlist);
 router.post('/add', addToWishlist);
-router.delete('/:productId', removeFromWishlist);
+router.delete('/:assetId', removeFromWishlist);
 
 module.exports = router;

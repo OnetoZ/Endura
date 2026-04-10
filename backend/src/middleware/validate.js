@@ -35,9 +35,9 @@ const adminCheckValidation = [
     validate
 ];
 
-// Product Validations
-const productValidation = [
-    body('name').notEmpty().withMessage('Product name is required'),
+// Asset Validations
+const assetValidation = [
+    body('name').notEmpty().withMessage('Asset name is required'),
     body('price').isNumeric().withMessage('Price must be a number'),
     body('description').notEmpty().withMessage('Description is required'),
     body('type').isIn(['Common', 'Rare', 'Epic', 'Legendary']).withMessage('Invalid type'),
@@ -56,6 +56,6 @@ module.exports = {
     registerValidation,
     loginValidation,
     adminCheckValidation,
-    productValidation,
+    assetValidation,
     orderValidation
 };

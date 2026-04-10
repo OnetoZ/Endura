@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { productService, userService, uploadService, getImageUrl, orderService } from '../services/api';
+import { assetService, userService, uploadService, getImageUrl, orderService, vaultService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useStore } from '../context/StoreContext';
 
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isAdding, setIsAdding] = useState(false);
     const [isSavingProduct, setIsSavingProduct] = useState(false);
-    const [products, setProducts] = useState([]);
+    const [products, setAssets] = useState([]);
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
     const { currentUser, setCurrentUser } = useStore();
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
     const [cardSaving, setCardSaving] = useState(false);
     const [editingCardId, setEditingCardId] = useState(null);
     const [newCard, setNewCard] = useState({
-        name: '', description: '', frontImage: '', backImage: '', category: 'common'
+        name: '', description: '', frontImage: '', backImage: '', tier: 'common'
     });
 
     // ── Order Details ──────────────────────────────────────────────────────
@@ -86,14 +86,14 @@ const AdminDashboard = () => {
         const loadData = async () => {
             try {
                 const [productsData, ordersData, usersData, cardsData, vaultData] = await Promise.all([
-                    productService.getProducts().catch(e => ({ products: [] })),
+                    assetService.getAssets().catch(e => ({ products: [] })),
                     orderService.getAllOrders().catch(e => []),
                     userService.getUsers().catch(e => []),
-                    productService.getVaultCards().catch(e => []),
-                    productService.getVaultItems().catch(e => [])
+                    vaultService.getVaultCards().catch(e => []),
+                    vaultService.getVaultItems().catch(e => [])
                 ]);
 
-                setProducts(Array.isArray(productsData) ? productsData : (productsData.products || []));
+                setAssets(Array.isArray(productsData) ? productsData : (productsData.products || []));
                 setOrders(ordersData || []);
                 setUsers(usersData || []);
                 setVaultCards(cardsData || []);
@@ -282,16 +282,16 @@ const AdminDashboard = () => {
             };
 
             if (editingProductId) {
-                const updated = await productService.updateProduct(editingProductId, productData);
-                setProducts(prev => prev.map(p => {
+                const updated = await assetService.updateAsset(editingProductId, productData);
+                setAssets(prev => prev.map(p => {
                     const idToMatch = p._id || p.id;
                     const resultId = updated._id || updated.id || updated.product?._id || updated.product?.id;
                     return idToMatch === editingProductId ? (updated.product || updated) : p;
                 }));
                 toast.success('Product updated successfully!');
             } else {
-                const created = await productService.createProduct(productData);
-                setProducts(prev => [created.product || created, ...prev]);
+                const created = await assetService.createAsset(productData);
+                setAssets(prev => [created.product || created, ...prev]);
                 toast.success('Product added successfully!');
             }
 
@@ -341,15 +341,15 @@ const AdminDashboard = () => {
         setCardSaving(true);
         try {
             if (editingCardId) {
-                const updated = await productService.updateVaultCard(editingCardId, newCard);
+                const updated = await vaultService.updateVaultCard(editingCardId, newCard);
                 setVaultCards(prev => prev.map(c => (c._id === editingCardId ? updated : c)));
                 toast.success('Card updated!');
             } else {
-                const created = await productService.createVaultCard(newCard);
+                const created = await vaultService.createVaultCard(newCard);
                 setVaultCards(prev => [created, ...prev]);
                 toast.success('Card created!');
             }
-            setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
+            setNewCard({ name: '', description: '', frontImage: '', backImage: '', tier: 'common' });
             setEditingCardId(null);
             setIsAddingCard(false);
         } catch (error) {
@@ -362,7 +362,7 @@ const AdminDashboard = () => {
     const handleDeleteCard = async (id) => {
         if (!window.confirm('Confirm deletion of this archived asset?')) return;
         try {
-            await productService.deleteVaultCard(id);
+            await vaultService.deleteVaultCard(id);
             setVaultCards(prev => prev.filter(c => c._id !== id));
             toast.success('Asset purged from archive');
         } catch (error) {
@@ -376,7 +376,7 @@ const AdminDashboard = () => {
             description: card.description || '',
             frontImage: card.frontImage,
             backImage: card.backImage,
-            category: card.category || 'common'
+            tier: card.tier || 'common'
         });
         setEditingCardId(card._id);
         setIsAddingCard(true);
@@ -385,8 +385,8 @@ const AdminDashboard = () => {
     const handleDeleteProduct = async (id) => {
         if (!window.confirm('Are you certain you wish to purge this product?')) return;
         try {
-            await productService.deleteProduct(id);
-            setProducts(prev => prev.filter(p => (p._id || p.id) !== id));
+            await assetService.deleteAsset(id);
+            setAssets(prev => prev.filter(p => (p._id || p.id) !== id));
             toast.success('Product purged from database.');
         } catch (error) {
             console.error('Failed to delete product:', error);
@@ -1068,8 +1068,8 @@ const AdminDashboard = () => {
                                                         <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Asset Class</label>
                                                         <select
                                                             className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
-                                                            value={newCard.category}
-                                                            onChange={e => setNewCard({...newCard, category: e.target.value})}
+                                                            value={newCard.tier}
+                                                            onChange={e => setNewCard({...newCard, tier: e.target.value})}
                                                         >
                                                             <option value="common">Common</option>
                                                             <option value="rare">Rare</option>
@@ -1144,7 +1144,7 @@ const AdminDashboard = () => {
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
                                                 <div className="absolute top-4 right-4">
                                                     <span className={`px-2 py-1 text-[8px] font-black uppercase tracking-widest border border-white/20 bg-black/40 backdrop-blur-md text-white`}>
-                                                        {card.category}
+                                                        {card.tier || 'COMMON'}
                                                     </span>
                                                 </div>
                                                 <div className="absolute bottom-4 left-4 right-4">

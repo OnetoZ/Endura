@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productService, userService, uploadService } from '../services/api';
+import { assetService, userService, uploadService } from '../services/api';
 import { toast } from 'react-hot-toast';
 
 const CATEGORY_STYLES = {
@@ -28,7 +28,7 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isAdding, setIsAdding] = useState(false);
     const [isSavingProduct, setIsSavingProduct] = useState(false);
-    const [products, setProducts] = useState([]);
+    const [products, setAssets] = useState([]);
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
@@ -54,18 +54,18 @@ const AdminDashboard = () => {
         const fetchData = async () => {
             try {
                 const [productsData, ordersData, usersData, userData, cardsData] = await Promise.all([
-                    productService.getProducts(),
+                    assetService.getAssets(),
                     (await import('../services/api')).orderService.getAllOrders(),
                     userService.getUsers(),
                     userService.getCurrentUser(),
-                    productService.getVaultCards(),
+                    assetService.getVaultCards(),
                 ]);
-                setProducts(productsData.products || []);
+                setAssets(productsData.products || []);
                 setOrders(ordersData || []);
                 setUsers(usersData || []);
                 setCurrentUser(userData || null);
                 setVaultCards(cardsData || []);
-                const vaultData = await productService.getVaultItems();
+                const vaultData = await assetService.getVaultItems();
                 setVaultItems(vaultData || []);
             } catch (error) {
                 console.error('Failed to fetch admin data:', error);
@@ -193,16 +193,16 @@ const AdminDashboard = () => {
             };
 
             if (editingProductId) {
-                const updated = await productService.updateProduct(editingProductId, productData);
-                setProducts(prev => prev.map(p => {
+                const updated = await assetService.updateAsset(editingProductId, productData);
+                setAssets(prev => prev.map(p => {
                     const idToMatch = p._id || p.id;
                     const resultId = updated._id || updated.id || updated.product?._id || updated.product?.id;
                     return idToMatch === editingProductId ? (updated.product || updated) : p;
                 }));
                 toast.success('Product updated successfully!');
             } else {
-                const created = await productService.createProduct(productData);
-                setProducts(prev => [created.product || created, ...prev]);
+                const created = await assetService.createAsset(productData);
+                setAssets(prev => [created.product || created, ...prev]);
                 toast.success('Product added successfully!');
             }
 
@@ -240,8 +240,8 @@ const AdminDashboard = () => {
     const handleDeleteProduct = async (id) => {
         if (!window.confirm('Are you certain you wish to purge this product?')) return;
         try {
-            await productService.deleteProduct(id);
-            setProducts(prev => prev.filter(p => (p._id || p.id) !== id));
+            await assetService.deleteAsset(id);
+            setAssets(prev => prev.filter(p => (p._id || p.id) !== id));
             toast.success('Product purged from database.');
         } catch (error) {
             console.error('Failed to delete product:', error);
@@ -774,11 +774,11 @@ const AdminDashboard = () => {
                                             setCardSaving(true);
                                             try {
                                                 if (editingCardId) {
-                                                    const updated = await productService.updateVaultCard(editingCardId, newCard);
+                                                    const updated = await assetService.updateVaultCard(editingCardId, newCard);
                                                     setVaultCards(prev => prev.map(c => c._id === editingCardId ? updated : c));
                                                     toast.success('Card updated successfully!');
                                                 } else {
-                                                    const created = await productService.createVaultCard(newCard);
+                                                    const created = await assetService.createVaultCard(newCard);
                                                     setVaultCards(prev => [created, ...prev]);
                                                     toast.success('Card added to vault!');
                                                 }
@@ -867,7 +867,7 @@ const AdminDashboard = () => {
                                                             onClick={async () => {
                                                                 if (!window.confirm(`Delete "${card.name}"?`)) return;
                                                                 try {
-                                                                    await productService.deleteVaultCard(card._id);
+                                                                    await assetService.deleteVaultCard(card._id);
                                                                     setVaultCards(prev => prev.filter(c => c._id !== card._id));
                                                                     toast.success('Card deleted');
                                                                 } catch {
