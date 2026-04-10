@@ -1,7 +1,7 @@
 
 // StoreContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService, cartService, userService } from '../services/api';
+import { authService, cartService, userService, productService } from '../services/api';
 
 const StoreContext = createContext(undefined);
 
@@ -22,11 +22,11 @@ export const AppProvider = ({ children }) => {
         const init = async () => {
             try {
                 // Fetch real products from backend
-                const { productService } = await import('../services/api');
                 const productsData = await productService.getProducts();
-                if (productsData && productsData.products) {
-                    setProducts(productsData.products);
-                }
+                console.log('📦 [StoreContext] Raw products data:', productsData);
+                const items = Array.isArray(productsData) ? productsData : (productsData?.products || []);
+                console.log('📦 [StoreContext] Resolved products:', items);
+                setProducts(items);
             } catch (err) {
                 console.error('Failed to load products from backend:', err);
             }
@@ -260,7 +260,7 @@ export const AppProvider = ({ children }) => {
 
     return (
         <StoreContext.Provider value={{
-            products, currentUser, cart, orders, vaultItems, users,
+            products, currentUser, cart, orders, vaultItems, users, isLoading,
             login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             placeRazorpayOrder, verifyRazorpayPayment,
             addProduct, removeProduct, unlockVaultItem

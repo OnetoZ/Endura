@@ -6,7 +6,7 @@ import { useState } from 'react';
 import SEO from '../components/SEO';
 
 const Collections = () => {
-    const { products } = useStore();
+    const { products, isLoading } = useStore();
     const [showIntro, setShowIntro] = useState(() => {
         return !sessionStorage.getItem('collections_intro_played');
     });
@@ -78,9 +78,20 @@ const Collections = () => {
                     animate="visible"
                     className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-12 lg:gap-16 [perspective:2000px]"
                 >
-                    {physicalProducts.map((product) => (
-                        <PhysicalProductCard key={product._id || product.id} product={product} />
-                    ))}
+                    {isLoading ? (
+                        <div className="col-span-full py-24 text-center">
+                            <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-500 text-[10px] uppercase tracking-[0.5em]">Syncing Archives...</p>
+                        </div>
+                    ) : physicalProducts.length > 0 ? (
+                        physicalProducts.map((product) => (
+                            <PhysicalProductCard key={product._id || product.id} product={product} />
+                        ))
+                    ) : (
+                        <div className="col-span-full py-24 text-center border border-white/5 bg-white/[0.02]">
+                            <p className="text-gray-500 text-[10px] uppercase tracking-[0.5em]">No physical assets detected in this sector.</p>
+                        </div>
+                    )}
                 </motion.div>
 
                 {/* Footer Info */}

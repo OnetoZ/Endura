@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 import { useStore } from '../context/StoreContext';
-import { productService, getImageUrl } from '../services/api';
+import { productService, getImageUrl, vaultService } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
 import CollectionHero from '../components/collections/CollectionHero';
 import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
@@ -421,14 +421,12 @@ const Vault = () => {
 
     const chunkedItems = useMemo(() => {
         const rows = [];
-        const filtered = vaultItems.filter(item => {
-            return unlockedIds.includes(item.id);
-        });
+        const filtered = vaultItems; // Show all items, ignore unlocked filter as per user request
         for (let i = 0; i < filtered.length; i += 3) {
             rows.push(filtered.slice(i, i + 3));
         }
         return rows;
-    }, [vaultItems, collectionFilter, unlockedIds]);
+    }, [vaultItems]);
 
     /* 
     useEffect(() => {

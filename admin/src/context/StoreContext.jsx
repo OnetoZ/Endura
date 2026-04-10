@@ -24,9 +24,8 @@ export const AppProvider = ({ children }) => {
                 // Fetch real products from backend
                 const { productService } = await import('../services/api');
                 const productsData = await productService.getProducts();
-                if (productsData && productsData.products) {
-                    setProducts(productsData.products);
-                }
+                const items = Array.isArray(productsData) ? productsData : (productsData?.products || []);
+                setProducts(items);
             } catch (err) {
                 console.error('Failed to load products from backend:', err);
             }
