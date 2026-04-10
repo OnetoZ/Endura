@@ -106,6 +106,7 @@ app.use('/api/vault', require('./routes/vaultRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 
+
 // Serve uploads folder statically
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
