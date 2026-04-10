@@ -12,7 +12,7 @@ const VaultCardSchema = new mongoose.Schema({
     category: String,
     serialNumber: Number,
     batchId: Number
-}, { timestamps: true });
+}, { collection: 'vaultcards' });
 
 const VaultCard = mongoose.models.VaultCard || mongoose.model('VaultCard', VaultCardSchema);
 
@@ -23,25 +23,31 @@ async function seedVaultCards() {
 
         const cards = [
             {
-                name: "NEO_BOTANIC_09",
-                description: "BIO_SYNTHETIC ARCHIVE // LEVEL_09",
-                frontImage: "/tarot-card-13.png",
-                backImage: "/tarot-card-13.png",
+                name: "NEO_BOTANIC_BLACK",
+                description: "BIO_SYNTHETIC ARCHIVE // GENERATION_01",
+                frontImage: "/uploads/BLACK TSHIRT DC.png",
+                backImage: "/uploads/BLACK TSHIRT DC.png",
                 category: "Legendary",
                 serialNumber: 1,
+                batchId: 1
+            },
+            {
+                name: "NEO_BOTANIC_BLUE",
+                description: "BIO_SYNTHETIC ARCHIVE // GENERATION_01",
+                frontImage: "/uploads/BLUE TSHIRT DC.png",
+                backImage: "/uploads/BLUE TSHIRT DC.png",
+                category: "Epic",
+                serialNumber: 2,
                 batchId: 1
             }
         ];
 
+        await VaultCard.deleteMany({});
         for (const card of cards) {
-            await VaultCard.findOneAndUpdate(
-                { name: card.name },
-                card,
-                { upsert: true, new: true }
-            );
+            await VaultCard.create(card);
         }
 
-        console.log('✅ Vault Cards seeded successfully');
+        console.log('✅ Vault Cards seeded successfully with local assets');
         process.exit(0);
     } catch (error) {
         console.error('❌ Error seeding vault cards:', error);
