@@ -120,6 +120,7 @@ const createOrder = asyncHandler(async (req, res) => {
             image: asset.images && asset.images.length > 0 ? asset.images[0] : '',
             quantity: item.quantity,
             price: asset.price,
+            size: item.selectedSize || item.size || '',
             editionNumber: asset.sold, // We will increment stock and sold later on verify
         });
     }
@@ -397,8 +398,46 @@ const webhook = asyncHandler(async (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
+/**
+ * @route   GET /api/payment/health
+ * @access  Public
+ * Purpose: Diagnostic endpoint to verify Razorpay and Session configuration on Render.
+ */
+const getPaymentHealth = asyncHandler(async (req, res) => {
+    const health = {
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID ? 'present' : 'missing',
+        razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET ? 'present' : 'missing',
+        razorpayInstance: razorpayInstance ? 'initialized' : 'failed',
+        sessionCookieConfig: {
+            secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        },
+        corsOrigins: process.env.CORS_ORIGIN || '*',
+        testOrder: 'pending'
+    };
+
+    // Attempt a test order creation with Razorpay
+    if (razorpayInstance) {
+        try {
+            const testOrder = await razorpayInstance.orders.create({
+                amount: 100, // 1 INR
+                currency: 'INR',
+                receipt: `health_check_${Date.now()}`
+            });
+            health.testOrder = testOrder.id ? 'pass' : 'fail';
+        } catch (err) {
+            health.testOrder = `fail: ${err.message}`;
+        }
+    } else {
+        health.testOrder = 'not_attempted: instance_missing';
+    }
+
+    res.status(200).json(health);
+});
+
 module.exports = {
     createOrder,
     verifyPayment,
     webhook,
+    getPaymentHealth
 };

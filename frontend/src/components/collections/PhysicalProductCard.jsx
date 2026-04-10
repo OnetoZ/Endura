@@ -119,11 +119,21 @@ const PhysicalProductCard = ({ product }) => {
                             key={currentImageIndex}
                             src={getImageUrl(images[currentImageIndex])}
                             alt={product.name}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={0.6}
+                            onDragEnd={(e, { offset, velocity }) => {
+                                if (offset.x > 50 || velocity.x > 500) {
+                                    setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
+                                } else if (offset.x < -50 || velocity.x < -500) {
+                                    setCurrentImageIndex(prev => (prev + 1) % images.length);
+                                }
+                            }}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="w-full h-full object-cover transition-all duration-1000 group-hover:contrast-[1.1]"
+                            className="w-full h-full object-cover transition-all duration-1000 group-hover:contrast-[1.1] touch-none cursor-grab active:cursor-grabbing"
                         />
                     </AnimatePresence>
                     {/* Subtle Overlay Glow */}
