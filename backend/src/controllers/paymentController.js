@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+// const Product = require('../models/Product');
 const Payment = require('../models/Payment');
 const Cart = require('../models/Cart');
 const VaultItem = require('../models/VaultItem');
