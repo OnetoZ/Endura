@@ -9,17 +9,23 @@ const asyncHandler = require('../utils/asyncHandler');
 
 // Helper: generate vault items after payment
 const generateVaultItems = async (order) => {
+    console.log(`[payment/generateVaultItems] Processing ${order.items.length} items for order ${order._id}`);
     const vaultPromises = order.items
-        .filter(item => item.asset) // only items with digital twin
-        .map(item =>
-            VaultItem.create({
-                user: order.user,
-                order: order._id,
-                asset: item.asset,
-                assetName: item.name,
-                assetImage: item.image,
-            })
-        );
+        .filter(item => item.asset) // only items with asset ID
+        .map(async (item) => {
+            const asset = await Asset.findById(item.asset);
+            if (asset && asset.digitalTwinImage) {
+                console.log(`[payment/generateVaultItems] Creating vault item for ${asset.name}`);
+                return VaultItem.create({
+                    user: order.user,
+                    order: order._id,
+                    asset: item.asset,
+                    assetName: asset.name,
+                    assetImage: asset.digitalTwinImage || item.image,
+                });
+            }
+            return null;
+        });
     await Promise.all(vaultPromises);
 };
 
@@ -243,10 +249,16 @@ const verifyPayment = asyncHandler(async (req, res) => {
         throw new Error('Order not found');
     }
 
-    // Generate Signature
+    const secret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+    if (!secret) {
+        console.error('[payment/verify] CRITICAL: RAZORPAY_KEY_SECRET is missing or empty');
+        res.status(500);
+        throw new Error('Server configuration error: payment secret missing');
+    }
+
     const body = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .createHmac('sha256', secret)
         .update(body.toString())
         .digest('hex');
 
@@ -337,10 +349,12 @@ const verifyPayment = asyncHandler(async (req, res) => {
             dbOrderId: db_order_id || null,
             razorpayOrderId: razorpay_order_id,
             razorpayPaymentId: razorpay_payment_id,
+            derived: expectedSignature.slice(0, 5) + '...',
+            received: razorpay_signature.slice(0, 5) + '...',
         });
 
         res.status(400);
-        throw new Error('Invalid payment signature');
+        throw new Error('Invalid payment signature. Verification failed.');
     }
 });
 
