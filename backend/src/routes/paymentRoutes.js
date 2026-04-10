@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createOrder, verifyPayment, webhook, getPaymentHealth } = require('../controllers/paymentController');
+const { createOrder, verifyPayment, webhook } = require('../controllers/paymentController');
 const { protect } = require('../middleware/auth');
 
 // Note: webhook should be publicly accessible since razorpay relies on it, 
@@ -8,6 +8,5 @@ const { protect } = require('../middleware/auth');
 router.post('/create-order', protect, createOrder);
 router.post('/verify', protect, verifyPayment);
 router.post('/webhook', webhook);
-router.get('/health', getPaymentHealth);
 
 module.exports = router;
