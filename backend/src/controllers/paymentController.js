@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Asset = require('../models/Asset');
 const Payment = require('../models/Payment');
 const Cart = require('../models/Cart');
 const VaultItem = require('../models/VaultItem');
@@ -10,14 +10,14 @@ const asyncHandler = require('../utils/asyncHandler');
 // Helper: generate vault items after payment
 const generateVaultItems = async (order) => {
     const vaultPromises = order.items
-        .filter(item => item.product) // only items with digital twin
+        .filter(item => item.asset) // only items with digital twin
         .map(item =>
             VaultItem.create({
                 user: order.user,
                 order: order._id,
-                product: item.product,
-                productName: item.name,
-                productImage: item.image,
+                asset: item.asset,
+                assetName: item.name,
+                assetImage: item.image,
             })
         );
     await Promise.all(vaultPromises);
@@ -47,24 +47,25 @@ const createOrder = asyncHandler(async (req, res) => {
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
         console.error('[payment/create-order] Rejected: no order items provided', {
-            userId: req.user?._id?.toString?.() || null,
+            userId: req.user._id.toString(),
             bodyKeys,
         });
         res.status(400);
-        throw new Error('No order items provided');
+        throw new Error('Your cart is empty or no order items were provided.');
     }
 
     const invalidItemIndex = orderItems.findIndex(
-        (item) => !item || !item.product || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0
+        (item) => !item || !item.asset || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0
     );
     if (invalidItemIndex !== -1) {
+        const invalidItem = orderItems[invalidItemIndex];
         console.error('[payment/create-order] Rejected: invalid order item payload', {
-            userId: req.user?._id?.toString?.() || null,
+            userId: req.user._id.toString(),
             invalidItemIndex,
-            invalidItem: orderItems[invalidItemIndex],
+            invalidItem,
         });
         res.status(400);
-        throw new Error(`Invalid order item at index ${invalidItemIndex}. Each item must include product and quantity > 0`);
+        throw new Error(`Invalid item at index ${invalidItemIndex}. Make sure all items have a valid ID and quantity > 0.`);
     }
 
     const requiredAddressFields = ['fullName', 'address', 'city', 'postalCode', 'country'];
@@ -75,18 +76,18 @@ const createOrder = asyncHandler(async (req, res) => {
 
     if (missingAddressFields.length > 0) {
         console.error('[payment/create-order] Rejected: missing required shipping address fields', {
-            userId: req.user?._id?.toString?.() || null,
+            userId: req.user._id.toString(),
             missingAddressFields,
-            receivedShippingAddress: shippingAddress || null,
+            receivedShippingAddress: shippingAddress || 'MISSING',
         });
         res.status(400);
-        throw new Error(`Missing required shipping address fields: ${missingAddressFields.join(', ')}`);
+        throw new Error(`Please provide all shipping details: ${missingAddressFields.join(', ')}`);
     }
 
     if (!razorpayInstance) {
         console.error('[payment/create-order] Razorpay is not configured');
         res.status(500);
-        throw new Error('Razorpay is not configured');
+        throw new Error('Server Configuration Error: Razorpay is not initialized. Please check backend environment variables.');
     }
 
     let calculatedTotal = 0;
@@ -94,40 +95,54 @@ const createOrder = asyncHandler(async (req, res) => {
 
     // Validate cart data & calculate total
     for (const item of orderItems) {
-        const product = await Product.findById(item.product);
-        if (!product) {
-            console.error('[payment/create-order] Rejected: product not found', {
-                productId: item.product,
+        const asset = await Asset.findById(item.asset);
+        if (!asset) {
+            console.error('[payment/create-order] Rejected: asset not found', {
+                assetId: item.asset,
+                userId: req.user._id.toString()
             });
             res.status(404);
-            throw new Error(`Product not found: ${item.product}`);
+            throw new Error(`Product not found: ${item.asset}. It might have been removed.`);
         }
-        if (product.stock < item.quantity) {
+        if (asset.stock < item.quantity) {
             console.error('[payment/create-order] Rejected: insufficient stock', {
-                productId: item.product,
-                productName: product.name,
+                assetId: item.asset,
+                assetName: asset.name,
                 requestedQuantity: item.quantity,
-                availableStock: product.stock,
+                availableStock: asset.stock,
             });
             res.status(400);
-            throw new Error(`Insufficient stock for: ${product.name}`);
+            throw new Error(`Insufficient stock for "${asset.name}". Available: ${asset.stock}`);
         }
-        calculatedTotal += product.price * item.quantity;
+        calculatedTotal += asset.price * item.quantity;
         
         itemsForDB.push({
-            product: product._id,
-            name: product.name,
-            image: product.images && product.images.length > 0 ? product.images[0] : '',
+            asset: asset._id,
+            name: asset.name,
+            image: asset.images && asset.images.length > 0 ? asset.images[0] : '',
             quantity: item.quantity,
-            price: product.price,
-            editionNumber: product.sold, // We will increment stock and sold later on verify
+            price: asset.price,
+            size: item.selectedSize || item.size || '',
+            editionNumber: asset.sold, 
         });
+    }
+
+    if (calculatedTotal <= 0) {
+        console.error('[payment/create-order] Rejected: total amount is 0 or less', { calculatedTotal });
+        res.status(400);
+        throw new Error('Total order amount must be greater than zero.');
     }
 
     // Razorpay amount is in paise
     const amountInPaise = Math.round(calculatedTotal * 100);
 
-    // Limit receipt to 40 characters (rcpt_ + Date.now() + 6 chars of user ID is ~25 chars)
+    if (amountInPaise < 100) {
+        console.error('[payment/create-order] Rejected: amount too small for Razorpay', { amountInPaise });
+        res.status(400);
+        throw new Error('The minimum transaction amount is ₹1.00 (100 paise).');
+    }
+
+    // Limit receipt to 40 characters
     const receiptId = `rcpt_${Date.now()}_${req.user._id.toString().slice(-6)}`;
 
     const options = {
@@ -136,22 +151,30 @@ const createOrder = asyncHandler(async (req, res) => {
         receipt: receiptId.slice(0, 40),
     };
 
+    console.log('[payment/create-order] STEP 3: Requesting Razorpay order', options);
+
     let razorpayOrder;
     try {
         razorpayOrder = await razorpayInstance.orders.create(options);
     } catch (razorpayError) {
         console.error('[payment/create-order] Razorpay creation failed', {
             error: razorpayError,
-            options
+            options,
+            userId: req.user._id.toString()
         });
-        res.status(razorpayError.statusCode || 400);
-        throw new Error(razorpayError.error?.description || razorpayError.message || 'Failed to create Razorpay order');
+        
+        // Detailed Razorpay error reporting
+        const statusCode = razorpayError.statusCode || 400;
+        const descripton = razorpayError.error?.description || razorpayError.message || 'Razorpay Gateway Error';
+        
+        res.status(statusCode);
+        throw new Error(`Payment Gateway Error: ${descripton}`);
     }
 
-    if (!razorpayOrder) {
+    if (!razorpayOrder || !razorpayOrder.id) {
         console.error('[payment/create-order] Razorpay order creation failed with empty response');
         res.status(500);
-        throw new Error('Failed to create Razorpay order');
+        throw new Error('Failed to create Razorpay order. The gateway returned an empty response.');
     }
 
     // Save order in DB with 'pending'
@@ -181,7 +204,7 @@ const createOrder = asyncHandler(async (req, res) => {
         db_order_id: order._id,
     });
 
-    console.log('[payment/create-order] Order created successfully', {
+    console.log('[payment/create-order] STEP 4: Order created successfully in DB', {
         userId: req.user?._id?.toString?.() || null,
         dbOrderId: order._id.toString(),
         razorpayOrderId: razorpayOrder.id,
@@ -227,12 +250,22 @@ const verifyPayment = asyncHandler(async (req, res) => {
         .update(body.toString())
         .digest('hex');
 
-    console.log('[payment/verify] Generated signature for comparison', {
+    console.log('[payment/verify] STEP 2: Generated signature for comparison', {
         userId,
         dbOrderId: db_order_id || null,
     });
 
     if (expectedSignature === razorpay_signature) {
+        // Idempotency check: only reduce stock if not already marks as paid
+        if (order.paymentStatus === 'paid') {
+            console.log('[payment/verify] Order already marked as paid, skipping stock update');
+            return res.status(200).json({
+                success: true,
+                message: 'Payment already verified',
+                dbOrderId: order._id,
+            });
+        }
+
         // Valid payment
         order.paymentStatus = 'paid';
         order.isPaid = true;
@@ -241,6 +274,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
         order.razorpayPaymentId = razorpay_payment_id;
 
         await order.save();
+
+        console.log('[payment/verify] Order status updated to PAID, starting stock reduction');
 
         // Create Payment record
         await Payment.create({
@@ -253,12 +288,26 @@ const verifyPayment = asyncHandler(async (req, res) => {
         });
 
         // Decrement stock and increment sold count
-        for (const item of order.items) {
-            await Product.findByIdAndUpdate(
-                item.product,
-                { $inc: { stock: -item.quantity, sold: item.quantity } }
+        const stockPromises = order.items.map(async (item) => {
+            const qty = Number(item.quantity);
+            if (!qty || qty <= 0) return;
+            
+            console.log(`[payment/verify] Reducing stock for asset ${item.asset} by ${qty}`);
+            
+            const updatedAsset = await Asset.findByIdAndUpdate(
+                item.asset,
+                { $inc: { stock: -qty, sold: qty } },
+                { new: true, runValidators: true }
             );
-        }
+
+            if (!updatedAsset) {
+                console.error(`[payment/verify] FAILED to find/update asset ${item.asset}`);
+            } else {
+                console.log(`[payment/verify] Asset ${item.asset} stock updated. New stock: ${updatedAsset.stock}`);
+            }
+        });
+        
+        await Promise.all(stockPromises);
 
         // Clear the user's cart
         await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
@@ -330,6 +379,8 @@ const webhook = asyncHandler(async (req, res) => {
             order.razorpayPaymentId = razorpayPaymentId;
             await order.save();
             
+            console.log('[payment/webhook] Event payment.captured: status updated to PAID, starting stock reduction');
+
             await Payment.create({
                 orderId: order._id,
                 razorpayOrderId,
@@ -339,12 +390,18 @@ const webhook = asyncHandler(async (req, res) => {
                 status: 'captured',
             });
 
-            for (const item of order.items) {
-                await Product.findByIdAndUpdate(
-                    item.product,
-                    { $inc: { stock: -item.quantity, sold: item.quantity } }
+            // Decrement stock and increment sold count
+            const stockPromises = order.items.map(async (item) => {
+                const qty = Number(item.quantity);
+                if (!qty || qty <= 0) return;
+                
+                await Asset.findByIdAndUpdate(
+                    item.asset,
+                    { $inc: { stock: -qty, sold: qty } },
+                    { new: true, runValidators: true }
                 );
-            }
+            });
+            await Promise.all(stockPromises);
 
             await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
             await generateVaultItems(order);
@@ -363,8 +420,46 @@ const webhook = asyncHandler(async (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
+/**
+ * @route   GET /api/payment/health
+ * @access  Public
+ * Purpose: Diagnostic endpoint to verify Razorpay and Session configuration on Render.
+ */
+const getPaymentHealth = asyncHandler(async (req, res) => {
+    const health = {
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID ? 'present' : 'missing',
+        razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET ? 'present' : 'missing',
+        razorpayInstance: razorpayInstance ? 'initialized' : 'failed',
+        sessionCookieConfig: {
+            secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        },
+        corsOrigins: process.env.CORS_ORIGIN || '*',
+        testOrder: 'pending'
+    };
+
+    // Attempt a test order creation with Razorpay
+    if (razorpayInstance) {
+        try {
+            const testOrder = await razorpayInstance.orders.create({
+                amount: 100, // 1 INR
+                currency: 'INR',
+                receipt: `health_check_${Date.now()}`
+            });
+            health.testOrder = testOrder.id ? 'pass' : 'fail';
+        } catch (err) {
+            health.testOrder = `fail: ${err.message}`;
+        }
+    } else {
+        health.testOrder = 'not_attempted: instance_missing';
+    }
+
+    res.status(200).json(health);
+});
+
 module.exports = {
     createOrder,
     verifyPayment,
     webhook,
+    getPaymentHealth
 };
