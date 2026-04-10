@@ -1,12 +1,12 @@
 
 // StoreContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService, cartService, userService } from '../services/api';
+import { authService, cartService, userService, assetService } from '../services/api';
 
 const StoreContext = createContext(undefined);
 
 export const AppProvider = ({ children }) => {
-    const [products, setProducts] = useState([]);
+    const [products, setAssets] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [cart, setCart] = useState(() => {
         const saved = localStorage.getItem('endura_cart');
@@ -22,11 +22,11 @@ export const AppProvider = ({ children }) => {
         const init = async () => {
             try {
                 // Fetch real products from backend
-                const { productService } = await import('../services/api');
-                const productsData = await productService.getProducts();
-                if (productsData && productsData.products) {
-                    setProducts(productsData.products);
-                }
+                const productsData = await assetService.getAssets();
+                console.log('📦 [StoreContext] Raw products data:', productsData);
+                const items = Array.isArray(productsData) ? productsData : (productsData?.products || []);
+                console.log('📦 [StoreContext] Resolved products:', items);
+                setAssets(items);
             } catch (err) {
                 console.error('Failed to load products from backend:', err);
             }
@@ -82,16 +82,18 @@ export const AppProvider = ({ children }) => {
             const { getImageUrl } = await import('../services/api');
             const data = await cartService.getCart();
             // Map backend structure (product object) to frontend expected flat structure
-            const mappedItems = (data.items || []).map(item => ({
-                id: item.product._id || item.product.id,
-                _id: item.product._id || item.product.id,
-                name: item.product.name,
-                price: item.product.price,
-                // Backend uses 'images' array. [0] is the front image.
-                image: getImageUrl(item.product.images?.[0] || item.product.frontImage || item.product.image),
-                category: item.product.category,
-                quantity: item.quantity
-            }));
+            const mappedItems = (data.items || [])
+                .filter(item => item.product && (item.product.name || item.product._id)) // Protect against ghost items
+                .map(item => ({
+                    id: item.product._id || item.product.id,
+                    _id: item.product._id || item.product.id,
+                    name: item.product.name,
+                    price: item.product.price,
+                    // Backend uses 'images' array. [0] is the front image.
+                    image: getImageUrl(item.product.images?.[0] || item.product.frontImage || item.product.image),
+                    category: item.product.category,
+                    quantity: item.quantity
+                }));
             setCart(mappedItems);
             localStorage.setItem('endura_cart', JSON.stringify(mappedItems));
         } catch (error) {
@@ -134,22 +136,29 @@ export const AppProvider = ({ children }) => {
         localStorage.removeItem('userInfo');
     };
 
-    const addToCart = async (product) => {
+    const addToCart = async (product, qty = 1, size = null) => {
+        // Guard against invalid products
+        if (!product || (!product.name && !product._id && !product.id)) {
+            console.error('Refusing to add invalid product to cart:', product);
+            return;
+        }
+
         const { getImageUrl } = await import('../services/api');
         // Optimistic local update
         const productWithImage = {
             ...product,
             image: getImageUrl(product.images?.[0] || product.image || product.frontImage),
-            id: product.id || product._id
+            id: product.id || product._id,
+            selectedSize: size
         };
         
         setCart(prev => {
-            const existing = prev.find(item => item.id === productWithImage.id);
+            const existing = prev.find(item => item.id === productWithImage.id && item.selectedSize === size);
             let nextCart;
             if (existing) {
-                nextCart = prev.map(item => item.id === productWithImage.id ? { ...item, quantity: item.quantity + 1 } : item);
+                nextCart = prev.map(item => (item.id === productWithImage.id && item.selectedSize === size) ? { ...item, quantity: item.quantity + qty } : item);
             } else {
-                nextCart = [...prev, { ...productWithImage, quantity: 1 }];
+                nextCart = [...prev, { ...productWithImage, quantity: qty }];
             }
             localStorage.setItem('endura_cart', JSON.stringify(nextCart));
             return nextCart;
@@ -158,16 +167,16 @@ export const AppProvider = ({ children }) => {
         // Backend sync if logged in
         if (currentUser) {
             try {
-                await cartService.addToCart(productWithImage.id, 1);
+                await cartService.addToCart(productWithImage.id, qty);
             } catch (error) {
                 console.error('Failed to sync addToCart to backend:', error);
             }
         }
     };
 
-    const removeFromCart = async (productId) => {
+    const removeFromCart = async (productId, size = null) => {
         setCart(prev => {
-            const newCart = prev.filter(item => item.id !== productId);
+            const newCart = prev.filter(item => !(item.id === productId && item.selectedSize === size));
             localStorage.setItem('endura_cart', JSON.stringify(newCart));
             return newCart;
         });
@@ -183,10 +192,10 @@ export const AppProvider = ({ children }) => {
         }
     };
 
-    const updateCartQuantity = (productId, delta) => {
+    const updateCartQuantity = async (productId, delta, size = null) => {
         setCart(prev => {
             const newCart = prev.map(item => {
-                if (item.id === productId) {
+                if (item.id === productId && item.selectedSize === size) {
                     const newQty = Math.max(1, item.quantity + delta);
                     return { ...item, quantity: newQty };
                 }
@@ -255,12 +264,12 @@ export const AppProvider = ({ children }) => {
         return false;
     };
 
-    const addProduct = (p) => setProducts(prev => [p, ...prev]);
-    const removeProduct = (id) => setProducts(prev => prev.filter(p => p.id !== id));
+    const addProduct = (p) => setAssets(prev => [p, ...prev]);
+    const removeProduct = (id) => setAssets(prev => prev.filter(p => p.id !== id));
 
     return (
         <StoreContext.Provider value={{
-            products, currentUser, cart, orders, vaultItems, users,
+            products, currentUser, cart, orders, vaultItems, users, isLoading,
             login, loginWithToken, logout, register, addToCart, removeFromCart, updateCartQuantity, clearCart, placeOrder,
             placeRazorpayOrder, verifyRazorpayPayment,
             addProduct, removeProduct, unlockVaultItem
@@ -275,3 +284,4 @@ export const useStore = () => {
     if (!context) throw new Error('useStore must be used within AppProvider');
     return context;
 };
+
