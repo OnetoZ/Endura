@@ -47,24 +47,25 @@ const createOrder = asyncHandler(async (req, res) => {
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
         console.error('[payment/create-order] Rejected: no order items provided', {
-            userId: req.user?._id?.toString?.() || null,
+            userId: req.user._id.toString(),
             bodyKeys,
         });
         res.status(400);
-        throw new Error('No order items provided');
+        throw new Error('Your cart is empty or no order items were provided.');
     }
 
     const invalidItemIndex = orderItems.findIndex(
         (item) => !item || !item.asset || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0
     );
     if (invalidItemIndex !== -1) {
+        const invalidItem = orderItems[invalidItemIndex];
         console.error('[payment/create-order] Rejected: invalid order item payload', {
-            userId: req.user?._id?.toString?.() || null,
+            userId: req.user._id.toString(),
             invalidItemIndex,
-            invalidItem: orderItems[invalidItemIndex],
+            invalidItem,
         });
         res.status(400);
-        throw new Error(`Invalid order item at index ${invalidItemIndex}. Each item must include asset and quantity > 0`);
+        throw new Error(`Invalid item at index ${invalidItemIndex}. Make sure all items have a valid ID and quantity > 0.`);
     }
 
     const requiredAddressFields = ['fullName', 'address', 'city', 'postalCode', 'country'];
@@ -75,18 +76,18 @@ const createOrder = asyncHandler(async (req, res) => {
 
     if (missingAddressFields.length > 0) {
         console.error('[payment/create-order] Rejected: missing required shipping address fields', {
-            userId: req.user?._id?.toString?.() || null,
+            userId: req.user._id.toString(),
             missingAddressFields,
-            receivedShippingAddress: shippingAddress || null,
+            receivedShippingAddress: shippingAddress || 'MISSING',
         });
         res.status(400);
-        throw new Error(`Missing required shipping address fields: ${missingAddressFields.join(', ')}`);
+        throw new Error(`Please provide all shipping details: ${missingAddressFields.join(', ')}`);
     }
 
     if (!razorpayInstance) {
         console.error('[payment/create-order] Razorpay is not configured');
         res.status(500);
-        throw new Error('Razorpay is not configured');
+        throw new Error('Server Configuration Error: Razorpay is not initialized. Please check backend environment variables.');
     }
 
     let calculatedTotal = 0;
@@ -98,9 +99,10 @@ const createOrder = asyncHandler(async (req, res) => {
         if (!asset) {
             console.error('[payment/create-order] Rejected: asset not found', {
                 assetId: item.asset,
+                userId: req.user._id.toString()
             });
             res.status(404);
-            throw new Error(`Asset not found: ${item.asset}`);
+            throw new Error(`Product not found: ${item.asset}. It might have been removed.`);
         }
         if (asset.stock < item.quantity) {
             console.error('[payment/create-order] Rejected: insufficient stock', {
@@ -110,7 +112,7 @@ const createOrder = asyncHandler(async (req, res) => {
                 availableStock: asset.stock,
             });
             res.status(400);
-            throw new Error(`Insufficient stock for: ${asset.name}`);
+            throw new Error(`Insufficient stock for "${asset.name}". Available: ${asset.stock}`);
         }
         calculatedTotal += asset.price * item.quantity;
         
@@ -121,14 +123,26 @@ const createOrder = asyncHandler(async (req, res) => {
             quantity: item.quantity,
             price: asset.price,
             size: item.selectedSize || item.size || '',
-            editionNumber: asset.sold, // We will increment stock and sold later on verify
+            editionNumber: asset.sold, 
         });
+    }
+
+    if (calculatedTotal <= 0) {
+        console.error('[payment/create-order] Rejected: total amount is 0 or less', { calculatedTotal });
+        res.status(400);
+        throw new Error('Total order amount must be greater than zero.');
     }
 
     // Razorpay amount is in paise
     const amountInPaise = Math.round(calculatedTotal * 100);
 
-    // Limit receipt to 40 characters (rcpt_ + Date.now() + 6 chars of user ID is ~25 chars)
+    if (amountInPaise < 100) {
+        console.error('[payment/create-order] Rejected: amount too small for Razorpay', { amountInPaise });
+        res.status(400);
+        throw new Error('The minimum transaction amount is ₹1.00 (100 paise).');
+    }
+
+    // Limit receipt to 40 characters
     const receiptId = `rcpt_${Date.now()}_${req.user._id.toString().slice(-6)}`;
 
     const options = {
@@ -137,22 +151,30 @@ const createOrder = asyncHandler(async (req, res) => {
         receipt: receiptId.slice(0, 40),
     };
 
+    console.log('[payment/create-order] Requesting Razorpay order', options);
+
     let razorpayOrder;
     try {
         razorpayOrder = await razorpayInstance.orders.create(options);
     } catch (razorpayError) {
         console.error('[payment/create-order] Razorpay creation failed', {
             error: razorpayError,
-            options
+            options,
+            userId: req.user._id.toString()
         });
-        res.status(razorpayError.statusCode || 400);
-        throw new Error(razorpayError.error?.description || razorpayError.message || 'Failed to create Razorpay order');
+        
+        // Detailed Razorpay error reporting
+        const statusCode = razorpayError.statusCode || 400;
+        const descripton = razorpayError.error?.description || razorpayError.message || 'Razorpay Gateway Error';
+        
+        res.status(statusCode);
+        throw new Error(`Payment Gateway Error: ${descripton}`);
     }
 
-    if (!razorpayOrder) {
+    if (!razorpayOrder || !razorpayOrder.id) {
         console.error('[payment/create-order] Razorpay order creation failed with empty response');
         res.status(500);
-        throw new Error('Failed to create Razorpay order');
+        throw new Error('Failed to create Razorpay order. The gateway returned an empty response.');
     }
 
     // Save order in DB with 'pending'

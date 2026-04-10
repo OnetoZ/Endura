@@ -84,12 +84,20 @@ const Cart = () => {
     const handleAddressSelect = () => {
         const addr = getSelectedAddress();
         
-        // If we are showing new address form, validate it
-        if (showNewAddress || userAddresses.length === 0) {
-            if (!newAddress.fullName || !newAddress.address || !newAddress.city || !newAddress.postalCode) {
-                setOrderError('Please fill in all required address fields');
-                return;
+        console.log('[Cart] Validating address:', addr);
+
+        // Comprehensive validation for both new and existing addresses
+        const requiredFields = ['fullName', 'address', 'city', 'postalCode'];
+        const missing = requiredFields.filter(f => !addr?.[f] || String(addr[f]).trim() === '');
+        
+        if (missing.length > 0) {
+            setOrderError(`Please complete your address. Missing: ${missing.join(', ')}`);
+            // If they are using an existing address that's incomplete, switch to "Add New" mode
+            // or show an alert.
+            if (!showNewAddress && userAddresses.length > 0) {
+                toast.error('The selected address is incomplete. Please add a new one or edit it.');
             }
+            return;
         }
 
         setOrderError('');
@@ -100,7 +108,12 @@ const Cart = () => {
         if (showNewAddress || userAddresses.length === 0) {
             return newAddress;
         }
-        return userAddresses[selectedAddressIdx];
+        const selected = userAddresses[selectedAddressIdx];
+        // Ensure country is always present for selected address
+        if (selected && !selected.country) {
+            selected.country = 'India';
+        }
+        return selected;
     };
 
     const confirmOrder = async () => {
