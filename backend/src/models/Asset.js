@@ -34,6 +34,12 @@ const assetSchema = new mongoose.Schema({
         required: true,
         default: 0,
     },
+    sizes: {
+        S: { type: Number, default: 0 },
+        M: { type: Number, default: 0 },
+        L: { type: Number, default: 0 },
+        XL: { type: Number, default: 0 }
+    },
     isAvailable: {
         type: Boolean,
         default: true,

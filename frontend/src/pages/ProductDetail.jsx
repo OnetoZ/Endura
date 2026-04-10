@@ -13,6 +13,7 @@ const ProductDetail = () => {
     const { products, addToCart } = useStore();
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [selectedSize, setSelectedSize] = useState('M');
     const [activeTab, setActiveTab] = useState('Specs');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const collectedItem = location.state?.item;
@@ -67,8 +68,11 @@ const ProductDetail = () => {
                     <div className="space-y-6">
                         <div className="text-[10px] font-mono tracking-[0.5em] uppercase text-white/30">Product View</div>
                         <div className="text-5xl md:text-6xl font-heading font-black tracking-widest uppercase">{collectedItem.name}</div>
-                        <div className="text-[11px] font-mono tracking-widest uppercase text-white/40">Tier: {collectedItem.tier}</div>
-                        <div className="text-[11px] font-mono tracking-widest uppercase text-white/40">Unlock Date: {collectedItem.unlockedAt || '---'}</div>
+                        <div className="text-[11px] font-mono tracking-widest uppercase text-white/40">Tier: {collectedItem.tier || 'Standard'}</div>
+                        {collectedItem.size && (
+                            <div className="text-[11px] font-mono tracking-widest uppercase text-accent/60">Selected Size: {collectedItem.size}</div>
+                        )}
+                        <div className="text-[11px] font-mono tracking-widest uppercase text-white/40">Unlock Date: {collectedItem.unlockedAt || collectedItem.createdAt?.split('T')[0] || '---'}</div>
                     </div>
                 </div>
             </div>
@@ -166,6 +170,8 @@ const ProductDetail = () => {
                             {product.description}
                         </p>
 
+
+
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 mb-12">
                             <div className="flex border border-white/10 w-[140px] sm:w-auto overflow-hidden shrink-0">
                                 <button
@@ -187,7 +193,7 @@ const ProductDetail = () => {
 
                             <button
                                 onClick={() => {
-                                    for (let i = 0; i < quantity; i++) addToCart(product);
+                                    addToCart(product, quantity, selectedSize);
                                     navigate('/cart');
                                 }}
                                 className="w-full sm:flex-grow py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
@@ -199,7 +205,7 @@ const ProductDetail = () => {
                         {/* Tabs */}
                         <div className="border border-white/5 overflow-hidden">
                             <div className="flex border-b border-white/5 bg-white/5">
-                                {['Specs'].map(tab => (
+                                {['Specs', 'Sizes'].map(tab => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -221,6 +227,24 @@ const ProductDetail = () => {
                                             <span className="text-white font-mono text-sm sm:text-base break-words">French terry loopknit</span>
                                         </li>
                                     </ul>
+                                )}
+                                {activeTab === 'Sizes' && (
+                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-6 italic">Prototype_Selection</label>
+                                        <div className="flex flex-wrap gap-4">
+                                            {['S', 'M', 'L', 'XL'].map((size) => (
+                                                <button
+                                                    key={size}
+                                                    onClick={() => setSelectedSize(size)}
+                                                    className={`w-14 h-14 border flex items-center justify-center text-[11px] font-black transition-all duration-300 ${selectedSize === size
+                                                        ? 'bg-primary border-primary text-white shadow-xl shadow-primary/40 scale-110'
+                                                        : 'border-white/10 text-gray-400 hover:border-white/40 hover:text-white'}`}
+                                                >
+                                                    {size}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
                                 {/* {activeTab === 'Digital Mirror' && (
                                     <p>This item includes a 1:1 digital twin skin. Upon purchase, a sync code will be delivered to your operator node (vault). Compatible with major meta-dimension protocols.</p>

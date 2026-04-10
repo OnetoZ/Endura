@@ -119,7 +119,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                                 <h3 className="text-xl font-heading uppercase text-white group-hover:text-primary-light group-hover:tracking-wider transition-all duration-500">{item.name}</h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className="w-1.5 h-1.5 bg-primary-light rounded-full shadow-[0_0_8px_var(--primary-light)]" />
-                                    <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">{item.category}</p>
+                                    <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">{item.category} {item.selectedSize ? `// SIZE: ${item.selectedSize}` : ''}</p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -257,6 +257,12 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                             </h3>
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em]">{item.category}</span>
+                                {item.selectedSize && (
+                                    <>
+                                        <div className="h-[1px] w-4 bg-accent/20" />
+                                        <span className="text-[10px] font-mono text-accent/60 uppercase tracking-[0.3em]">SIZE: {item.selectedSize}</span>
+                                    </>
+                                )}
                                 <div className="h-[1px] w-8 bg-accent/20" />
                             </div>
                         </div>

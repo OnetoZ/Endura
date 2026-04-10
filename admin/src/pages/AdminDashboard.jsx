@@ -24,7 +24,8 @@ const INITIAL_PRODUCT_STATE = {
     additionalImages: [],
     digitalTwinImage: '',
     type: 'Common',
-    shortAtmosphericLine: ''
+    shortAtmosphericLine: '',
+    sizes: { S: 0, M: 0, L: 0, XL: 0 }
 };
 
 const AdminDashboard = () => {
@@ -274,11 +275,14 @@ const AdminDashboard = () => {
 
         setIsSavingProduct(true);
         try {
+            const totalStock = Object.values(newProduct.sizes || { S: 0, M: 0, L: 0, XL: 0 })
+                .reduce((acc, val) => acc + (Number(val) || 0), 0);
+                
             const productData = {
                 ...newProduct,
                 images: [newProduct.image, newProduct.backImage, newProduct.digitalTwinImage, ...newProduct.additionalImages],
                 price: Number(newProduct.price),
-                stock: Number(newProduct.stock)
+                stock: totalStock > 0 ? totalStock : Number(newProduct.stock)
             };
 
             if (editingProductId) {
@@ -529,7 +533,7 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="flex-1 text-center md:text-left">
                                                 <p className="text-sm font-black uppercase tracking-widest group-hover:text-primary transition-colors">{item.name}</p>
-                                                <p className="text-[10px] text-gray-500 uppercase tracking-tight mt-1">Edition: #{item.editionNumber || 'GENESIS'}</p>
+                                                <p className="text-[10px] text-gray-500 uppercase tracking-tight mt-1">Edition: #{item.editionNumber || 'GENESIS'} {item.size ? `// Size: ${item.size}` : ''}</p>
                                             </div>
                                             <div className="flex gap-12 text-center md:text-right">
                                                 <div>
@@ -728,16 +732,36 @@ const AdminDashboard = () => {
                                                         required
                                                     />
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Stock</label>
-                                                    <input
-                                                        type="number"
-                                                        className="w-full bg-white/5 border border-white/10 p-4 text-sm font-bold uppercase tracking-widest text-white outline-none focus:border-primary transition-all"
-                                                        value={newProduct.stock}
-                                                        onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
-                                                        placeholder="QUANTITY"
-                                                        required
-                                                    />
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Global Stock</label>
+                                                        <input
+                                                            type="number"
+                                                            className="w-full bg-white/5 border border-white/10 p-4 text-sm font-bold uppercase tracking-widest text-white outline-none focus:border-primary transition-all opacity-50"
+                                                            value={Object.values(newProduct.sizes || {}).reduce((acc, val) => acc + (Number(val) || 0), 0) || newProduct.stock}
+                                                            readOnly
+                                                            placeholder="TOTAL_QUANTITY"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-3 pt-2">
+                                                        <label className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Inventory By Size</label>
+                                                        <div className="grid grid-cols-4 gap-3">
+                                                            {['S', 'M', 'L', 'XL'].map(size => (
+                                                                <div key={size} className="space-y-1.5 text-center">
+                                                                    <div className="text-[8px] font-black text-gray-500 uppercase">{size}</div>
+                                                                    <input
+                                                                        type="number"
+                                                                        className="w-full bg-white/5 border border-white/10 p-2 text-center text-xs font-bold text-white outline-none focus:border-primary transition-all"
+                                                                        value={newProduct.sizes?.[size] || 0}
+                                                                        onChange={e => setNewProduct({
+                                                                            ...newProduct,
+                                                                            sizes: { ...newProduct.sizes, [size]: e.target.value }
+                                                                        })}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="space-y-6">
@@ -989,7 +1013,7 @@ const AdminDashboard = () => {
                                                     </td>
                                                     <td className="py-6">
                                                         {o.items?.map((item, i) => (
-                                                            <p key={i} className="text-[10px] text-gray-400 uppercase font-black">{item.name} x{item.quantity}</p>
+                                                            <p key={i} className="text-[10px] text-gray-400 uppercase font-black">{item.name} {item.size ? `[${item.size}]` : ''} x{item.quantity}</p>
                                                         ))}
                                                         <p className="text-[10px] text-accent mt-1 font-mono">₹{o.totalAmount}</p>
                                                     </td>

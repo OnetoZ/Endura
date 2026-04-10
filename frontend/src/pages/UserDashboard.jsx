@@ -92,6 +92,7 @@ const UserDashboard = () => {
                     addedIds.add(itemId);
                     items.push({
                         ...product,
+                        size: orderItem.size,
                         editionNumber: orderItem.editionNumber || null,
                         totalStock: (product.stock || 0) + (product.sold || 0),
                         hasDigitalTwin: !!(product.images?.[2] || product.digitalTwinImage),
@@ -463,7 +464,7 @@ const UserDashboard = () => {
                                                             <div className="space-y-1">
                                                                 {order.items?.map((item, i) => (
                                                                     <div key={i} className="flex justify-between text-sm">
-                                                                        <span className="text-gray-300">• {item.name}</span>
+                                                                        <span className="text-gray-300">• {item.name} {item.size && <span className="text-[10px] text-accent/60 font-mono ml-2">[{item.size}]</span>}</span>
                                                                         <span className="text-gray-400">Qty: {item.quantity} × ₹{item.price}</span>
                                                                     </div>
                                                                 ))}
@@ -627,6 +628,7 @@ const UserDashboard = () => {
                                                             Digital Twin
                                                         </p>
                                                         <p className="text-[8px] font-mono text-gray-500">
+                                                            {item.size ? `SIZE: ${item.size} • ` : ''}
                                                             {item.editionNumber ? `Card #${item.editionNumber}` : ''}
                                                             {item.totalStock ? ` of ${item.totalStock}` : ''}
                                                         </p>
