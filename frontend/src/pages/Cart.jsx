@@ -349,14 +349,6 @@ const Cart = () => {
                                         <span className="text-xl font-heading text-white tracking-widest uppercase">{checkoutItems.length} DETECTED</span>
                                     </div>
                                 </div>
-
-                                <button
-                                    onClick={clearCart}
-                                    className="group flex items-center gap-3 text-[9px] font-mono text-red-500/30 hover:text-red-500 uppercase tracking-[0.5em] transition-all"
-                                >
-                                    <div className="w-1.5 h-1.5 rounded-full border border-red-500/20 group-hover:bg-red-500 transition-all shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
-                                    Purge Chamber
-                                </button>
                             </div>
 
                             {/* Two Column Layout */}

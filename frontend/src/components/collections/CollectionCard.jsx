@@ -145,7 +145,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                                 onClick={() => onRemove(item._id || item.id, item.selectedSize)}
                                 className="group/btn relative px-4 py-2 overflow-hidden"
                             >
-                                <span className="relative z-10 text-[9px] font-mono text-red-500/80 group-hover/btn:text-white transition-colors uppercase tracking-widest">Terminate</span>
+                                <span className="relative z-10 text-[9px] font-mono text-red-500 group-hover/btn:text-white transition-colors uppercase tracking-widest">Remove</span>
                                 <div className="absolute inset-0 bg-red-500 -translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
                             </button>
                         </div>
@@ -299,8 +299,8 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                             }}
                             className="group/remove flex items-center gap-2"
                         >
-                            <span className="text-[9px] font-heading text-gray-600 group-hover/remove:text-red-500/80 uppercase tracking-[0.4em] transition-all">De-Manifest</span>
-                            <div className="w-1 h-1 bg-gray-800 rounded-full group-hover/remove:bg-red-500 transition-colors" />
+                            <span className="text-[9px] font-heading text-red-500 group-hover/remove:text-red-400 uppercase tracking-[0.4em] transition-all">Remove</span>
+                            <div className="w-1 h-1 bg-red-500 rounded-full group-hover:bg-red-400 transition-colors" />
                         </button>
                     </div>
                 </div>
