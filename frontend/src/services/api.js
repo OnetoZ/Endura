@@ -198,6 +198,10 @@ export const vaultService = {
         const response = await api.post(`/vault/${id}/collect`);
         return response.data;
     },
+    syncVaultWithCode: async (code) => {
+        const response = await api.post('/vault/sync', { code });
+        return response.data;
+    },
 };
 
 export const orderService = {

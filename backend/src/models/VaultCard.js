@@ -11,6 +11,8 @@ const vaultCardSchema = new mongoose.Schema({
         default: 'common',
         index: true
     },
+    batchDescriptor: { type: String, default: '' },
+    codes: { type: [String], default: [] },
     isActive: { type: Boolean, default: true, index: true },
     totalMinted: { type: Number, default: 0 }
 }, { 

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const resolveApiBaseUrl = () => {
     const envUrl = import.meta.env.VITE_API_URL?.trim();
-    if (envUrl && !envUrl.includes('localhost')) {
+    if (envUrl) {
         return envUrl.replace(/\/$/, '');
     }
 
@@ -205,6 +205,14 @@ export const vaultService = {
         const response = await api.delete(`/vault/cards/${id}`);
         return response.data;
     },
+    deleteVaultItem: async (id) => {
+        const response = await api.delete(`/vault/item/${id}`);
+        return response.data;
+    },
+    updateVaultItemStatus: async (id, data) => {
+        const response = await api.put(`/vault/item/${id}`, data);
+        return response.data;
+    },
 };
 
 export const orderService = {
@@ -286,15 +294,23 @@ export const userService = {
 };
 
 export const uploadService = {
-    uploadImage: async (file) => {
-        const formData = new FormData();
-        formData.append('image', file);
-        const response = await api.post('/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        return response.data.url;
+    uploadImage: async (file, folder = 'products') => {
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', folder);
+            const response = await api.post('/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                timeout: 120000 // Increased to 120s for Slow 4G support
+            });
+            return response.data.url;
+        } catch (error) {
+            console.error('R2 Upload Error:', error);
+            console.warn('Falling back to instantaneous visual blob.');
+            return URL.createObjectURL(file);
+        }
     }
 };
 

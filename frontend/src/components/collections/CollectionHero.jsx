@@ -57,20 +57,9 @@ const CollectionHero = ({ images }) => {
                 ref={contentRef}
                 className="relative z-10 text-center px-4"
             >
-                {/* <span className="restricted-label block mb-2 tracking-[0.3em]">REPOSSESSION PROTOCOL</span> */}
-                <h1 className="text-4xl md:text-8xl font-heading uppercase tracking-tighter leading-none mb-6">
+                <h1 className="text-4xl md:text-8xl font-heading uppercase tracking-tighter leading-none">
                     THE <span className="text-accent italic">VAULT</span>
                 </h1>
-                <p className="max-w-xl mx-auto text-sm text-gray-400 font-body uppercase tracking-widest leading-relaxed opacity-60">
-                    Limited pieces authenticated. <br />
-                    Preparing the vault reveal.
-                </p>
-            </div>
-
-            {/* Scroll Indicator */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-                <span className="text-[10px] font-mono tracking-widest uppercase">Scroll to Grab</span>
-                <div className="w-[1px] h-12 bg-gradient-to-b from-primary to-transparent"></div>
             </div>
         </section>
     );

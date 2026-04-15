@@ -1,13 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Package, MapPin, Phone, User, Mail, Save, Image as ImageIcon } from 'lucide-react';
+import { Lock, Package, MapPin, Phone, User, Mail, Save, Image as ImageIcon, X } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
-import { authService, assetService, orderService, getImageUrl } from '../services/api';
+import { authService, assetService, orderService, getImageUrl, vaultService } from '../services/api';
+import { AnimatePresence } from 'framer-motion';
+
+const tierAccent = (tier) => {
+    switch (tier?.toLowerCase()) {
+        case 'legendary': return '#ff00ff';
+        case 'epic': return '#ff0055';
+        case 'rare': return '#00d4ff';
+        default: return '#d4af37';
+    }
+};
+
+const DressItem = ({ item, vaultReady }) => {
+    const [isHovered, setIsHovered] = useState(true);
+    const accent = tierAccent(item.tier);
+    return (
+        <div className="relative w-full h-full bg-black overflow-hidden group/dress border border-white/10 rounded-xl"
+            style={{
+                boxShadow: `inset 0 0 60px 10px ${accent}18`,
+                background: `radial-gradient(circle at center, transparent 40%, ${accent}08 100%)`
+            }}>
+            <div className="relative w-full h-full flex flex-col items-center justify-center p-8 overflow-visible">
+                <motion.div className="relative z-10 w-full h-full flex items-center justify-center overflow-visible"
+                    animate={vaultReady ? { y: [-8, 8, -8] } : {}}
+                    transition={{ y: { duration: 4, repeat: Infinity, ease: "easeInOut" } }}>
+                    <img src={getImageUrl(item.backImageUrl || item.backImage || item.image)}
+                        alt={item.name} className="w-full h-full object-contain block transition-transform duration-700"
+                        style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)' }} />
+                </motion.div>
+                <AnimatePresence>
+                    {isHovered && (
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
+                            className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
+                            <div className="absolute top-8 left-8 w-10 h-10 border-t border-l opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute top-8 right-8 w-10 h-10 border-t border-r opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute bottom-8 left-8 w-10 h-10 border-b border-l opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute bottom-8 right-8 w-10 h-10 border-b border-r opacity-40" style={{ borderColor: accent }} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};
 
 const UserDashboard = () => {
     const navigate = useNavigate();
     const { currentUser, loginWithToken, products } = useStore();
+
+    const [selectedAsset, setSelectedAsset] = useState(null);
+    const [isFlipped, setIsFlipped] = useState(false);
 
     const [editMode, setEditMode] = useState(false);
     const [nameMode, setNameMode] = useState(false);
@@ -84,7 +130,10 @@ const UserDashboard = () => {
     const collectedItems = React.useMemo(() => {
         const items = [];
         const addedIds = new Set();
-        orders.forEach(order => {
+        // Only include items from orders that are NOT pending
+        const confirmedOrders = orders.filter(o => o.status !== 'Pending' && o.status !== 'PENDING');
+
+        confirmedOrders.forEach(order => {
             order.items?.forEach(orderItem => {
                 const product = products?.find(p => p._id === orderItem.product || p.id === orderItem.product || p.name === orderItem.name);
                 const itemId = product?._id || product?.id || orderItem.product;
@@ -104,48 +153,38 @@ const UserDashboard = () => {
         return items;
     }, [orders, products]);
 
-    // Vault Assets from LocalStorage + API
+    // Vault Assets from API
     const [vaultAssets, setVaultAssets] = useState([]);
     useEffect(() => {
         const loadVaultAssets = async () => {
             try {
-                const savedData = localStorage.getItem('endura_vault_persistence');
-                if (!savedData) return;
-
-                const { unlockedItems } = JSON.parse(savedData);
-                if (!unlockedItems || !unlockedItems.length) return;
-
-                const dbCards = await assetService.getVaultCards().catch(() => []);
-                const mappedDbCards = dbCards.map(c => ({
-                    id: c._id,
-                    _id: c._id,
-                    name: c.name,
-                    image: c.frontImage || c.image,
-                    tier: c.category
-                }));
-
-                const allVaultItems = [...mappedDbCards];
-                const uniqueUnlocked = [];
-                const seen = new Set();
-
-                unlockedItems.forEach(id => {
-                    const item = allVaultItems.find(x => x.id === id || x._id === id);
-                    if (item && !seen.has(item.id || item._id)) {
-                        seen.add(item.id || item._id);
-                        uniqueUnlocked.push(item);
-                    }
-                });
-
-                setVaultAssets(uniqueUnlocked);
+                // Fetch User-specific Owned Protocols from server
+                const userAssets = await vaultService.getUserVault();
+                if (userAssets && userAssets.protocols) {
+                    const ownedProtocols = userAssets.protocols
+                        .filter(p => p.vaultCard && p.vaultCard.name !== 'Protocol Sync')
+                        .map(p => ({
+                            id: p._id,
+                            _id: p._id,
+                            serialNumber: p.serialNumber,
+                            name: p.vaultCard?.name || 'Protocol Sync',
+                            description: p.vaultCard?.description || '',
+                            image: p.vaultCard?.frontImage,
+                            backImageUrl: p.vaultCard?.backImage,
+                            tier: p.vaultCard?.tier || 'rare',
+                            isUnlocked: true
+                        }));
+                    setVaultAssets(ownedProtocols);
+                }
             } catch (e) {
                 console.error("Failed to load vault assets:", e);
             }
         };
 
-        if (products && products.length > 0) {
+        if (currentUser) {
             loadVaultAssets();
         }
-    }, [products]);
+    }, [currentUser]);
 
     // Derived data mapping
     const userData = {
@@ -400,12 +439,12 @@ const UserDashboard = () => {
                                     <div className="text-center py-8">
                                         <p className="text-gray-500 text-sm">Loading orders...</p>
                                     </div>
-                                ) : orders.length === 0 ? (
+                                ) : orders.filter(o => o.status !== 'Pending' && o.status !== 'PENDING').length === 0 ? (
                                     <div className="text-center py-8">
-                                        <p className="text-gray-500 text-sm">No orders found</p>
+                                        <p className="text-gray-500 text-sm">No confirmed acquisitions found</p>
                                     </div>
                                 ) : (
-                                    orders.map((order, index) => (
+                                    orders.filter(o => o.status !== 'Pending' && o.status !== 'PENDING').map((order, index) => (
                                         <motion.div
                                             key={order._id}
                                             initial={{ opacity: 0, y: 20 }}
@@ -585,72 +624,37 @@ const UserDashboard = () => {
                                     MY COLLECTION
                                 </h2>
                                 <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-8">
-                                    Digital Twins • Vault Cards • Collected Assets
+                                    Vault Cards • Collected Assets
                                 </p>
 
-                                {collectedItems.length === 0 && vaultAssets.length === 0 ? (
+                                {vaultAssets.length === 0 ? (
                                     <div className="text-center py-12 border border-white/10 bg-white/[0.02]">
                                         <Lock className="w-8 h-8 text-gray-600 mx-auto mb-4" />
                                         <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-loose">
-                                            No collectables yet.
-                                            <span className="text-gray-600 block mt-2">Purchase products to collect digital twins, or visit the Vault to unlock rare assets.</span>
+                                            Archive is currently empty.
+                                            <span className="text-gray-600 block mt-2">Visit the Vault to synchronize new archival protocols.</span>
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                        {/* Digital Twins from purchases */}
-                                        {collectedItems.filter(item => item.hasDigitalTwin).map((item, idx) => (
-                                            <div key={`twin-${idx}`} className="relative group overflow-hidden border border-white/20 bg-black hover:border-[#d4af37] transition-colors">
-                                                <div className="absolute inset-0 bg-[#d4af37]/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                                
-                                                {/* Edition Badge */}
-                                                {item.editionNumber && (
-                                                    <div className="absolute top-3 right-3 z-20 bg-black/80 border border-[#d4af37]/50 px-2 py-1">
-                                                        <span className="text-[8px] font-mono text-[#d4af37] uppercase tracking-widest">
-                                                            #{item.editionNumber}{item.totalStock ? ` / ${item.totalStock}` : ''}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                <div className="aspect-square relative p-4 flex items-center justify-center">
-                                                    <img
-                                                        src={getImageUrl(item.images?.[2] || item.digitalTwinImage)}
-                                                        alt={`${item.name} Digital Twin`}
-                                                        className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-700 relative z-10"
-                                                    />
-                                                </div>
-                                                <div className="p-4 border-t border-white/10 bg-white/5">
-                                                    <h3 className="text-[10px] font-black uppercase text-white truncate mb-1" title={item.name}>
-                                                        {item.name}
-                                                    </h3>
-                                                    <div className="flex items-center justify-between">
-                                                        <p className="text-[#d4af37] text-[8px] uppercase tracking-widest font-bold">
-                                                            Digital Twin
-                                                        </p>
-                                                        <p className="text-[8px] font-mono text-gray-500">
-                                                            {item.size ? `SIZE: ${item.size} • ` : ''}
-                                                            {item.editionNumber ? `Card #${item.editionNumber}` : ''}
-                                                            {item.totalStock ? ` of ${item.totalStock}` : ''}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-
                                         {/* Vault Assets */}
                                         {vaultAssets.map((item, idx) => (
-                                            <div key={`vault-${idx}`} className="relative group overflow-hidden border border-white/20 bg-black hover:border-accent transition-colors">
+                                            <div
+                                                key={`vault-${idx}`}
+                                                onClick={() => { setSelectedAsset(item); setIsFlipped(false); }}
+                                                className="relative group overflow-hidden border border-white/20 bg-black hover:border-accent transition-colors cursor-pointer"
+                                            >
                                                 <div className="absolute inset-0 bg-accent/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                                <div className="aspect-square relative p-4 flex items-center justify-center bg-white/[0.02]">
+                                                <div className="aspect-[3/4] relative p-3 flex items-center justify-center bg-white/[0.02]">
                                                     <img
                                                         src={getImageUrl(item.image || item.images?.[0])}
                                                         alt={`${item.name} Vault Asset`}
-                                                        className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 relative z-10 p-2"
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10 p-2"
                                                     />
                                                 </div>
                                                 <div className="p-4 border-t border-white/10 bg-white/5">
-                                                    <h3 className="text-[10px] font-black uppercase text-white truncate mb-1" title={item.name}>
-                                                        {item.name}
+                                                    <h3 className="text-sm font-black uppercase text-white truncate mb-1" title={item.serialNumber || item.name}>
+                                                        {item.serialNumber || '—'}
                                                     </h3>
                                                     <p className="text-accent text-[8px] uppercase tracking-widest font-bold">
                                                         Vault Card • {item.tier || 'Archived'}
@@ -665,6 +669,98 @@ const UserDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Detail Inspection Modal */}
+            <AnimatePresence>
+                {selectedAsset && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedAsset(null)}
+                            className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+                        />
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-lg bg-[#050505] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                        >
+                            {/* Header */}
+                            <div className="flex justify-between items-center p-6 border-b border-white/5">
+                                <div>
+                                    <h2 className="text-xl font-heading uppercase tracking-widest text-primary">
+                                        ARTEFACT INSPECTION
+                                    </h2>
+                                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-1">
+                                        ARCHIVE_REF: {selectedAsset._id.slice(-8).toUpperCase()}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedAsset(null)}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+
+                            {/* Interactive Card View */}
+                            <div className="p-4">
+                                <div
+                                    className="relative aspect-[3/4] max-w-[380px] mx-auto transition-all duration-700 cursor-pointer [perspective:1000px]"
+                                    onMouseEnter={() => setIsFlipped(true)}
+                                    onMouseLeave={() => setIsFlipped(false)}
+                                >
+                                    <div className={`relative w-full h-full transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
+                                        {/* Front Face */}
+                                        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl border border-white/10 overflow-hidden bg-[#111]">
+                                            <img
+                                                src={getImageUrl(selectedAsset.image || selectedAsset.images?.[0])}
+                                                className="w-full h-full object-cover p-2"
+                                                alt="Artifact Front"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                                        </div>
+
+                                        {/* Back Face */}
+                                        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl border border-white/10 overflow-hidden bg-black">
+                                            <DressItem item={selectedAsset} vaultReady={true} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Telemetry Footer */}
+                            <div className="p-8 pt-0 space-y-6">
+                                <div className="text-center space-y-4">
+                                    <h3 className="text-2xl font-black uppercase tracking-[0.1em] text-white">
+                                        {selectedAsset.serialNumber || '—'}
+                                    </h3>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center justify-center gap-4">
+                                            <span className="text-[10px] font-mono tracking-[0.4em] font-bold uppercase" style={{ color: tierAccent(selectedAsset.tier) }}>
+                                                TIER: {selectedAsset.tier || 'COMMON'}
+                                            </span>
+                                            <span className="w-1 h-1 rounded-full bg-white/20" />
+                                            <span className="text-[10px] font-mono tracking-[0.2em] text-white/40 uppercase">
+                                                SERIAL: {selectedAsset.serialNumber || '1'} / 1
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
+                                    <p className="text-[11px] text-gray-400 leading-relaxed font-medium text-center italic">
+                                        {selectedAsset.description || "Experimental digital fabric synthesized through archival protocol overrides. This asset serves as a high-fidelity collectible within the Endura network."}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

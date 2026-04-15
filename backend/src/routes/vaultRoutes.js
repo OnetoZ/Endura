@@ -2,13 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { getVaultCards, createVaultCard, updateVaultCard, deleteVaultCard } = require('../controllers/vaultCardController');
 
-const { getUserVault, redeemVaultItem, collectVaultCard, getAllVaultItems } = require('../controllers/vaultController');
+const { getUserVault, redeemVaultItem, collectVaultCard, getAllVaultItems, deleteVaultItemAdmin, updateVaultItemAdmin, syncVaultCardByCode } = require('../controllers/vaultController');
 const { protect, admin } = require('../middleware/auth');
 
 router.get('/', protect, getUserVault);
+router.post('/sync', protect, syncVaultCardByCode);
 router.put('/:id/redeem', protect, redeemVaultItem);
 router.post('/:id/collect', protect, collectVaultCard);
 router.get('/all', protect, admin, getAllVaultItems);
+
+router.delete('/item/:id', protect, admin, deleteVaultItemAdmin);
+router.put('/item/:id', protect, admin, updateVaultItemAdmin);
 
 
 
