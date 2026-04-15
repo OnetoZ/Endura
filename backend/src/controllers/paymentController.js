@@ -1,3 +1,4 @@
+const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
 const Asset = require('../models/Asset');
@@ -6,6 +7,12 @@ const Cart = require('../models/Cart');
 const VaultItem = require('../models/VaultItem');
 const { razorpayInstance, razorpayKeyId } = require('../utils/razorpay');
 const asyncHandler = require('../utils/asyncHandler');
+
+// Initialize Razorpay instance
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 // Helper: generate vault items after payment
 const generateVaultItems = async (order) => {

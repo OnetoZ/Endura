@@ -49,7 +49,8 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
 }));
 
 // ── Body Parsers (CRITICAL: MUST be before routes to prevent empty req.body) ──
@@ -129,9 +130,13 @@ mongoose.connect(process.env.MONGO_URI, {
   })
   .then(() => {
     console.log('✅ Successfully connected to MongoDB');
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server is running on port ${PORT} (0.0.0.0)`);
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
+    // Set explicit timeouts for long-running image uploads
+    server.timeout = 60000;
+    server.headersTimeout = 65000;
+    server.keepAliveTimeout = 61000;
   })
   .catch((error) => {
     console.error('❌ MongoDB connection error:', error.message);

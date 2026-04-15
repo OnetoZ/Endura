@@ -98,13 +98,11 @@ import { HelmetProvider } from 'react-helmet-async';
 export default function App() {
   return (
     <HelmetProvider>
-      <AppProvider>
-        <SmoothScroll>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <AppLayout />
-          </BrowserRouter>
-        </SmoothScroll>
-      </AppProvider>
+      <SmoothScroll>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AppLayout />
+        </BrowserRouter>
+      </SmoothScroll>
     </HelmetProvider>
   );
 }

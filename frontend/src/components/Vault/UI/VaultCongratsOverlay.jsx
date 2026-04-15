@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accent, onEnterDashboard, onClose }) => {
+const VaultCongratsOverlay = ({ children, accent, onEnterDashboard, onClose, serialNumber, tier }) => {
+    const [isFlipped, setIsFlipped] = React.useState(false);
     const handleClose = (e) => {
         if (e) {
             e.preventDefault();
@@ -21,13 +22,13 @@ const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accen
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-[8px] px-6 pointer-events-auto"
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-[12px] px-6 pointer-events-auto"
             onClick={(e) => {
                 if (e.target === e.currentTarget) handleClose(e);
             }}
         >
             {/* HUD WRAPPER - Stable Rectangle with Natural Scaling */}
-            <div className="relative w-[520px] min-h-[320px] bg-[#000000] p-[24px_48px] box-border flex flex-col items-center justify-center gap-16 overflow-hidden">
+            <div className="relative w-[520px] min-h-[600px] bg-[#000000] p-[48px] box-border flex flex-col items-center justify-center gap-12 overflow-hidden shadow-[0_0_150px_rgba(201,162,39,0.1)]">
                 {/* HUD CORNERS LAYER */}
                 <div className="absolute inset-0 pointer-events-none z-50">
                     {/* Top Left Corners */}
@@ -51,11 +52,11 @@ const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accen
                 {/* Repositioned Close Button */}
                 <div
                     onClick={handleClose}
-                    className="absolute top-4 right-4 p-2 opacity-40 hover:opacity-100 transition-all hover:rotate-90 z-[100] cursor-pointer group"
+                    className="absolute top-6 right-6 p-2 opacity-40 hover:opacity-100 transition-all hover:rotate-90 z-[100] cursor-pointer group"
                     style={{ color: hudColor }}
                     aria-label="Return to Vault"
                 >
-                    <X size={24} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
+                    <X size={28} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
                 </div>
 
                 <motion.div
@@ -63,39 +64,39 @@ const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accen
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full flex flex-col items-center text-center space-y-8"
+                    className="w-full flex flex-col items-center text-center space-y-12"
                 >
-                    {/* Artifact Display Region */}
+                    {/* Interactive Artifact Display Region */}
                     {children && (
-                        <motion.div
-                            animate={{ y: [0, -10, 0], rotateZ: [0, 1, 0] }}
-                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                            style={{ background: 'transparent' }}
-                            className="artifact-container w-full max-h-[180px] flex items-center justify-center flex-shrink-0 overflow-hidden [&_img]:max-h-[180px] [&_img]:max-w-full [&_img]:object-contain [&_img]:block"
+                        <div
+                            className="w-[280px] h-[380px] [perspective:1000px] group/item cursor-help"
+                            onMouseEnter={() => setIsFlipped(true)}
+                            onMouseLeave={() => setIsFlipped(false)}
                         >
-                            {children}
-                        </motion.div>
+                            <motion.div
+                                className="relative w-full h-full duration-1000 [transform-style:preserve-3d]"
+                                animate={{
+                                    rotateY: isFlipped ? 180 : 0,
+                                }}
+                                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                {children}
+                            </motion.div>
+                        </div>
                     )}
 
                     <div className="space-y-[14px]">
-                        <div className="space-y-2">
-                            <h2 className="text-3xl font-heading font-black tracking-[0.3em]" style={{ color: hudColor }}>
-                                THE VAULT HAS SPOKEN
+                        <div className="space-y-4">
+                            <h2 className="text-4xl font-heading font-black tracking-[0.2em]" style={{ color: hudColor }}>
+                                ARCHIVE SYNCHRONIZED
                             </h2>
-                            <p className="text-[10px] font-mono tracking-[0.4em] text-white/40 uppercase">
-                                Imperial Authorization Confirmed
-                            </p>
-                        </div>
-
-                        <div className="space-y-1">
-                            <p className="text-[12px] font-heading font-bold tracking-[0.2em] text-white/80 uppercase">
-                                Credit Score Updated
-                            </p>
-                            <div className="flex items-center justify-center gap-4">
-                                <span className="text-white/40 font-mono text-sm">{oldScore}</span>
-                                <span className="font-mono text-xl" style={{ color: hudColor }}>→</span>
-                                <span className="font-mono text-xl font-bold" style={{ color: hudColor }}>{newScore}</span>
-                                <span className="ml-2 text-[10px] font-mono opacity-60" style={{ color: hudColor }}>+{creditDelta}</span>
+                            <div className="flex flex-col gap-2">
+                                <p className="text-[12px] font-mono tracking-[0.4em] text-white font-bold uppercase">
+                                    TIER : {tier || 'COMMON'}
+                                </p>
+                                <p className="text-[10px] font-mono tracking-[0.3em] text-white/40 uppercase">
+                                    SERIAL NO. {serialNumber || '1'}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -103,9 +104,9 @@ const VaultCongratsOverlay = ({ oldScore, newScore, creditDelta, children, accen
                     <button
                         onClick={onEnterDashboard}
                         style={{ backgroundColor: hudColor, boxShadow: `0 0 20px ${hudColor}33` }}
-                        className="w-full max-w-[240px] py-4 text-black font-heading font-black text-[12px] tracking-[0.3em] uppercase transition-all hover:bg-white hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full max-w-[280px] py-5 text-black font-heading font-black text-[12px] tracking-[0.4em] uppercase transition-all hover:bg-white hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        [ Enter Dashboard ]
+                        [ VIEW COLLECTION ]
                     </button>
                 </motion.div>
 

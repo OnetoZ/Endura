@@ -31,6 +31,7 @@ const vaultItemSchema = new mongoose.Schema({
         index: true
     },
     isRedeemed: { type: Boolean, default: false, index: true },
+    syncCode: { type: String, default: '', index: true },
     redeemedAt: { type: Date },
 }, { 
     timestamps: true,

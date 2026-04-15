@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { getImageUrl } from '../services/api';
 import SEO from '../components/SEO';
 
 const Shop = () => {
-    const { products, addToCart } = useStore();
+    const { products, addToCart, currentUser } = useStore();
+    const navigate = useNavigate();
     const [filter, setFilter] = useState('All');
 
     const categories = ['All', 'Apparel', 'Digital'];
@@ -75,7 +76,13 @@ const Shop = () => {
                                             View Intel
                                         </Link>
                                         <button
-                                            onClick={() => addToCart(product)}
+                                            onClick={() => {
+                                                if (!currentUser) {
+                                                    navigate('/auth');
+                                                    return;
+                                                }
+                                                addToCart(product);
+                                            }}
                                             className="py-4 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary-light transition-all"
                                         >
                                             Initialize Sync

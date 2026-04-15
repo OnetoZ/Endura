@@ -261,20 +261,18 @@ const googleCallback = asyncHandler(async (req, res) => {
 
     const isSourceAdmin = stateObj.source === 'admin';
 
-    // Dynamically determine targetUrl
-    let targetUrl = isSourceAdmin ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174') : (process.env.CLIENT_URL || 'http://localhost:5173');
+    // Dynamically determine targetUrl from env vars (fall back to localhost for dev)
+    let targetUrl = isSourceAdmin
+        ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174')
+        : (process.env.CLIENT_URL || 'http://localhost:5173');
 
-    // AUTO-DEPLOYMENT DETECT: If running on Render, force live domain if not set
-    if (process.env.RENDER || process.env.NODE_ENV === 'production') {
-        if (isSourceAdmin && !targetUrl.includes('wearendura.com')) {
-            targetUrl = 'https://admin.wearendura.com';
-        } else if (!isSourceAdmin && !targetUrl.includes('wearendura.com')) {
-            targetUrl = 'https://wearendura.com';
+    // If the OAuth state contains the requester's origin and no explicit env var was set,
+    // trust the origin (e.g. the browser that initiated the login).
+    if (stateObj.origin) {
+        const envKey = isSourceAdmin ? 'ADMIN_CLIENT_URL' : 'CLIENT_URL';
+        if (!process.env[envKey]) {
+            targetUrl = stateObj.origin;
         }
-    }
-
-    if (stateObj.origin && !process.env.ADMIN_CLIENT_URL && !process.env.CLIENT_URL) {
-        targetUrl = stateObj.origin;
     }
 
     // ── Admin flow ────────────

@@ -9,8 +9,13 @@ export const AppProvider = ({ children }) => {
     const [products, setAssets] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [cart, setCart] = useState(() => {
-        const saved = localStorage.getItem('endura_cart');
-        return saved ? JSON.parse(saved) : [];
+        // Only restore cart from localStorage if user is logged in
+        const userInfoRaw = localStorage.getItem('userInfo');
+        if (userInfoRaw) {
+            const saved = localStorage.getItem('endura_cart');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return [];
     });
     const [orders, setOrders] = useState([]);
     const [vaultItems, setVaultItems] = useState([]);
@@ -140,9 +145,16 @@ export const AppProvider = ({ children }) => {
         setCurrentUser(null);
         setCart([]);
         localStorage.removeItem('userInfo');
+        localStorage.removeItem('endura_cart');
     };
 
     const addToCart = async (product, qty = 1, size = null) => {
+        // Require login to add items to cart
+        if (!currentUser) {
+            console.warn('User must be logged in to add items to cart');
+            return { requiresLogin: true };
+        }
+
         // Guard against invalid products
         if (!product || (!product.name && !product._id && !product.id)) {
             console.error('Refusing to add invalid product to cart:', product);

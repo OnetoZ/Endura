@@ -11,7 +11,7 @@ const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { products, addToCart } = useStore();
+    const { products, addToCart, currentUser } = useStore();
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedSize, setSelectedSize] = useState('M');
@@ -227,8 +227,12 @@ const ProductDetail = () => {
                             </div>
 
                             <button
-                                onClick={() => {
-                                    addToCart(product, quantity, selectedSize);
+                                onClick={async () => {
+                                    if (!currentUser) {
+                                        navigate('/auth');
+                                        return;
+                                    }
+                                    await addToCart(product, quantity, selectedSize);
                                     navigate('/cart');
                                 }}
                                 className="w-full sm:flex-grow py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"

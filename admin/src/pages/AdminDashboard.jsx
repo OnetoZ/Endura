@@ -48,6 +48,7 @@ const AdminDashboard = () => {
     const [newCard, setNewCard] = useState({
         name: '', description: '', frontImage: '', backImage: '', tier: 'common'
     });
+    const [cardUploads, setCardUploads] = useState({ frontImage: false, backImage: false });
 
     // ── Order Details ──────────────────────────────────────────────────────
     const [viewingOrder, setViewingOrder] = useState(null);
@@ -116,9 +117,43 @@ const AdminDashboard = () => {
         return () => window.removeEventListener('endura_admin_refresh', handleGlobalRefresh);
     }, [verifyAndLoad]);
 
+    // Re-fetch data whenever the active tab changes
+    useEffect(() => {
+        const refreshData = async () => {
+            try {
+                if (activeTab === 'dashboard') {
+                    // Refresh everything for the overview stats
+                    const [productsData, ordersData, usersData, cardsData, vaultData] = await Promise.all([
+                        assetService.getAssets().catch(e => ({ products: [] })),
+                        orderService.getAllOrders().catch(e => []),
+                        userService.getUsers().catch(e => []),
+                        vaultService.getVaultCards().catch(e => []),
+                        vaultService.getVaultItems().catch(e => [])
+                    ]);
+                    setAssets(Array.isArray(productsData) ? productsData : (productsData.products || []));
+                    setOrders(ordersData || []);
+                    setUsers(usersData || []);
+                    setVaultCards(cardsData || []);
+                    setVaultItems(vaultData || []);
+                } else if (activeTab === 'vault') {
+                    const [cardsData, vaultData] = await Promise.all([
+                        vaultService.getVaultCards().catch(e => []),
+                        vaultService.getVaultItems().catch(e => [])
+                    ]);
+                    setVaultCards(cardsData || []);
+                    setVaultItems(vaultData || []);
+                }
+            } catch (err) {
+                console.warn('Tab refresh failed:', err);
+            }
+        };
+        refreshData();
+    }, [activeTab]);
+
     // ── Products ──────────────────────────────────────────────────────────
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
     const [editingProductId, setEditingProductId] = useState(null);
+    const [expandedBatchId, setExpandedBatchId] = useState(null);
 
     // ── Recent Activity Logic ──────────────────────────────────────────────
     const recentActivities = useMemo(() => {
@@ -250,11 +285,19 @@ const AdminDashboard = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const uploadPromise = uploadService.uploadImage(file);
+        console.log(`[ADMIN] Preparing upload for ${fieldName}:`, {
+            name: file.name,
+            type: file.type,
+            sizeInMB: (file.size / (1024 * 1024)).toFixed(2)
+        });
+
+        setCardUploads(prev => ({ ...prev, [fieldName]: true }));
+        const uploadPromise = uploadService.uploadImage(file, 'vault');
+
         toast.promise(uploadPromise, {
-            loading: 'Uploading card image...',
-            success: 'Image uploaded!',
-            error: 'Failed to upload image'
+            loading: `Uploading ${fieldName === 'frontImage' ? 'front' : 'back'} image...`,
+            success: 'Image uploaded successfully!',
+            error: 'R2 Sync failed - using local fallback'
         });
 
         try {
@@ -262,6 +305,8 @@ const AdminDashboard = () => {
             setNewCard(prev => ({ ...prev, [fieldName]: url }));
         } catch (error) {
             console.error('Upload error:', error);
+        } finally {
+            setCardUploads(prev => ({ ...prev, [fieldName]: false }));
         }
     };
 
@@ -277,7 +322,7 @@ const AdminDashboard = () => {
         try {
             const totalStock = Object.values(newProduct.sizes || { S: 0, M: 0, L: 0, XL: 0 })
                 .reduce((acc, val) => acc + (Number(val) || 0), 0);
-                
+
             const productData = {
                 ...newProduct,
                 images: [newProduct.image, newProduct.backImage, newProduct.digitalTwinImage, ...newProduct.additionalImages],
@@ -364,15 +409,42 @@ const AdminDashboard = () => {
     };
 
     const handleDeleteCard = async (id) => {
-        if (!window.confirm('Confirm deletion of this archived asset?')) return;
+        if (!window.confirm('Confirm deletion of this archived asset? This will also remove all redeemed records.')) return;
         try {
             await vaultService.deleteVaultCard(id);
             setVaultCards(prev => prev.filter(c => c._id !== id));
-            toast.success('Asset purged from archive');
+            // Also remove associated vault items from local state
+            setVaultItems(prev => prev.filter(item => {
+                const itemCardId = String(item.vaultCard?._id || item.vaultCard);
+                return itemCardId !== String(id);
+            }));
+            toast.success('Asset and all linked records purged');
         } catch (error) {
             toast.error('Purge failed');
         }
     };
+
+    const handleDeleteVaultItem = async (id) => {
+        if (!window.confirm('Confirm purging this distributed asset record?')) return;
+        try {
+            await vaultService.deleteVaultItem(id);
+            setVaultItems(prev => prev.filter(c => c._id !== id));
+            toast.success('Asset record erased');
+        } catch (error) {
+            toast.error('Failed to erase record');
+        }
+    };
+
+    const handleToggleVaultItemStatus = async (id, currentStatus) => {
+        try {
+            const updated = await vaultService.updateVaultItemStatus(id, { isRedeemed: !currentStatus });
+            setVaultItems(prev => prev.map(item => item._id === id ? updated : item));
+            toast.success(`Asset marked as ${!currentStatus ? 'Redeemed' : 'Stored'}`);
+        } catch (error) {
+            toast.error('Failed to update status');
+        }
+    };
+
 
     const handleEditCard = (card) => {
         setNewCard({
@@ -609,8 +681,9 @@ const AdminDashboard = () => {
                             <StatusWidget label="Total Products" value={products.length} color="primary" />
                             <StatusWidget label="Active Orders" value={orders.length} color="accent" />
                             <StatusWidget label="Total Users" value={users?.length || 0} color="purple-500" />
-                            <StatusWidget label="Vault Items" value={vaultItems?.length || 0} color="green-400" />
-                            <StatusWidget label="Items Redeemed" value={vaultItems?.filter(v => !v.locked).length || 0} color="blue-400" />
+                            <StatusWidget label="Vault Templates" value={vaultCards?.length || 0} color="green-400" />
+
+                            <StatusWidget label="Items Redeemed" value={vaultItems?.filter(v => v.isRedeemed).length || 0} color="pink-400" />
                             <StatusWidget label="Avg. Price" value={`₹${Math.round(products.reduce((acc, p) => acc + p.price, 0) / products.length) || 0}`} color="yellow-400" />
 
                             {/* Recent Activity Mini-Feed */}
@@ -866,9 +939,6 @@ const AdminDashboard = () => {
                                                         <option value="Rare">Rare</option>
                                                         <option value="Epic">Epic</option>
                                                         <option value="Legendary">Legendary</option>
-                                                        <option value="Physical">Physical</option>
-                                                        <option value="Digital Twin">Digital Twin</option>
-                                                        <option value="Digital">Digital</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1058,148 +1128,206 @@ const AdminDashboard = () => {
                                     <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Vault Management</h3>
                                     <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Configure administrative collectible templates</p>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setIsAddingCard(!isAddingCard);
-                                        if (!isAddingCard) {
-                                            setNewCard({ name: '', description: '', frontImage: '', backImage: '', category: 'common' });
-                                            setEditingCardId(null);
-                                        }
-                                    }}
-                                    className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-white text-black' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
-                                >
-                                    {isAddingCard ? 'Cancel Action' : 'Deploy New Asset'}
-                                </button>
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const [cardsData, vaultData] = await Promise.all([
+                                                    vaultService.getVaultCards().catch(e => []),
+                                                    vaultService.getVaultItems().catch(e => [])
+                                                ]);
+                                                setVaultCards(cardsData || []);
+                                                setVaultItems(vaultData || []);
+                                                toast.success('Vault data refreshed');
+                                            } catch (err) {
+                                                toast.error('Refresh failed');
+                                            }
+                                        }}
+                                        className="px-6 py-3 border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:border-primary transition-all"
+                                    >
+                                        Refresh Data
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsAddingCard(!isAddingCard);
+                                            if (!isAddingCard) {
+                                                setNewCard({ name: '', description: '', frontImage: '', backImage: '', tier: 'common' });
+                                                setEditingCardId(null);
+                                            }
+                                        }}
+                                        className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCard ? 'bg-white text-black' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                                    >
+                                        {isAddingCard ? 'Cancel Action' : 'Deploy New Asset'}
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Add/Edit Form */}
-                            <AnimatePresence>
-                                {isAddingCard && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden mb-12"
-                                    >
-                                        <div className="glass border-primary/20 p-8 bg-primary/[0.02]">
-                                            <form onSubmit={handleVaultCardSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                                <div className="space-y-6">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Asset Name</label>
-                                                        <input
-                                                            className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
-                                                            value={newCard.name}
-                                                            onChange={e => setNewCard({ ...newCard, name: e.target.value })}
-                                                            placeholder="ASSET_IDENTIFIER"
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Asset Class</label>
-                                                        <select
-                                                            className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary"
-                                                            value={newCard.tier}
-                                                            onChange={e => setNewCard({ ...newCard, tier: e.target.value })}
-                                                        >
-                                                            <option value="common">Common</option>
-                                                            <option value="rare">Rare</option>
-                                                            <option value="epic">Epic</option>
-                                                            <option value="legendary">Legendary</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
+                            <div className="mb-4"></div>
 
-                                                <div className="space-y-6">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image (Tarot)</label>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="w-full bg-black/50 border border-white/10 p-4 text-[10px] text-gray-500 file:bg-primary file:border-0 file:text-white file:px-4 file:py-1 file:uppercase file:font-black file:text-[9px] cursor-pointer"
-                                                            onChange={e => handleCardImageUpload(e, 'frontImage')}
-                                                        />
-                                                        {newCard.frontImage && <p className="text-[8px] text-accent mt-1 uppercase">Link: {newCard.frontImage.slice(-20)}</p>}
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image (Product)</label>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="w-full bg-black/50 border border-white/10 p-4 text-[10px] text-gray-500 file:bg-primary file:border-0 file:text-white file:px-4 file:py-1 file:uppercase file:font-black file:text-[9px] cursor-pointer"
-                                                            onChange={e => handleCardImageUpload(e, 'backImage')}
-                                                        />
-                                                        {newCard.backImage && <p className="text-[8px] text-accent mt-1 uppercase">Link: {newCard.backImage.slice(-20)}</p>}
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-6">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Description</label>
-                                                        <textarea
-                                                            className="w-full bg-black/50 border border-white/10 p-4 text-sm font-bold uppercase text-white outline-none focus:border-primary h-[85px]"
-                                                            value={newCard.description}
-                                                            onChange={e => setNewCard({ ...newCard, description: e.target.value })}
-                                                            placeholder="ATMOSPHERIC_INTEL"
-                                                        />
-                                                    </div>
-                                                    <button
-                                                        disabled={cardSaving}
-                                                        type="submit"
-                                                        className="w-full py-4 bg-primary text-white font-black uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
-                                                    >
-                                                        {cardSaving ? 'Syncing...' : (editingCardId ? 'Update Asset' : 'Commit to Archive')}
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {/* Cards List */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {/* Cards List / Accordion */}
+                            <div className="flex flex-col gap-2">
                                 {vaultCards.length === 0 ? (
-                                    <div className="col-span-full py-20 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] glass border-white/5">
-                                        No assets detected in archive
+                                    <div className="py-20 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] glass border-white/5">
+                                        No mass synchronization batches detected
                                     </div>
                                 ) : (
-                                    vaultCards.map(card => (
-                                        <div key={card._id} className="glass border-white/10 overflow-hidden group">
-                                            <div className="aspect-[3/4] relative overflow-hidden">
-                                                <img
-                                                    src={getImageUrl(card.frontImage)}
-                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                                                    alt={card.name}
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                                                <div className="absolute top-4 right-4">
-                                                    <span className={`px-2 py-1 text-[8px] font-black uppercase tracking-widest border border-white/20 bg-black/40 backdrop-blur-md text-white`}>
-                                                        {card.tier || 'COMMON'}
-                                                    </span>
-                                                </div>
-                                                <div className="absolute bottom-4 left-4 right-4">
-                                                    <p className="text-sm font-black uppercase tracking-widest text-white truncate">{card.name}</p>
-                                                    <p className="text-[8px] text-gray-400 uppercase tracking-tighter mt-1 truncate">{card.description || 'SECURE_ASSET'}</p>
-                                                </div>
-                                            </div>
-                                            <div className="p-4 flex justify-between border-t border-white/5 bg-white/[0.02]">
-                                                <button
-                                                    onClick={() => handleEditCard(card)}
-                                                    className="text-[9px] font-black uppercase text-gray-400 hover:text-primary transition-colors"
+                                    vaultCards.map(card => {
+                                        const isExpanded = expandedBatchId === card._id;
+                                        const batchItems = vaultItems.filter(item => (item.vaultCard?._id || item.vaultCard) === card._id);
+
+                                        return (
+                                            <div key={card._id} className="glass border border-white/5 transition-all overflow-hidden flex flex-col group">
+                                                {/* Accordion Header */}
+                                                <div
+                                                    className="hover:bg-white/[0.02] p-4 transition-all cursor-pointer flex justify-between items-center z-10"
+                                                    onClick={() => setExpandedBatchId(isExpanded ? null : card._id)}
                                                 >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteCard(card._id)}
-                                                    className="text-[9px] font-black uppercase text-red-500/50 hover:text-red-500 transition-colors"
-                                                >
-                                                    Purge
-                                                </button>
+                                                    <div className="flex items-center gap-6">
+                                                        <div className={`w-1.5 h-1.5 rounded-full transition-all shadow-[0_0_10px_rgba(180,132,255,0.5)] ${isExpanded ? 'bg-primary' : 'bg-primary/50'}`}></div>
+                                                        <span className="text-[11px] font-black uppercase tracking-widest text-white">
+                                                            {card.batchDescriptor || `PROTOCOL BATCH: ${vaultCards.length - vaultCards.indexOf(card)}`}
+                                                        </span>
+                                                        <div className="flex items-center gap-4 ml-4">
+                                                            <span className="px-2 py-0.5 border border-white/5 text-[8px] font-black text-gray-500 uppercase tracking-widest rounded-sm">
+                                                                TIER: {card.tier || 'COMMON'}
+                                                            </span>
+                                                            <span className="px-2 py-0.5 border border-primary/20 text-[8px] font-black text-primary/70 uppercase tracking-widest rounded-sm">
+                                                                SCALE: {card.name || '1/1'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-4">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary/70">{batchItems.length} CODES</span>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEditCard(card);
+                                                            }}
+                                                            className="text-[9px] font-black uppercase text-gray-400 hover:text-white px-3 py-1 transition-all rounded-sm"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteCard(card._id);
+                                                            }}
+                                                            className="text-[9px] font-black uppercase text-red-500/50 hover:text-red-500 hover:bg-white/5 px-3 py-1 transition-all rounded-sm"
+                                                        >
+                                                            DELETE
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Accordion Body */}
+                                                <AnimatePresence>
+                                                    {isExpanded && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            className="border-t border-white/5 bg-black/40 overflow-hidden"
+                                                        >
+                                                            <div className="p-6">
+                                                                <div className="flex flex-col lg:flex-row gap-8 mb-8 items-start">
+                                                                    {/* Left Column: Images & Tier */}
+                                                                    <div className="flex flex-col items-start gap-4 shrink-0">
+                                                                        <div>
+                                                                            <span className="text-[9px] font-black uppercase text-primary tracking-[0.4em] bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-sm">
+                                                                                TIER: {card.tier || 'COMMON'}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex gap-4">
+                                                                            <div className="bg-[#111] border border-white/5 p-4 relative rounded-sm min-w-[120px]">
+                                                                                <p className="text-[8px] text-gray-500 uppercase tracking-widest absolute top-2 left-2">Front Side</p>
+                                                                                {card.frontImage ? (
+                                                                                    <img src={getImageUrl(card.frontImage)} alt="Front Asset" className="h-24 mt-4 object-contain shadow-[0_0_20px_rgba(180,132,255,0.1)] mx-auto" />
+                                                                                ) : (
+                                                                                    <span className="text-[9px] text-gray-600 uppercase tracking-widest block text-center py-8 px-4 mt-4">No front asset</span>
+                                                                                )}
+                                                                            </div>
+
+                                                                            {card.backImage && (
+                                                                                <div className="bg-[#111] border border-white/5 p-4 relative rounded-sm min-w-[120px]">
+                                                                                    <p className="text-[8px] text-gray-500 uppercase tracking-widest absolute top-2 left-2">Back Side</p>
+                                                                                    <img src={getImageUrl(card.backImage)} alt="Back Asset" className="h-24 mt-4 object-contain shadow-[0_0_20px_rgba(180,132,255,0.1)] mx-auto" />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+
+                                                                <div className="overflow-x-auto border border-white/5">
+                                                                    <table className="w-full text-left bg-black/20">
+                                                                        <thead className="text-[9px] font-black uppercase tracking-widest text-gray-500 border-b border-white/5 bg-white/[0.02]">
+                                                                            <tr>
+                                                                                <th className="py-3 pl-6">Serial No.</th>
+                                                                                <th className="py-3">Redeem Code</th>
+                                                                                <th className="py-3 text-center">Status</th>
+                                                                                <th className="py-3 pr-6 text-right">User</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-white/5 text-sm">
+                                                                            {(() => {
+                                                                                const allCodes = (card.codes && card.codes.length > 0)
+                                                                                    ? card.codes
+                                                                                    : (card.description || '').split(/[\n,]+/).map(c => c.replace(/\s/g, '')).filter(c => c.length > 0);
+
+                                                                                if (allCodes.length === 0) {
+                                                                                    return (
+                                                                                        <tr>
+                                                                                            <td colSpan={4} className="py-8 text-center text-gray-600 text-[9px] font-black uppercase tracking-[0.3em]">No assigned codes embedded</td>
+                                                                                        </tr>
+                                                                                    );
+                                                                                }
+
+                                                                                return allCodes.map((codeText, idx) => {
+                                                                                    const cleanCode = codeText.trim();
+                                                                                    const cardId = String(card._id);
+                                                                                    // Find a VaultItem that used this specific code
+                                                                                    const matchedItem = vaultItems.find(item =>
+                                                                                        item.syncCode === cleanCode &&
+                                                                                        String(item.vaultCard?._id || item.vaultCard) === cardId
+                                                                                    );
+                                                                                    const isCollected = !!matchedItem;
+                                                                                    const isRedeemed = matchedItem && matchedItem.isRedeemed;
+
+                                                                                    return (
+                                                                                        <tr key={idx} className="group hover:bg-white/5 transition-all">
+                                                                                            <td className="py-3 pl-6 font-mono text-[10px] text-primary">{idx + 1} / {allCodes.length}</td>
+                                                                                            <td className="py-3 font-mono text-[9px] text-gray-300 tracking-[0.2em] uppercase">{cleanCode}</td>
+                                                                                            <td className="py-3 text-center">
+                                                                                                <span className={`px-2 py-1 text-[8px] font-black uppercase tracking-widest border ${isCollected ? 'border-primary/50 text-primary bg-primary/10' : 'border-gray-500/50 text-gray-400 bg-white/5'}`}>
+                                                                                                    {isCollected ? 'REDEEMED' : 'NOT REDEEMED'}
+                                                                                                </span>
+                                                                                            </td>
+                                                                                            <td className="py-3 pr-6 text-right">
+                                                                                                {isCollected && matchedItem.user ? (
+                                                                                                    <span className="text-[10px] font-bold text-primary tracking-widest uppercase">{matchedItem.user.username || matchedItem.user.email || 'USER'}</span>
+                                                                                                ) : (
+                                                                                                    <span className="text-[10px] font-mono text-gray-500">-</span>
+                                                                                                )}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    );
+                                                                                });
+                                                                            })()}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
+
+                            {/* Bottom Area Content Removed */}
                         </div>
                     )}
 
@@ -1291,6 +1419,183 @@ const AdminDashboard = () => {
                     )}
                 </div>
             </div>
+
+            {/* Global Modals Stack */}
+            <AnimatePresence>
+                {isAddingCard && (
+                    <div className="fixed inset-0 z-[99999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-3xl bg-[#0a0a0a] border border-white/10 relative shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-hidden"
+                        >
+                            {/* Top Purple Glow */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-6 bg-[#af85ff]/30 blur-2xl pointer-events-none"></div>
+
+                            <div className="p-8 relative max-h-[85vh] overflow-y-auto custom-scrollbar">
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setIsAddingCard(false)}
+                                    className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors z-50 p-2"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="2" />
+                                    </svg>
+                                </button>
+
+                                <h2 className="text-xl font-oswald font-bold uppercase text-white tracking-widest mb-1">Bulk Sync Terminal</h2>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-8 border-b border-white/5 pb-4">Initialize Protocol Batch: #{vaultCards.length + 1}</p>
+
+                                <form onSubmit={handleVaultCardSave} className="flex flex-col md:flex-row gap-8">
+                                    {/* Left Column (Metadata) */}
+                                    <div className="flex-1 space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Archive Tier</label>
+                                                <select
+                                                    value={newCard.tier}
+                                                    onChange={e => setNewCard({ ...newCard, tier: e.target.value })}
+                                                    className="w-full bg-[#111] border border-white/5 p-3 text-[10px] font-bold text-white outline-none focus:border-primary transition-all rounded-sm uppercase"
+                                                >
+                                                    <option value="common">Common</option>
+                                                    <option value="rare">Rare</option>
+                                                    <option value="epic">Epic</option>
+                                                    <option value="legendary">Legendary</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Serial Scale</label>
+                                                <select
+                                                    value={newCard.name}
+                                                    onChange={e => setNewCard({ ...newCard, name: e.target.value })}
+                                                    className="w-full bg-[#111] border border-white/5 p-3 text-[10px] font-bold text-white outline-none focus:border-primary transition-all rounded-sm uppercase appearance-none cursor-pointer text-center"
+                                                >
+                                                    <option value="">SELECT SCALE</option>
+                                                    <option value="1/1">1/1</option>
+                                                    <option value="1/10">1/10</option>
+                                                    <option value="1/25">1/25</option>
+                                                    <option value="1/50">1/50</option>
+                                                    <option value="1/75">1/75</option>
+                                                    <option value="1/100">1/100</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Front Side Asset</label>
+                                            <div className="relative group/field">
+                                                <div className="flex gap-2 relative">
+                                                    <input
+                                                        readOnly
+                                                        value={newCard.frontImage ? newCard.frontImage : ''}
+                                                        placeholder="FRONT ASSET URL..."
+                                                        className="w-full bg-[#111] border border-white/5 p-3 text-xs font-mono text-gray-500 outline-none rounded-sm truncate pr-10"
+                                                    />
+                                                    <label htmlFor="frontImgUpload" className="w-12 border border-white/5 bg-[#1a1a1a] flex items-center justify-center cursor-pointer hover:bg-white/10 transition-all rounded-sm relative overflow-hidden">
+                                                        {cardUploads.frontImage ? (
+                                                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                            </div>
+                                                        ) : (
+                                                            <svg className="pointer-events-none" width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M6 1V9M6 1L2 5M6 1L10 5M1 13H11" stroke="#666" strokeWidth="1.5" />
+                                                            </svg>
+                                                        )}
+                                                        <input id="frontImgUpload" type="file" className="hidden" accept="image/*" onChange={e => handleCardImageUpload(e, 'frontImage')} disabled={cardUploads.frontImage} />
+                                                    </label>
+                                                </div>
+                                                {newCard.frontImage && (
+                                                    <div className="mt-2 relative w-24 h-24 border border-white/10 bg-[#050505] overflow-hidden rounded-sm group-hover/field:border-primary/50 transition-all">
+                                                        <img src={getImageUrl(newCard.frontImage)} alt="Front Preview" className="w-full h-full object-cover" />
+                                                        {cardUploads.frontImage && (
+                                                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+                                                                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                                <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em]">Uploading...</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Back Side Asset</label>
+                                            <div className="relative group/field">
+                                                <div className="flex gap-2 relative">
+                                                    <input
+                                                        readOnly
+                                                        value={newCard.backImage ? newCard.backImage : ''}
+                                                        placeholder="BACK ASSET URL..."
+                                                        className="w-full bg-[#111] border border-white/5 p-3 text-xs font-mono text-gray-500 outline-none rounded-sm truncate pr-10"
+                                                    />
+                                                    <label htmlFor="backImgUpload" className="w-12 border border-white/5 bg-[#1a1a1a] flex items-center justify-center cursor-pointer hover:bg-white/10 transition-all rounded-sm relative overflow-hidden">
+                                                        {cardUploads.backImage ? (
+                                                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                            </div>
+                                                        ) : (
+                                                            <svg className="pointer-events-none" width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M6 1V9M6 1L2 5M6 1L10 5M1 13H11" stroke="#666" strokeWidth="1.5" />
+                                                            </svg>
+                                                        )}
+                                                        <input id="backImgUpload" type="file" className="hidden" accept="image/*" onChange={e => handleCardImageUpload(e, 'backImage')} disabled={cardUploads.backImage} />
+                                                    </label>
+                                                </div>
+                                                {newCard.backImage && (
+                                                    <div className="mt-2 relative w-24 h-24 border border-white/10 bg-[#050505] overflow-hidden rounded-sm group-hover/field:border-primary/50 transition-all">
+                                                        <img src={getImageUrl(newCard.backImage)} alt="Back Preview" className="w-full h-full object-cover" />
+                                                        {cardUploads.backImage && (
+                                                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+                                                                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                                <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em]">Uploading...</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column (Textarea + Buttons) */}
+                                    <div className="flex-[1.2] flex flex-col justify-between">
+                                        <div className="flex-1 flex flex-col space-y-2 h-[200px]">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Protocol Code Strings (Pasted)</label>
+                                            <textarea
+                                                className="w-full h-[180px] bg-[#111] border border-white/5 p-4 text-[10px] leading-relaxed font-mono text-gray-400 outline-none flex-1 resize-none rounded-sm"
+                                                placeholder="PASTE CODES HERE... (ONE PER LINE OR COMMA SEPARATED)"
+                                                value={newCard.description}
+                                                onChange={e => setNewCard({ ...newCard, description: e.target.value })}
+                                            ></textarea>
+
+                                            <div className="flex items-center gap-2 pt-2">
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom Row */}
+                                        <div className="flex gap-4 mt-8">
+                                            <button
+                                                type="submit"
+                                                disabled={cardSaving}
+                                                className="flex-[2] py-4 bg-[#B484FF] text-black font-black uppercase tracking-widest text-[10px] hover:brightness-110 hover:shadow-[0_0_20px_rgba(180,132,255,0.4)] transition-all rounded-sm"
+                                            >
+                                                {cardSaving ? 'Syncing...' : 'Initiate Mass Synchronization'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsAddingCard(false)}
+                                                className="flex-[1] py-4 bg-[#0a0a0a] border border-white/10 text-white font-black uppercase tracking-widest text-[10px] hover:bg-white/5 transition-colors rounded-sm"
+                                            >
+                                                Abort
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
 
             {/* Global Admin Styles */}
