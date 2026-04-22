@@ -30,8 +30,8 @@ export const getImageUrl = (path) => {
     const placeholder = 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800';
     if (!path) return placeholder;
 
-    // If it's already a Base64 string (stored in Mongo), return it as is
-    if (typeof path === 'string' && path.startsWith('data:image')) return path;
+    // If it's already a Base64 string or a local blob, return it as is
+    if (typeof path === 'string' && (path.startsWith('data:image') || path.startsWith('blob:'))) return path;
 
     // Logical Healing for Absolute URLs
     if (typeof path === 'string' && path.startsWith('http')) {
@@ -300,9 +300,6 @@ export const uploadService = {
             formData.append('image', file);
             formData.append('type', folder);
             const response = await api.post('/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
                 timeout: 120000 // Increased to 120s for Slow 4G support
             });
             return response.data.url;
