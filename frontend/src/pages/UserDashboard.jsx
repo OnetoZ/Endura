@@ -169,9 +169,11 @@ const UserDashboard = () => {
                             serialNumber: p.serialNumber,
                             name: p.vaultCard?.name || 'Protocol Sync',
                             description: p.vaultCard?.description || '',
-                            image: p.vaultCard?.frontImage,
+                            image: p.vaultCard?.backImage || p.vaultCard?.frontImage,
+                            frontImageUrl: p.vaultCard?.frontImage,
                             backImageUrl: p.vaultCard?.backImage,
                             tier: p.vaultCard?.tier || 'rare',
+                            totalCodes: p.vaultCard?.codes?.length || 1,
                             isUnlocked: true
                         }));
                     setVaultAssets(ownedProtocols);
@@ -302,7 +304,7 @@ const UserDashboard = () => {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="glass p-8 border border-white/5 hover:border-primary/30 transition-all duration-300"
+                            className="glass p-8 border border-white/70 hover:border-accent transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                         >
                             <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-gray-400">
                                 RANK STATUS
@@ -333,7 +335,7 @@ const UserDashboard = () => {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.6 }}
-                            className="glass p-8 border border-white/5 hover:border-primary/30 transition-all duration-300"
+                            className="glass p-8 border border-white/70 hover:border-accent transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                         >
                             <h2 className="text-xl font-heading uppercase tracking-widest mb-6 text-gray-400">
                                 IDENTIFICATION
@@ -428,7 +430,7 @@ const UserDashboard = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.6 }}
-                            className="glass p-8 border border-white/5"
+                            className="glass p-8 border border-white/70 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                         >
                             <h2 className="text-xl font-heading uppercase tracking-widest mb-8 text-gray-400 flex items-center gap-3">
                                 <Package className="w-5 h-5" />
@@ -450,7 +452,7 @@ const UserDashboard = () => {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: 0.8 + (index * 0.1) }}
-                                            className="p-6 bg-white/[0.02] border border-white/5 hover:border-primary/30 transition-all duration-300"
+                                            className="p-6 bg-white/[0.02] border border-white/40 hover:border-accent transition-all duration-300"
                                         >
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
@@ -549,7 +551,7 @@ const UserDashboard = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 1.0 }}
-                            className="glass p-8 border border-white/5"
+                            className="glass p-8 border border-white/70 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                         >
                             <h2 className="text-xl font-heading uppercase tracking-widest mb-8 text-gray-400 flex items-center gap-3">
                                 <MapPin className="w-5 h-5" />
@@ -618,46 +620,45 @@ const UserDashboard = () => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 1.2 }}
                         >
-                            <div className="glass p-8 border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                            <div className="glass p-8 border border-white/70 shadow-[0_0_20px_rgba(255,255,255,0.05)] mt-12 bg-black/40">
                                 <h2 className="text-xl font-heading uppercase tracking-widest mb-2 text-[#d4af37] flex items-center gap-3">
                                     <ImageIcon className="w-5 h-5" />
                                     MY COLLECTION
                                 </h2>
                                 <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-8">
-                                    Vault Cards • Collected Assets
+                                    Private Vault • Synchronized Protocols
                                 </p>
 
                                 {vaultAssets.length === 0 ? (
                                     <div className="text-center py-12 border border-white/10 bg-white/[0.02]">
                                         <Lock className="w-8 h-8 text-gray-600 mx-auto mb-4" />
                                         <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-loose">
-                                            Archive is currently empty.
+                                            No private protocols found.
                                             <span className="text-gray-600 block mt-2">Visit the Vault to synchronize new archival protocols.</span>
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                        {/* Vault Assets */}
                                         {vaultAssets.map((item, idx) => (
                                             <div
                                                 key={`vault-${idx}`}
                                                 onClick={() => { setSelectedAsset(item); setIsFlipped(false); }}
-                                                className="relative group overflow-hidden border border-white/20 bg-black hover:border-accent transition-colors cursor-pointer"
+                                                className="relative group overflow-hidden border border-white/70 bg-black hover:border-accent transition-colors cursor-pointer rounded-lg shadow-xl"
                                             >
-                                                <div className="absolute inset-0 bg-accent/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                <div className="absolute inset-0 bg-accent/10 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                 <div className="aspect-[3/4] relative p-3 flex items-center justify-center bg-white/[0.02]">
                                                     <img
                                                         src={getImageUrl(item.image || item.images?.[0])}
                                                         alt={`${item.name} Vault Asset`}
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10 p-2"
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10 p-1"
                                                     />
                                                 </div>
                                                 <div className="p-4 border-t border-white/10 bg-white/5">
-                                                    <h3 className="text-sm font-black uppercase text-white truncate mb-1" title={item.serialNumber || item.name}>
-                                                        {item.serialNumber || '—'}
+                                                    <h3 className="text-xs font-black uppercase text-white truncate mb-1" title={item.name}>
+                                                        {item.serialNumber} / {item.totalCodes} {item.name === '1/10' ? '' : item.name}
                                                     </h3>
                                                     <p className="text-accent text-[8px] uppercase tracking-widest font-bold">
-                                                        Vault Card • {item.tier || 'Archived'}
+                                                        {item.tier} PROTOCOL
                                                     </p>
                                                 </div>
                                             </div>
@@ -686,15 +687,15 @@ const UserDashboard = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-lg bg-[#050505] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                             className="relative w-full max-w-lg mx-4 bg-[#050505] border border-white/60 rounded-2xl overflow-hidden shadow-2xl"
                         >
                             {/* Header */}
-                            <div className="flex justify-between items-center p-6 border-b border-white/5">
-                                <div>
-                                    <h2 className="text-xl font-heading uppercase tracking-widest text-primary">
-                                        ARTEFACT INSPECTION
-                                    </h2>
-                                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-1">
+                             <div className="flex justify-between items-center p-5 md:p-6 border-b border-white/5">
+                                 <div>
+                                     <h2 className="text-lg md:text-xl font-heading uppercase tracking-widest text-primary">
+                                         ARTEFACT INSPECTION
+                                     </h2>
+                                     <p className="text-[9px] md:text-[10px] font-mono text-white/40 uppercase tracking-widest mt-1">
                                         ARCHIVE_REF: {selectedAsset._id.slice(-8).toUpperCase()}
                                     </p>
                                 </div>
@@ -706,37 +707,21 @@ const UserDashboard = () => {
                                 </button>
                             </div>
 
-                            {/* Interactive Card View */}
-                            <div className="p-4">
-                                <div
-                                    className="relative aspect-[3/4] max-w-[380px] mx-auto transition-all duration-700 cursor-pointer [perspective:1000px]"
-                                    onMouseEnter={() => setIsFlipped(true)}
-                                    onMouseLeave={() => setIsFlipped(false)}
-                                >
-                                    <div className={`relative w-full h-full transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
-                                        {/* Front Face */}
-                                        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl border border-white/10 overflow-hidden bg-[#111]">
-                                            <img
-                                                src={getImageUrl(selectedAsset.image || selectedAsset.images?.[0])}
-                                                className="w-full h-full object-cover p-2"
-                                                alt="Artifact Front"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-                                        </div>
+                             {/* Interactive Artifact View */}
+                             <div className="p-4">
+                                 <div className="relative aspect-[3/4] max-w-[380px] mx-auto rounded-xl border border-white/40 overflow-hidden bg-black shadow-[0_0_50px_rgba(168,85,247,0.15)] group">
+                                     <DressItem item={selectedAsset} vaultReady={true} />
+                                     
+                                     {/* Subtle UI Corners */}
+                                     <div className="absolute inset-0 pointer-events-none border border-white/20 m-1 rounded-lg" />
+                                 </div>
+                             </div>
 
-                                        {/* Back Face */}
-                                        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl border border-white/10 overflow-hidden bg-black">
-                                            <DressItem item={selectedAsset} vaultReady={true} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Telemetry Footer */}
-                            <div className="p-8 pt-0 space-y-6">
-                                <div className="text-center space-y-4">
-                                    <h3 className="text-2xl font-black uppercase tracking-[0.1em] text-white">
-                                        {selectedAsset.serialNumber || '—'}
+                             {/* Telemetry Footer */}
+                             <div className="p-6 md:p-8 pt-0 space-y-6">
+                                 <div className="text-center space-y-4">
+                                     <h3 className="text-xl md:text-2xl font-black uppercase tracking-[0.1em] text-white">
+                                         {selectedAsset.serialNumber || '—'}
                                     </h3>
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center justify-center gap-4">
@@ -745,7 +730,7 @@ const UserDashboard = () => {
                                             </span>
                                             <span className="w-1 h-1 rounded-full bg-white/20" />
                                             <span className="text-[10px] font-mono tracking-[0.2em] text-white/40 uppercase">
-                                                SERIAL: {selectedAsset.serialNumber || '1'} / 1
+                                                {selectedAsset.serialNumber || '1'} / {selectedAsset.totalCodes || 1}
                                             </span>
                                         </div>
                                     </div>

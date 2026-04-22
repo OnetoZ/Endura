@@ -15,6 +15,7 @@ import '../components/collections/collections.css';
 import { useVaultScore } from '../hooks/useVaultScore';
 import VaultCongratsOverlay from '../components/Vault/UI/VaultCongratsOverlay';
 import SEO from '../components/SEO';
+import { X } from 'lucide-react';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
@@ -106,7 +107,7 @@ const VaultCard = ({
     const accent = tierAccent(item.tier);
 
     return (
-        <div 
+        <div
             className="relative w-full max-w-[280px] md:max-w-none mx-auto h-[350px] md:h-[420px] [perspective:1000px] group cursor-pointer"
             onClick={() => setIsFlipped(!isFlipped)}
         >
@@ -119,9 +120,9 @@ const VaultCard = ({
             >
                 {/* ─── FRONT SIDE ─── */}
                 <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl bg-black border border-white/10 overflow-hidden">
-                    <img 
-                        src={getImageUrl(item.image)} 
-                        alt={item.name} 
+                    <img
+                        src={getImageUrl(item.image)}
+                        alt={item.name}
                         className="w-full h-full object-cover p-2 rounded-2xl"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -149,10 +150,9 @@ const DressItem = ({
 
     return (
         <div
-            className="relative w-full h-full bg-black overflow-hidden group/dress border border-white/10 rounded-xl"
+            className="relative w-full h-full bg-black overflow-hidden group/dress border border-white/40 rounded-xl"
             style={{
-                boxShadow: `inset 0 0 100px 20px ${accent}33`,
-                background: `radial-gradient(circle at center, transparent 30%, ${accent}11 100%)`
+                boxShadow: `inset 0 0 120px 30px #a855f722`,
             }}
         >
 
@@ -172,9 +172,9 @@ const DressItem = ({
                     <img
                         src={getImageUrl(item.backImageUrl || item.backImage || item.image || item.frontImage)}
                         alt={item.name}
-                        className="w-full h-full object-cover block transition-transform duration-700"
+                        className="w-full h-full object-contain block transition-transform duration-700 p-4"
                         style={{
-                            transform: isHovered ? 'scale(0.9)' : 'scale(0.5)'
+                            transform: isHovered ? 'scale(1.1)' : 'scale(1)'
                         }}
                     />
                 </motion.div>
@@ -298,6 +298,20 @@ const Vault = () => {
     const [syncCode, setSyncCode] = useState('');
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncError, setSyncError] = useState(false);
+    const [globalGallery, setGlobalGallery] = useState([]);
+
+    const fetchGlobalGallery = useCallback(async () => {
+        try {
+            const data = await vaultService.getGlobalVaultItems();
+            setGlobalGallery(data);
+        } catch (error) {
+            console.error("Failed to fetch global gallery:", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchGlobalGallery();
+    }, [fetchGlobalGallery]);
 
     const handlePreview = (item) => {
         setPreviewItem(item);
@@ -403,10 +417,10 @@ const Vault = () => {
 
                         {/* ─── ENCRYPTION OVERRIDE HUD (Always Visible) ─── */}
                         <div className="flex items-center justify-center pt-8 pb-12 px-4 reveal">
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="relative w-full max-w-[400px] glass border border-white/10 rounded-[30px] p-8 md:p-10 flex flex-col items-center justify-center text-center overflow-hidden shadow-[0_0_100px_rgba(212,175,55,0.05)]"
+                                className="relative w-full max-w-[400px] glass border border-white/60 rounded-[30px] p-8 md:p-10 flex flex-col items-center justify-center text-center overflow-hidden shadow-[0_0_100px_rgba(255,255,255,0.05)]"
                             >
                                 {/* Geometric Circles / Radar Effect */}
                                 <div className="absolute inset-0 flex justify-center items-center -z-10 opacity-10">
@@ -437,7 +451,7 @@ const Vault = () => {
 
                                 {/* Trigger Sync Overlay */}
                                 <div className="w-full">
-                                    <button 
+                                    <button
                                         onClick={() => setShowSyncOverlay(true)}
                                         className="w-full py-4 bg-[#d4af37] text-black font-oswald font-black text-xs uppercase tracking-[0.5em] hover:bg-white transition-all duration-700 shadow-[0_15px_30px_rgba(212,175,55,0.15)]"
                                     >
@@ -456,27 +470,104 @@ const Vault = () => {
                     </div>
                 </header>
 
-                <main className="relative z-10 max-w-[1200px] mx-auto px-6 pt-12 pb-48 transition-all duration-1000">
-                    {unlockedIds.length > 0 && (
-                        <div className="flex flex-col gap-24">
-                            {chunkedItems.map((row, idx) => (
-                                <div key={idx} className="vault-row grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-                                    {row.map(item => (
-                                        <div
-                                            key={item.id}
-                                            className="vault-card-reveal"
-                                            onClick={() => handlePreview(item)}
-                                        >
+                <main className="relative z-10 max-w-[1400px] mx-auto px-6 pt-12 pb-48 transition-all duration-1000">
+                    <div className="flex flex-col gap-32">
+                        {/* Session Unlocked Items (New Syncs) */}
+                        {unlockedIds.length > 0 && (
+                            <div className="space-y-12">
+                                <h3 className="text-xl font-heading font-black text-white/40 tracking-[0.8em] uppercase text-center md:text-left flex items-center gap-4">
+                                    <div className="w-8 h-px bg-white/10" />
+                                    New Protocols Detected
+                                    <div className="w-8 h-px bg-white/10" />
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 lg:gap-16">
+                                    {vaultItems.filter(c => unlockedIds.includes(c.id)).map(item => (
+                                        <div key={item.id} className="vault-row">
                                             <VaultCard
                                                 item={item}
                                                 vaultReady={vaultReady}
+                                                onClick={() => handlePreview(item)}
                                             />
                                         </div>
                                     ))}
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                            </div>
+                        )}
+
+                        {/* Global Registry Archive */}
+                        {globalGallery.length > 0 && (
+                            <div className="space-y-16">
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-white/5 pb-12">
+                                    <div className="text-center md:text-left">
+                                        <h3 className="text-2xl md:text-4xl font-heading font-black text-white tracking-widest uppercase mb-2">
+                                            Global Archive
+                                        </h3>
+                                        <p className="text-[10px] font-mono text-white/30 tracking-[0.5em] uppercase">
+                                            Public Registry of Synchronized Artifacts
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-12">
+                                        <div className="text-center">
+                                            <p className="text-[8px] font-mono text-white/20 tracking-[0.4em] mb-1 uppercase">Synchronized</p>
+                                            <p className="text-2xl font-heading text-accent">{globalGallery.length}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+                                    {globalGallery.map((item, index) => (
+                                        <motion.div
+                                            key={item.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            viewport={{ once: true }}
+                                            className="group relative bg-[#0a0a0a] border border-white/20 p-5 rounded-2xl hover:border-accent/40 transition-all duration-700 cursor-pointer shadow-lg"
+                                            onClick={() => handlePreview({
+                                                ...item,
+                                                id: item.id, // Using the VaultItem ID
+                                                vaultCardId: item.vaultCardId,
+                                                name: item.cardName,
+                                                tier: item.cardTier,
+                                                image: item.frontImage,
+                                                isCollected: true
+                                            })}
+                                        >
+                                            <div className="aspect-[3/4] rounded-xl overflow-hidden mb-6 relative">
+                                                <img
+                                                    src={getImageUrl(item.frontImage)}
+                                                    alt={item.cardName}
+                                                    className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
+                                                />
+                                                <div className="absolute inset-x-0 bottom-0 py-4 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <p className="text-center text-[7px] font-mono text-accent tracking-[0.5em] uppercase">ENTER_ENCRYPTION</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h4 className="text-xs font-heading font-black text-white/80 group-hover:text-white uppercase tracking-wider mb-1">
+                                                            {item.cardName === '1/10' ? `${item.serialNumber} / ${item.totalCodes}` : item.cardName}
+                                                        </h4>
+                                                        <p className="text-[7px] font-mono text-accent uppercase tracking-widest">
+                                                            Tier: {item.cardTier}
+                                                        </p>
+                                                    </div>
+                                                    <p className="text-[9px] font-mono text-white/30 font-bold">{item.serialNumber} / {item.totalCodes}</p>
+                                                </div>
+                                                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                                                    <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">Agent</span>
+                                                    <span className="text-[9px] font-heading font-bold text-white/60 tracking-wider group-hover:text-accent transition-colors">
+                                                        {item.userName}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </main>
 
                 {bursts.map(b => (
@@ -498,11 +589,8 @@ const Vault = () => {
                                 onAnimationComplete={() => {
                                     const it = targetItem;
                                     if (!it) return;
-                                    const nU = [...unlockedIds, it.id];
-                                    const nS = { ...stats, [(it.tier || 'common').toLowerCase()]: (stats[(it.tier || 'common').toLowerCase()] || 0) + 1 };
-                                    setUnlockedIds(nU);
-                                    setStats(nS);
-                                    updatePersistence(nU, credits + 1, nS);
+                                    // Removed setUnlockedIds and setStats here
+                                    // This moves the card to global gallery instead of vault session
 
                                     setTimeout(() => {
                                         if (it._source === 'db') {
@@ -562,24 +650,22 @@ const Vault = () => {
                             onClick={() => setPreviewItem(null)}
                         >
                             <motion.div
-                                initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 1.1, opacity: 0, y: -50 }}
-                                className="relative w-full max-w-4xl bg-black/60 border border-white/10 rounded-3xl overflow-hidden glass p-12 flex flex-col items-center justify-center min-h-[60vh]"
-                                onClick={(e) => e.stopPropagation()}
+                                 initial={{ scale: 0.8, opacity: 0, y: 50 }}
+                                 animate={{ scale: 1, opacity: 1, y: 0 }}
+                                 exit={{ scale: 1.1, opacity: 0, y: -50 }}
+                                 className="relative w-full max-w-4xl bg-black/80 border border-white/60 shadow-[0_0_60px_rgba(168,85,247,0.3)] rounded-3xl overflow-hidden glass p-6 md:p-12 flex flex-col items-center justify-center min-h-[40vh]"
+                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Close Button */}
                                 <button
                                     onClick={() => setPreviewItem(null)}
-                                    className="absolute top-8 right-8 text-white/40 hover:text-white transition-colors"
+                                    className="absolute top-6 right-6 z-[2010] text-white/40 hover:text-white transition-colors"
                                 >
-                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                    <X className="w-5 h-5" />
                                 </button>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-center w-full px-4">
-                                    <div className="relative h-[300px] md:h-[600px] flex items-center justify-center">
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-center w-full px-2 md:px-4 mt-8 md:mt-0">
+                                     <div className="relative h-[340px] md:h-[500px] flex items-center justify-center">
                                         <div className="absolute inset-0 bg-primary/10 blur-[150px] rounded-full" />
                                         <DressItem
                                             item={{ ...previewItem, image: previewItem.image }}
@@ -589,12 +675,14 @@ const Vault = () => {
 
                                     <div className="space-y-10 text-center md:text-left">
                                         <div className="space-y-4">
-                                            <span className="font-mono text-[10px] text-[#d4af37] tracking-[0.5em] uppercase">
-                                                ARCHIVE: // {previewItem.tier}
-                                            </span>
-                                            <h2 className="text-4xl md:text-7xl font-heading font-black tracking-tight uppercase leading-none break-words">
-                                                {previewItem.name}
-                                            </h2>
+                                             <span className="font-mono text-[10px] text-[#d4af37] tracking-[0.2em] uppercase">
+                                                 ARCHIVE: // {previewItem.tier}
+                                             </span>
+                                             <h2 className="text-3xl md:text-7xl font-heading font-black tracking-tight uppercase leading-none break-words">
+                                                 {previewItem.serialNumber
+                                                     ? `${previewItem.serialNumber} / ${previewItem.totalCodes || ''}`
+                                                     : previewItem.name}
+                                             </h2>
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 <div className="h-px w-8 bg-[#d4af37]/30" />
                                                 <span className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Protocol Verified</span>
@@ -602,18 +690,31 @@ const Vault = () => {
                                         </div>
 
                                         <div className="space-y-6">
-                                            <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
-                                                {previewItem.description || "Experimental digital artifact bound to physical luxury. Part of the Endura protocol."}
-                                            </p>
+                                            {/* Hide codes and show collector info */}
+                                            {(previewItem.isCollected || previewItem.userName) ? (
+                                                <div className="space-y-4">
+                                                    <p className="hidden md:block text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] mb-4">Protocol Synchronized By</p>
+                                                    <div className="flex flex-col gap-2 md:items-start items-center font-heading uppercase tracking-widest">
+                                                        <span className="opacity-40 text-[10px] md:text-[11px]">Agent:</span>
+                                                        <span className="text-xl md:text-2xl font-black leading-none text-[#d4af37]">{previewItem.userName || 'Unknown Agent'}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
+                                                    {previewItem.description && !previewItem.description.includes('8394726150')
+                                                        ? previewItem.description
+                                                        : "Experimental digital artifact bound to physical luxury. Part of the Endura protocol."}
+                                                </p>
+                                            )}
 
-                                            <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-[0.2em] text-[#d4af37]/60">
+                                            <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-tight text-[#d4af37]/60">
                                                 <span>PHASE: 01_DECRYPTION</span>
                                                 <span className="text-white/10">|</span>
                                                 <span>REWARDS: SYNC_READY</span>
                                             </div>
                                         </div>
 
-                                        <div className="pt-10 border-t border-white/5 flex flex-wrap gap-4 justify-center md:justify-start">
+                                         <div className="pt-6 md:pt-10 border-t border-white/5 flex flex-wrap gap-3 md:gap-4 justify-center md:justify-start">
                                             <div className="px-5 py-2.5 border border-[#d4af37]/20 bg-[#d4af37]/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-[#d4af37]">
                                                 LEGACY STATUS: ACTIVE
                                             </div>
@@ -640,29 +741,19 @@ const Vault = () => {
                             onEnterDashboard={() => navigate('/dashboard')}
                             onClose={() => setShowCongrats(false)}
                         >
-                            <div className="relative w-full h-full [transform-style:preserve-3d]">
-                                {/* Front Face */}
-                                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl bg-[#111] border border-white/10 overflow-hidden">
-                                     <img 
-                                        src={getImageUrl(congratsData?.vaultItem?.vaultCard?.frontImage || targetItem?.image)} 
-                                        className="w-full h-full object-cover scale-[1.3]"
-                                        alt="Front"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-                                </div>
+                            <div className="relative w-full h-full rounded-2xl bg-black border border-white/40 overflow-hidden shadow-[0_0_80px_rgba(168,85,247,0.2)]">
+                                <DressItem
+                                    item={congratsData?.vaultItem ? {
+                                        ...congratsData.vaultItem,
+                                        image: congratsData.vaultItem.vaultCard?.frontImage,
+                                        backImageUrl: congratsData.vaultItem.vaultCard?.backImage,
+                                        tier: congratsData.vaultItem.vaultCard?.tier
+                                    } : { ...targetItem, image: targetItem.image }}
+                                    vaultReady={true}
+                                />
                                 
-                                {/* Back Face */}
-                                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl bg-black border border-white/10 overflow-hidden">
-                                    <DressItem 
-                                        item={congratsData?.vaultItem ? {
-                                            ...congratsData.vaultItem,
-                                            image: congratsData.vaultItem.vaultCard?.frontImage,
-                                            backImageUrl: congratsData.vaultItem.vaultCard?.backImage,
-                                            tier: congratsData.vaultItem.vaultCard?.tier
-                                        } : { ...targetItem, image: targetItem.image }}
-                                        vaultReady={true} 
-                                    />
-                                </div>
+                                {/* HUD Definition Corners */}
+                                <div className="absolute inset-0 pointer-events-none border border-white/20 m-2 rounded-xl" />
                             </div>
                         </VaultCongratsOverlay>
                     )}
@@ -670,7 +761,7 @@ const Vault = () => {
                 <AnimatePresence>
                     {showSyncOverlay && (
                         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -692,7 +783,7 @@ const Vault = () => {
 
                                 {/* Diagonal scanning line */}
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-accent/20 animate-[scan_3s_linear_infinite]" />
-                                
+
                                 <div className="relative z-10 space-y-8">
                                     <div className="text-center space-y-2">
                                         <h3 className="text-2xl font-oswald font-black text-white tracking-[0.2em] uppercase">Manual Override</h3>
@@ -701,7 +792,7 @@ const Vault = () => {
 
                                     <div className="space-y-4">
                                         <div className="relative">
-                                            <input 
+                                            <input
                                                 type="text"
                                                 value={syncCode}
                                                 onChange={(e) => {
@@ -712,7 +803,7 @@ const Vault = () => {
                                                 className="w-full bg-white/5 border border-white/10 p-5 font-mono text-center text-accent tracking-[0.5em] outline-none focus:border-accent transition-all uppercase placeholder:text-white/10"
                                             />
                                             {syncError && (
-                                                <motion.p 
+                                                <motion.p
                                                     initial={{ opacity: 0, y: -5 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="absolute -top-6 left-0 right-0 text-center text-red-500 font-mono text-[8px] uppercase tracking-widest"
@@ -722,7 +813,7 @@ const Vault = () => {
                                             )}
                                         </div>
 
-                                        <button 
+                                        <button
                                             disabled={isSyncing || !syncCode}
                                             onClick={async () => {
                                                 setIsSyncing(true);
@@ -744,16 +835,13 @@ const Vault = () => {
                                                             _source: 'protocol'
                                                         };
 
-                                                        setDbCards(prev => [newProtocol, ...prev]);
-                                                        setUnlockedIds(prev => [...prev, newProtocol.id]);
-                                                        
-                                                        const tier = (newProtocol.tier || 'rare').toLowerCase();
-                                                        setStats(prev => ({ ...prev, [tier]: (prev[tier] || 0) + 1 }));
-
                                                         setCongratsData(result);
                                                         setSyncCode('');
                                                         setShowSyncOverlay(false);
                                                         setShowCongrats(true);
+                                                        fetchGlobalGallery();
+                                                        // We don't add it to setDbCards or setUnlockedIds here 
+                                                        // because the user wants nothing visible in the vault after collecting.
                                                     }
                                                 } catch (error) {
                                                     console.error("Sync failed:", error);
@@ -776,7 +864,7 @@ const Vault = () => {
                                         </button>
                                     </div>
 
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setShowSyncOverlay(false);
                                             setSyncCode('');

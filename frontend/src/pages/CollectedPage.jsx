@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { ArrowLeft, Sparkles, ExternalLink, Calendar, Tag, Shield } from 'lucide-react';
+import { ArrowLeft, Sparkles, ExternalLink, Shield, User as UserIcon } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 import { useStore } from '../context/StoreContext';
+import { vaultService, getImageUrl } from '../services/api';
 
 // ─── Tier Accent ────────────────────────────────────────────────────────────
 const tierAccent = (tier) => {
@@ -22,7 +23,7 @@ const tierAccent = (tier) => {
 // ─── Grid Card ──────────────────────────────────────────────────────────────
 const CollectedCard = ({ item, onClick, index }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const accent = tierAccent(item.tier);
+    const accent = tierAccent(item.cardTier);
 
     return (
         <motion.div
@@ -30,7 +31,7 @@ const CollectedCard = ({ item, onClick, index }) => {
             onClick={() => onClick(item)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="collected-card-reveal group relative w-full h-[380px] flex flex-col items-center justify-center cursor-pointer transition-all duration-700"
+            className="collected-card-reveal group relative w-full h-[420px] flex flex-col items-center justify-center cursor-pointer transition-all duration-700"
         >
             {/* AMBIENT LIGHTING (No Box) */}
             <div
@@ -73,8 +74,8 @@ const CollectedCard = ({ item, onClick, index }) => {
                 }}
             >
                 <img
-                    src={item.image}
-                    alt={item.name}
+                    src={getImageUrl(item.frontImage)}
+                    alt={item.cardName}
                     className="h-56 object-contain drop-shadow-[0_0_40px_rgba(255,255,255,0.15)] transition-all duration-1000"
                 />
 
@@ -91,23 +92,31 @@ const CollectedCard = ({ item, onClick, index }) => {
                         className="text-lg font-heading font-black tracking-[0.4em] text-white uppercase transition-colors duration-500"
                         style={{ color: isHovered ? accent : 'white' }}
                     >
-                        {item.name}
+                        {item.cardName}
                     </h3>
                     <div className="flex items-center justify-center gap-3 mt-1">
-                        <span className="text-[9px] font-mono tracking-[0.3em] text-white/30 uppercase">{item.tier} ARCHIVE</span>
+                        <span className="text-[9px] font-mono tracking-[0.3em] text-white/30 uppercase">{item.cardTier} ARCHIVE</span>
                         <div className="w-1 h-1 rounded-full bg-accent group-hover:animate-ping" />
                         <span
                             className="text-[9px] font-mono tracking-[0.5em] uppercase font-bold"
                             style={{ color: accent }}
                         >
-                            COLLECTION ARCHIVED
+                            #{item.serialNumber || '001'}
                         </span>
                     </div>
                 </div>
 
-                <div className="flex gap-4 opacity-0 group-hover:opacity-40 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
-                    <span className="text-[7px] font-mono text-white/50 tracking-tighter">ID: {item.id.slice(0, 8)}</span>
-                    <span className="text-[7px] font-mono text-white/50 tracking-tighter">SECURE_LINK: VERIFIED</span>
+                {/* User Info Footer */}
+                <div className="flex flex-col items-center gap-2 mt-4">
+                     <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                        <UserIcon className="w-2.5 h-2.5 text-accent" />
+                        <span className="text-[8px] font-mono text-white/60 tracking-wider uppercase">
+                            AGENT: {item.userName}
+                        </span>
+                    </div>
+                    <div className="flex gap-4 opacity-0 group-hover:opacity-40 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
+                        <span className="text-[7px] font-mono text-white/50 tracking-tighter uppercase">ARCHIVE_SECURED</span>
+                    </div>
                 </div>
             </div>
 
@@ -121,138 +130,98 @@ const CollectedCard = ({ item, onClick, index }) => {
 
 // ─── Detail View Modal ──────────────────────────────────────────────────────
 const ItemDetailModal = ({ item, onClose }) => {
-    const accent = tierAccent(item.tier);
+    const accent = tierAccent(item.cardTier);
 
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center p-6 md:p-12"
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-6 md:p-12"
+            onClick={onClose}
         >
             <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.1, opacity: 0 }}
-                className="relative w-full max-w-3xl h-[500px] flex flex-col lg:flex-row pointer-events-auto"
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 1.1, opacity: 0, y: -20 }}
+                className="relative w-full max-w-4xl bg-black border border-white/10 rounded-3xl overflow-hidden flex flex-col lg:flex-row pointer-events-auto shadow-[0_0_100px_rgba(212,175,55,0.1)]"
+                onClick={(e) => e.stopPropagation()}
             >
-                {/* Embroidery Designed HUD Corners */}
-                <div className="absolute top-0 left-0 w-24 h-24 z-30 pointer-events-none">
-                    <div className="absolute top-0 left-0 w-16 h-16 border-t border-l" style={{ borderColor: `${accent}66` }} />
-                    <div className="absolute top-2 left-2 w-12 h-12 border-t border-l" style={{ borderColor: `${accent}33` }} />
-                    <div className="absolute top-[7px] left-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
-                </div>
-                <div className="absolute top-0 right-0 w-24 h-24 z-30 pointer-events-none">
-                    <div className="absolute top-0 right-0 w-16 h-16 border-t border-r" style={{ borderColor: `${accent}66` }} />
-                    <div className="absolute top-2 right-2 w-12 h-12 border-t border-r" style={{ borderColor: `${accent}33` }} />
-                    <div className="absolute top-[7px] right-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
-                </div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 z-30 pointer-events-none">
-                    <div className="absolute bottom-0 left-0 w-16 h-16 border-b border-l" style={{ borderColor: `${accent}66` }} />
-                    <div className="absolute bottom-2 left-2 w-12 h-12 border-b border-l" style={{ borderColor: `${accent}33` }} />
-                    <div className="absolute bottom-[7px] left-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
-                </div>
-                <div className="absolute bottom-0 right-0 w-24 h-24 z-30 pointer-events-none">
-                    <div className="absolute bottom-0 right-0 w-16 h-16 border-b border-r" style={{ borderColor: `${accent}66` }} />
-                    <div className="absolute bottom-2 right-2 w-12 h-12 border-b border-r" style={{ borderColor: `${accent}33` }} />
-                    <div className="absolute bottom-[7px] right-[7px] w-1.5 h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ backgroundColor: accent }} />
-                </div>
+                {/* HUD Corners */}
+                <div className="absolute top-0 left-0 w-16 h-16 border-t border-l border-white/10 m-8" />
+                <div className="absolute top-0 right-0 w-16 h-16 border-t border-r border-white/10 m-8" />
+                <div className="absolute bottom-0 left-0 w-16 h-16 border-b border-l border-white/10 m-8" />
+                <div className="absolute bottom-0 right-0 w-16 h-16 border-b border-r border-white/10 m-8" />
 
                 {/* Left: Holographic Asset Display */}
-                <div className="w-full lg:w-1/2 relative flex items-center justify-center p-12 overflow-hidden">
-                    {/* Ambient Glow */}
-                    <div
-                        className="absolute inset-0 opacity-10"
-                        style={{ background: `radial-gradient(circle at center, ${accent}88, transparent 70%)`, filter: 'blur(80px)' }}
-                    />
-
-                    {/* Asset ID Marker */}
-                    <div className="absolute top-10 left-10 flex flex-col gap-1 opacity-20">
-                        <span className="text-[6px] font-mono tracking-widest text-white uppercase">ID_ENTRY</span>
-                        <span className="text-[8px] font-mono tracking-[0.2em] text-white uppercase font-black">{item.id.slice(0, 10)}</span>
-                    </div>
-
+                <div className="w-full lg:w-1/2 relative flex items-center justify-center p-12 lg:p-20 overflow-hidden bg-white/[0.02]">
+                    <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent" />
+                    
                     <motion.div
-                        animate={{ y: [-15, 15, -15] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        animate={{ y: [-15, 15, -15], rotateY: [0, 10, -10, 0] }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                         className="relative z-10"
                     >
                         <img
-                            src={item.image}
-                            alt={item.name}
-                            className="h-64 object-contain drop-shadow-[0_0_60px_rgba(255,255,255,0.15)]"
+                            src={getImageUrl(item.frontImage)}
+                            alt={item.cardName}
+                            className="h-72 lg:h-96 object-contain drop-shadow-[0_0_60px_rgba(255,255,255,0.1)]"
                         />
                     </motion.div>
-
-                    {/* HUD Status Marker */}
-                    <div className="absolute bottom-10 left-10 flex items-center gap-3 opacity-30">
-                        <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                        <span className="text-[8px] font-mono tracking-[0.4em] text-white uppercase">ARCHIVE_LOADED</span>
-                    </div>
                 </div>
 
                 {/* Right: Technical Readout */}
-                <div className="w-full lg:w-1/2 p-10 md:p-14 flex flex-col justify-center space-y-8 relative">
+                <div className="w-full lg:w-1/2 p-12 lg:p-16 flex flex-col justify-center space-y-10 relative bg-black">
                     <div className="space-y-4">
                         <div className="flex items-center gap-4 text-[9px] font-mono tracking-[0.5em] text-accent uppercase">
                             <div className="w-4 h-[1px] bg-accent" />
-                            <span>Verified archive entry</span>
+                            <span>Global Archive Verification</span>
                         </div>
-                        <h2 className="text-4xl font-heading font-black tracking-tighter text-white uppercase leading-[0.9]">
-                            {item.name}
+                        <h2 className="text-4xl lg:text-6xl font-heading font-black tracking-tight text-white uppercase leading-none">
+                            {item.cardName}
                         </h2>
                     </div>
 
-                    <div className="space-y-6 pt-4 border-t border-white/5">
+                    <div className="space-y-8 pt-8 border-t border-white/5">
                         <div className="grid grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Tier.Classification</p>
-                                <p className="text-xs font-heading font-black tracking-widest text-white uppercase flex items-center gap-2">
-                                    <Shield className="w-3 h-3" style={{ color: accent }} /> {item.tier}
+                                <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Collector</p>
+                                <p className="text-sm font-heading font-black tracking-widest text-white uppercase">
+                                    {item.userName}
                                 </p>
                             </div>
-                            {item.size && (
-                                <div className="space-y-2">
-                                    <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Archive.Size</p>
-                                    <p className="text-xs font-heading font-black tracking-widest text-accent uppercase">{item.size}</p>
-                                </div>
-                            )}
                             <div className="space-y-2 text-right">
-                                <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Auth.Status</p>
-                                <p className="text-xs font-heading font-black tracking-widest text-accent uppercase">AUTHENTICATED</p>
+                                <p className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Serial</p>
+                                <p className="text-sm font-heading font-black tracking-widest text-accent uppercase">
+                                    #{item.serialNumber}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-end border-b border-white/5 pb-2">
-                                <span className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Secure_Node</span>
-                                <span className="text-[9px] font-mono text-white/60 tracking-widest uppercase">NODE_ARCHIVE_55</span>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end border-b border-white/5 pb-3">
+                                <span className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Tier</span>
+                                <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: accent }}>{item.cardTier}</span>
                             </div>
-                            <div className="flex justify-between items-end border-b border-white/5 pb-2">
-                                <span className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Hash_Verification</span>
-                                <span className="text-[9px] font-mono text-white/60 tracking-widest uppercase truncate ml-8">SHA256::D4AF37</span>
+                            <div className="flex justify-between items-end border-b border-white/5 pb-3">
+                                <span className="text-[8px] font-mono text-white/30 tracking-[0.3em] uppercase">Collected</span>
+                                <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">
+                                    {new Date(item.collectedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
-                        <button
-                            onClick={onClose}
-                            className="w-full py-4 bg-transparent border border-white/10 text-[10px] font-heading font-black tracking-[0.4em] text-white/60 hover:text-white hover:border-accent group transition-all uppercase flex items-center justify-center gap-4"
-                        >
-                            <span>BACK_TO_ARCHIVE</span>
-                            <motion.div
-                                animate={{ x: [0, -4, 0] }}
-                                transition={{ repeat: Infinity, duration: 1.5 }}
-                            >
-                                <ArrowLeft className="w-3 h-3 group-hover:text-accent" />
-                            </motion.div>
-                        </button>
-                    </div>
-
-                    {/* Bottom Utility Text */}
-                    <div className="absolute bottom-8 left-10 text-[7px] font-mono text-white/10 tracking-[0.5em] uppercase">
-                        Endura://Asset_Management - Sect_5
+                    <button
+                        onClick={onClose}
+                        className="w-full py-5 bg-white/5 border border-white/10 text-[10px] font-heading font-black tracking-[0.5em] text-white/60 hover:text-white hover:border-accent hover:bg-accent/5 transition-all uppercase flex items-center justify-center gap-4 group"
+                    >
+                        <span>BACK_TO_GALLERY</span>
+                        <ArrowLeft className="w-3 h-3 group-hover:-translate-x-2 transition-transform" />
+                    </button>
+                    
+                    <div className="absolute bottom-8 right-8 text-[6px] font-mono text-white/10 tracking-[0.8em] uppercase">
+                        Endura://Global_Registry
                     </div>
                 </div>
             </motion.div>
@@ -263,42 +232,33 @@ const ItemDetailModal = ({ item, onClose }) => {
 // ─── Main Collected Page ─────────────────────────────────────────────────────
 const CollectedPage = () => {
     const navigate = useNavigate();
-    const { products } = useStore();
+    const [globalItems, setGlobalItems] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const containerRef = useRef(null);
 
-    // ── Load items and filter for unlocked ones ───────────────────────────
-    const items = useMemo(() => {
-        const savedData = localStorage.getItem('endura_vault_persistence');
-        if (!savedData) return [];
-
-        const { unlockedItems: unlockedIds } = JSON.parse(savedData);
-        if (!unlockedIds || unlockedIds.length === 0) return [];
-
-        const vaultItems = products.filter(p =>
-            p.type === 'physical' &&
-            ['T-Shirt', 'Hoodie', 'Vest', 'Pants', 'Shorts', 'Jacket', 'Coat'].includes(p.subcategory)
-        ).map((p, idx) => {
-            let tier = 'common';
-            if (idx % 8 === 0) tier = 'legendary';
-            else if (idx % 5 === 0) tier = 'epic';
-            else if (idx % 3 === 0) tier = 'rare';
-            return { ...p, tier };
-        });
-
-        // Add special support for cards if needed, but usually cards translate to products
-        return vaultItems.filter(item => unlockedIds.includes(item.id));
-    }, [products]);
+    useEffect(() => {
+        const fetchGlobalItems = async () => {
+            try {
+                const data = await vaultService.getGlobalVaultItems();
+                setGlobalItems(data);
+            } catch (error) {
+                console.error("Failed to fetch global collections:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGlobalItems();
+    }, []);
 
     // Scroll Reveal animation
     useEffect(() => {
+        if (loading || globalItems.length === 0) return;
+        
         const ctx = gsap.context(() => {
-            // Container fade in
             gsap.fromTo(containerRef.current, { opacity: 0 }, { opacity: 1, duration: 1, ease: 'power2.out' });
-
-            // Card scroll reveal
             const cards = gsap.utils.toArray('.collected-card-reveal');
-            cards.forEach((card, i) => {
+            cards.forEach((card) => {
                 gsap.from(card, {
                     scrollTrigger: {
                         trigger: card,
@@ -308,76 +268,85 @@ const CollectedPage = () => {
                     y: 60,
                     opacity: 0,
                     scale: 0.95,
-                    duration: 3.5,
+                    duration: 1.5,
                     ease: "power4.out"
                 });
             });
         }, containerRef);
         return () => ctx.revert();
-    }, []);
+    }, [loading, globalItems]);
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-black text-white selection:bg-accent/30 overflow-x-hidden">
+        <div ref={containerRef} className="min-h-screen bg-black text-white selection:bg-accent/30 overflow-x-hidden pt-24">
             <Toaster position="top-right" />
 
             {/* Background Atmosphere */}
             <div
                 className="fixed inset-0 pointer-events-none opacity-40"
-                style={{ background: 'radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.1), transparent 70%)' }}
+                style={{ background: 'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05), transparent 70%)' }}
             />
 
             {/* Header */}
             <header className="relative z-50 pt-16 pb-24">
                 <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-12">
-                    {/* Left: Back Link */}
                     <div className="flex-1 w-full order-2 md:order-1">
                         <button
                             onClick={() => navigate('/vault')}
                             className="group flex items-center gap-4 text-[10px] font-mono tracking-[0.5em] text-white/30 hover:text-white transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-2 transition-transform" />
-                            <span>BACK_TO_VAULT</span>
+                            <span>ACCESS_VAULT_UNIT</span>
                         </button>
                     </div>
 
-                    {/* Center: Title */}
                     <div className="flex-1 text-center order-1 md:order-2">
                         <div className="flex items-center justify-center gap-3 text-[10px] font-mono tracking-[0.8em] text-accent uppercase mb-4">
                             <Sparkles className="w-4 h-4" />
-                            <span>Verified Assets</span>
+                            <span>Global Protocol History</span>
                         </div>
                         <h1 className="text-4xl md:text-7xl font-heading font-black tracking-[0.1em] text-white uppercase leading-none">
                             COLLECTED ARCHIVE
                         </h1>
                     </div>
 
-                    {/* Right: Stats */}
                     <div className="flex-1 flex justify-end order-3">
-                        <div className="text-right border-r border-accent/20 pr-6">
-                            <p className="text-[9px] font-mono text-white/20 tracking-[0.4em] uppercase mb-1">Total Assets</p>
-                            <p className="text-xl font-heading text-white">{items.length}</p>
+                        <div className="text-right border-r border-white/10 pr-8">
+                            <p className="text-[9px] font-mono text-white/20 tracking-[0.4em] uppercase mb-1">Total Minted</p>
+                            <p className="text-2xl font-heading text-white">{globalItems.length}</p>
                         </div>
-                        <div className="pl-6">
-                            <p className="text-[9px] font-mono text-white/20 tracking-[0.4em] uppercase mb-1">Sync Status</p>
-                            <p className="text-xl font-heading text-accent">100%</p>
+                        <div className="pl-8 text-left">
+                            <p className="text-[9px] font-mono text-white/20 tracking-[0.4em] uppercase mb-1">Status</p>
+                            <p className="text-2xl font-heading text-accent">PUBLIC</p>
                         </div>
                     </div>
                 </div>
             </header>
 
             {/* Grid Content */}
-            <main className="relative z-10 max-w-[1200px] mx-auto px-6 pb-32">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-                    {items.map((item, index) => (
-                        <div key={item.id} className="collected-card-reveal">
-                            <CollectedCard
-                                item={item}
-                                index={index}
-                                onClick={setSelectedItem}
-                            />
-                        </div>
-                    ))}
-                </div>
+            <main className="relative z-10 max-w-[1400px] mx-auto px-6 pb-48">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-40 gap-6">
+                        <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+                        <p className="text-[10px] font-mono tracking-[0.5em] text-white/40 uppercase">Loading Registry...</p>
+                    </div>
+                ) : globalItems.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-40 border border-white/5 bg-white/[0.02] rounded-3xl">
+                        <Shield className="w-12 h-12 text-white/10 mb-8" />
+                        <p className="text-[10px] font-mono tracking-[0.5em] text-white/40 uppercase">No active protocols detected in global archive</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16">
+                        {globalItems.map((item, index) => (
+                            <div key={item.id} className="collected-card-reveal">
+                                <CollectedCard
+                                    item={item}
+                                    index={index}
+                                    onClick={setSelectedItem}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
             </main>
 
             {/* Modal Detail */}
@@ -390,11 +359,10 @@ const CollectedPage = () => {
                 )}
             </AnimatePresence>
 
-            {/* Footer */}
-            <footer className="relative z-10 py-24 border-t border-white/5 opacity-20">
+            <footer className="relative z-10 py-24 border-t border-white/5 bg-black">
                 <div className="max-w-[1400px] mx-auto px-6 text-center">
-                    <p className="text-[9px] font-mono tracking-[0.5em] uppercase">
-                        Endura Digital Identity Protocol // Archive Sector 0x4f
+                    <p className="text-[8px] font-mono tracking-[0.5em] text-white/20 uppercase">
+                        Endura International Collective // Global Asset Registration // Node 0x99
                     </p>
                 </div>
             </footer>

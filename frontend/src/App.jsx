@@ -13,7 +13,6 @@ import UserDashboard from './pages/UserDashboard';
 import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
 import Vault from './pages/Vault';
-import CollectedPage from './pages/CollectedPage';
 import OrderSuccess from './pages/OrderSuccess';
 import OrderFailed from './pages/OrderFailed';
 import Footer from './components/Footer';
@@ -108,7 +107,6 @@ function AppLayout() {
             </ProtectedRoute>
           } />
           <Route path="/protocol" element={<Protocol />} />
-          <Route path="/collected" element={<CollectedPage />} />
           <Route path="/auth" element={
             currentUser && !location.search.includes('admin2fa') && !location.search.includes('tempToken') && !location.search.includes('token')
               ? <Navigate to="/" replace />

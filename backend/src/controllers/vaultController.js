@@ -290,4 +290,57 @@ const syncVaultCardByCode = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = { getUserVault, redeemVaultItem, getAllVaultItems, collectVaultCard, deleteVaultItemAdmin, updateVaultItemAdmin, syncVaultCardByCode };
+/**
+ * @route   GET /api/vault/global
+ * @desc    Get all collected vault items for public display
+ * @access  Public
+ */
+const getGlobalCollections = asyncHandler(async (req, res) => {
+    const items = await VaultItem.find({})
+        .populate('user', 'username avatar')
+        .populate('vaultCard', 'name frontImage backImage tier codes')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    // Transform to a cleaner format if needed
+    const globalGallery = items.map(item => ({
+        id: item._id,
+        userName: item.user?.username || 'Anonymous Agent',
+        userAvatar: item.user?.avatar,
+        cardName: item.vaultCard?.name || 'Protocol Sync',
+        cardTier: item.vaultCard?.tier || 'rare',
+        frontImage: item.vaultCard?.frontImage,
+        backImage: item.vaultCard?.backImage,
+        serialNumber: item.serialNumber || 1,
+        totalCodes: item.vaultCard?.codes?.length || 1,
+        collectedAt: item.createdAt,
+        vaultCardId: item.vaultCard?._id
+    }));
+
+    res.json(globalGallery);
+});
+
+/**
+ * @route   DELETE /api/vault/:id
+ * @access  Private
+ */
+const deleteVaultItem = asyncHandler(async (req, res) => {
+    const item = await VaultItem.findById(req.params.id);
+
+    if (!item) {
+        res.status(404);
+        throw new Error('Vault item not found');
+    }
+
+    // Check ownership or admin status
+    if (item.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    await item.deleteOne();
+
+    res.json({ message: 'Vault item removed' });
+});
+
+module.exports = { getUserVault, redeemVaultItem, getAllVaultItems, collectVaultCard, deleteVaultItemAdmin, updateVaultItemAdmin, syncVaultCardByCode, getGlobalCollections, deleteVaultItem };
