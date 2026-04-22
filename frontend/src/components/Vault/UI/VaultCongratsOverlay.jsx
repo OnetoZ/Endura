@@ -28,7 +28,7 @@ const VaultCongratsOverlay = ({ children, accent, onEnterDashboard, onClose, ser
             }}
         >
             {/* HUD WRAPPER - Stable Rectangle with Natural Scaling */}
-            <div className="relative w-[520px] min-h-[600px] bg-[#000000] p-[48px] box-border flex flex-col items-center justify-center gap-12 overflow-hidden shadow-[0_0_150px_rgba(201,162,39,0.1)]">
+            <div className="relative w-[520px] min-h-[600px] bg-[#000000] p-[48px] box-border flex flex-col items-center justify-center gap-12 overflow-hidden shadow-[0_0_60px_rgba(168,85,247,0.3)] border border-white/70">
                 {/* HUD CORNERS LAYER */}
                 <div className="absolute inset-0 pointer-events-none z-50">
                     {/* Top Left Corners */}

@@ -202,6 +202,14 @@ export const vaultService = {
         const response = await api.post('/vault/sync', { code });
         return response.data;
     },
+    getGlobalVaultItems: async () => {
+        const response = await api.get('/vault/global');
+        return response.data;
+    },
+    deleteVaultItem: async (id) => {
+        const response = await api.delete(`/vault/${id}`);
+        return response.data;
+    }
 };
 
 export const orderService = {
