@@ -66,9 +66,6 @@ export const getImageUrl = (path) => {
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 // Add token to requests if available
@@ -285,14 +282,18 @@ export const cartService = {
         const response = await api.get('/cart');
         return response.data;
     },
-    addToCart: async (assetId, quantity) => {
-        const response = await api.post('/cart/add', { assetId, quantity });
+    addToCart: async (assetId, quantity, size = 'M') => {
+        const response = await api.post('/cart/add', { assetId, quantity, size });
         return response.data;
     },
-    updateCart: async (assetId, quantity) => {
-        const response = await api.put('/cart/update', { assetId, quantity });
+    updateCart: async (assetId, quantity, size = 'M') => {
+        const response = await api.put('/cart/update', { assetId, quantity, size });
         return response.data;
     },
+    removeFromCart: async (assetId, size = 'M') => {
+        const response = await api.delete(`/cart/item/${assetId}`, { params: { size } });
+        return response.data;
+    }
 };
 
 export const userService = {
@@ -315,10 +316,13 @@ export const userService = {
 };
 
 export const uploadService = {
-    uploadImage: async (file) => {
+    uploadImage: async (file, folder = 'products') => {
         const formData = new FormData();
         formData.append('image', file);
-        const response = await api.post('/upload', formData);
+        formData.append('type', folder);
+        const response = await api.post('/upload', formData, {
+            timeout: 120000 
+        });
         return response.data.url;
     }
 };

@@ -177,19 +177,27 @@ const PhysicalProductCard = ({ product }) => {
             </motion.div>
 
             {/* Product Meta Data */}
-            <div className="mt-4 md:mt-8 flex justify-between items-start px-1 md:px-2 meta-reveal">
-                <div className="flex flex-col gap-1 md:gap-2">
-                    <p className="text-[7px] md:text-[9px] text-[#d4af37]/60 font-black uppercase tracking-[0.3em] md:tracking-[0.5em]">{product.category}</p>
-                    <h3 className="text-sm md:text-2xl font-oswald font-bold text-white uppercase tracking-tight group-hover:text-[#d4af37] transition-colors duration-500 line-clamp-1">
+            <div className="mt-2 md:mt-4 flex justify-between items-start px-1 md:px-2 meta-reveal">
+                <div className="flex flex-col gap-0.5 md:gap-1">
+                    <p className="text-[6px] md:text-[8px] text-[#d4af37]/60 font-black uppercase tracking-[0.3em] md:tracking-[0.5em]">{product.category}</p>
+                    <h3 className="text-xs md:text-xl font-oswald font-bold text-white uppercase tracking-tight group-hover:text-[#d4af37] transition-colors duration-500 line-clamp-1">
                         {product.name}
                     </h3>
                 </div>
                 <div className="text-right">
-                    <div className="flex items-center gap-1 md:gap-2 justify-end mb-1">
-                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#d4af37] animate-pulse"></div>
-                        <p className="text-sm md:text-2xl font-bold text-white tracking-tighter">₹{product.price}</p>
+                    <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1 md:gap-2 justify-end">
+                            <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#d4af37] animate-pulse"></div>
+                            <p className="text-xs md:text-xl font-bold text-white tracking-tighter">₹{product.price}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[7px] md:text-[9px] text-gray-500 line-through font-medium">₹{Number(product.price) + 1000}</span>
+                            <span className="text-[7px] md:text-[9px] text-[#d4af37] font-black uppercase tracking-widest">
+                                {Math.round((1000 / (Number(product.price) + 1000)) * 100)}% OFF
+                            </span>
+                        </div>
                     </div>
-                    <p className="hidden md:block text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em]">Batch_001 // LTD_EDTN</p>
+                    <p className="hidden md:block text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-1">Batch_001 // LTD_EDTN</p>
                 </div>
             </div>
         </motion.div>

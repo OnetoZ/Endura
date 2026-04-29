@@ -192,37 +192,90 @@ const ProductDetail = () => {
                             </div>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-oswald font-bold uppercase mb-8 leading-none tracking-tighter">
+                        <h1 className="text-3xl md:text-4xl font-oswald font-bold uppercase mb-6 leading-none tracking-tighter">
                             {product.name}
                         </h1>
 
-                        <div className="flex flex-wrap items-end gap-3 md:gap-6 mb-8 md:mb-12">
-                            <p className="text-3xl md:text-4xl font-bold text-accent">₹{product.price}</p>
-                            <p className="text-gray-500 text-[10px] md:text-sm italic pb-1">Local Currency Synchronized</p>
+                        <div className="flex flex-wrap items-end gap-3 md:gap-4 mb-6 md:mb-8">
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-4">
+                                    <p className="text-3xl md:text-4xl font-bold text-accent">₹{product.price}</p>
+                                    <span className="text-lg md:text-xl text-gray-600 line-through font-medium">₹{Number(product.price) + 1000}</span>
+                                </div>
+                                <div className="mt-1">
+                                    <span className="text-[9px] md:text-[10px] text-[#d4af37] font-black uppercase tracking-[0.3em]">
+                                        EXCLUSIVE {Math.round((1000 / (Number(product.price) + 1000)) * 100)}% DISCOUNT APPLIED
+                                    </span>
+                                </div>
+                            </div>
+                            <p className="text-gray-500 text-[9px] md:text-xs italic pb-1">Local Currency Synchronized</p>
                         </div>
 
-                        <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-12 border-l-2 border-primary pl-6 md:pl-8">
+                        <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 border-l-2 border-primary pl-6 md:pl-8">
                             {product.description}
                         </p>
 
 
 
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 mb-12">
+                        {/* Size Selection (New Position - Higher Visibility) */}
+                        <div className="mb-8">
+                            <div className="flex justify-between items-center mb-4">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 bg-primary animate-pulse"></div>
+                                    Select Prototype Size
+                                </label>
+                                <button 
+                                    onClick={() => setShowSizeGuide(true)}
+                                    className="text-[9px] font-black text-primary hover:text-primary-light uppercase tracking-widest border-b border-primary/30 pb-0.5 transition-all"
+                                >
+                                    Size Guide
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-3 md:gap-4">
+                                {['S', 'M', 'L', 'XL'].map((size) => {
+                                    const isOutOfStock = product.sizes && (Number(product.sizes[size]) === 0 || !product.sizes[size]);
+                                    
+                                    return (
+                                        <button
+                                            key={size}
+                                            disabled={isOutOfStock}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`relative w-12 h-12 md:w-14 md:h-14 border flex items-center justify-center text-[10px] md:text-[11px] font-black transition-all duration-300 ${
+                                                isOutOfStock 
+                                                    ? 'opacity-20 cursor-not-allowed border-white/5 text-gray-700' 
+                                                    : selectedSize === size
+                                                        ? 'bg-primary border-primary text-white shadow-lg shadow-primary/40 scale-105 md:scale-110'
+                                                        : 'border-white/10 text-gray-400 hover:border-white/40 hover:text-white'
+                                            }`}
+                                        >
+                                            {size}
+                                            {isOutOfStock && (
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <div className="w-full h-[1px] bg-red-500/50 -rotate-45" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 mb-8">
                             <div className="flex border border-white/10 w-[140px] sm:w-auto overflow-hidden shrink-0">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="flex-1 px-4 sm:px-6 py-4 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
+                                    className="flex-1 px-3 sm:px-4 py-3 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
                                 >
-                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" /></svg>
+                                    <svg className="w-3 h-3 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" /></svg>
                                 </button>
-                                <div className="px-4 sm:px-6 py-4 bg-white/5 font-bold text-sm flex items-center justify-center min-w-[3rem] text-white">
+                                <div className="px-3 sm:px-4 py-3 bg-white/5 font-bold text-xs flex items-center justify-center min-w-[2.5rem] text-white">
                                     {quantity}
                                 </div>
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
-                                    className="flex-1 px-4 sm:px-6 py-4 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
+                                    className="flex-1 px-3 sm:px-4 py-3 hover:bg-white/5 transition-all text-white font-bold flex items-center justify-center group"
                                 >
-                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                                    <svg className="w-3 h-3 text-gray-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                                 </button>
                             </div>
 
@@ -235,7 +288,7 @@ const ProductDetail = () => {
                                     await addToCart(product, quantity, selectedSize);
                                     navigate('/cart');
                                 }}
-                                className="w-full sm:flex-grow py-4 md:py-5 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
+                                className="w-full sm:flex-grow py-3 md:py-4 px-6 md:px-0 bg-primary text-white font-black uppercase tracking-widest text-[9px] sm:text-[10px] hover:bg-primary-light transition-all shadow-[0_10px_30px_rgba(109,40,217,0.3)]"
                             >
                                 Initiate Protocol (Add to Cart)
                             </button>
@@ -269,28 +322,10 @@ const ProductDetail = () => {
                                 )}
                                 {activeTab === 'Sizes' && (
                                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
-                                        <div className="flex justify-between items-center mb-6">
-                                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Prototype_Selection</label>
-                                            <button 
-                                                onClick={() => setShowSizeGuide(true)}
-                                                className="text-[9px] font-black text-primary hover:text-primary-light uppercase tracking-widest border-b border-primary/30 pb-0.5 transition-all"
-                                            >
-                                                Size Guide
-                                            </button>
-                                        </div>
-                                        <div className="flex flex-wrap gap-4">
-                                            {['S', 'M', 'L', 'XL'].map((size) => (
-                                                <button
-                                                    key={size}
-                                                    onClick={() => setSelectedSize(size)}
-                                                    className={`w-14 h-14 border flex items-center justify-center text-[11px] font-black transition-all duration-300 ${selectedSize === size
-                                                        ? 'bg-primary border-primary text-white shadow-xl shadow-primary/40 scale-110'
-                                                        : 'border-white/10 text-gray-400 hover:border-white/40 hover:text-white'}`}
-                                                >
-                                                    {size}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-widest leading-loose">
+                                            Size selection has been moved to the primary interaction block above for tactical efficiency. 
+                                            Current selection: <span className="text-white font-bold">{selectedSize}</span>
+                                        </p>
                                     </div>
                                 )}
                         </div>
@@ -398,23 +433,23 @@ const ProductDetail = () => {
                             </div>
 
                             {/* Right Side: Text & Claim Info */}
-                            <div className="text-left space-y-6">
-                                <div className="inline-block px-3 py-1 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#d4af37] text-[10px] font-black uppercase tracking-widest mb-4">
+                            <div className="text-left space-y-8">
+                                <div className="inline-block px-4 py-1.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#d4af37] text-[11px] font-black uppercase tracking-widest mb-4">
                                     Unlockable Asset
                                 </div>
-                                <h2 className="text-3xl md:text-5xl font-oswald font-bold uppercase tracking-widest text-white">
+                                <h2 className="text-4xl md:text-6xl font-oswald font-bold uppercase tracking-widest text-white leading-tight">
                                     <span className="text-[#d4af37]">Digital Twin</span> Skin
                                 </h2>
-                                <p className="text-gray-400 text-sm leading-relaxed max-w-lg">
+                                <p className="text-gray-400 text-base leading-relaxed max-w-lg">
                                     Experience the metaverse analog of this physical asset. Fully rigorous and engineered for next-gen digital encounters.
                                 </p>
 
-                                <div className="p-6 border border-white/10 bg-white/5 mt-8 max-w-lg">
-                                    <h4 className="text-[12px] font-black uppercase tracking-widest text-white mb-2 flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-[#d4af37]"></div>
+                                <div className="p-8 border border-white/10 bg-white/5 mt-10 max-w-lg">
+                                    <h4 className="text-[14px] font-black uppercase tracking-widest text-white mb-3 flex items-center gap-3">
+                                        <div className="w-2.5 h-2.5 bg-[#d4af37]"></div>
                                         How to Claim
                                     </h4>
-                                    <p className="text-[11px] text-gray-500 uppercase tracking-widest leading-loose">
+                                    <p className="text-[12px] text-gray-500 uppercase tracking-widest leading-loose">
                                         Purchase the physical asset to unlock its digital counterpart. Upon successful acquisition, the 1:1 digital twin skin will be automatically deposited into your <span className="text-white">Operator Vault / My Collection</span> in the user dashboard.
                                     </p>
                                 </div>

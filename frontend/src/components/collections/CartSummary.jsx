@@ -31,7 +31,7 @@ const CountUp = ({ value }) => {
     return <span>{displayValue.toLocaleString()}</span>;
 };
 
-const CartSummary = ({ subtotal, total, credits, useCredits, onToggleCredits, onCheckout, isCheckingOut }) => {
+const CartSummary = ({ subtotal, total, onCheckout, isCheckingOut }) => {
     return (
         <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -70,41 +70,16 @@ const CartSummary = ({ subtotal, total, credits, useCredits, onToggleCredits, on
 
                 {/* Animated Interactive Belt */}
                 <div className="flex flex-col sm:flex-row gap-4">
-                    {credits > 0 && (
-                        <button
-                            onClick={onToggleCredits}
-                            className={`flex-1 group/btn relative flex items-center justify-between p-4 rounded-2xl border transition-all duration-500 ${useCredits
-                                ? 'bg-primary/20 border-primary-light/50 ring-1 ring-primary-light/20'
-                                : 'bg-white/5 border-white/10 hover:border-white/30'
-                                }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`w-3 h-3 rounded-full flex items-center justify-center border ${useCredits ? 'border-primary-light' : 'border-gray-600'}`}>
-                                    {useCredits && <div className="w-1.5 h-1.5 bg-primary-light rounded-full animate-ping" />}
-                                </div>
-                                <div className="text-left">
-                                    <span className="block text-[8px] font-mono text-gray-500 uppercase tracking-widest">Apply Credits</span>
-                                    <span className={`text-[10px] font-heading uppercase tracking-widest ${useCredits ? 'text-primary-light' : 'text-white/60'}`}>
-                                        {credits} ENDURA_PTS
-                                    </span>
-                                </div>
-                            </div>
-                            <span className={`text-[8px] font-mono font-bold ${useCredits ? 'text-primary-light' : 'text-gray-700'}`}>
-                                {useCredits ? 'SYNCED' : 'OFFLINE'}
-                            </span>
-                        </button>
-                    )}
-
                     <button
                         onClick={onCheckout}
                         disabled={isCheckingOut}
-                        className="flex-[1.5] group/checkout relative py-4 bg-white hover:bg-black transition-all duration-700 rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+                        className="flex-1 group/checkout relative py-4 bg-white hover:bg-black transition-all duration-700 rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
                     >
                         {/* Shimmer Effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-light/20 to-transparent translate-x-[-100%] group-hover/checkout:translate-x-[100%] transition-transform duration-1000" />
 
                         <div className="relative z-10 flex items-center justify-center gap-4">
-                            <span className="text-[11px] font-heading font-black uppercase tracking-[0.4em] text-black group-hover/checkout:text-white transition-colors">
+                            <span className="text-xs font-heading font-black uppercase tracking-[0.4em] text-black group-hover/checkout:text-white transition-colors">
                                 {isCheckingOut ? 'Processing...' : 'Transmit Order'}
                             </span>
                             {!isCheckingOut && (

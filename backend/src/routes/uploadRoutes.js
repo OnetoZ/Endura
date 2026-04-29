@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -33,20 +34,43 @@ router.post('/admin/upload-image', upload.array('images', 10), asyncHandler(asyn
         return res.status(400).json({ message: 'No images uploaded' });
     }
 
-    // Determine folder based on type parameter or default to 'products'
     const folder = req.body.type || 'products';
 
     try {
         const imageUrls = await r2Service.uploadMultipleFiles(req.files, folder);
-
         res.json({
             message: 'Images uploaded successfully',
             urls: imageUrls,
             count: imageUrls.length
         });
     } catch (error) {
-        console.error('Upload error:', error);
-        res.status(500).json({ message: 'Error uploading images', error: error.message });
+        console.error('R2 Multiple Upload Error - Falling back to local storage:', error);
+        
+        try {
+            const imageUrls = [];
+            const uploadsDir = path.join(__dirname, '../../uploads');
+            
+            if (!fs.existsSync(uploadsDir)) {
+                fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+
+            for (const file of req.files) {
+                const timestamp = Date.now();
+                const fileName = `image-${timestamp}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+                const localPath = path.join(uploadsDir, fileName);
+                fs.writeFileSync(localPath, file.buffer);
+                imageUrls.push(`/uploads/${fileName}`);
+            }
+
+            res.json({
+                message: 'Images uploaded to local storage (R2 failure fallback)',
+                urls: imageUrls,
+                count: imageUrls.length
+            });
+        } catch (localError) {
+            console.error('Local Multiple Fallback Error:', localError);
+            res.status(500).json({ message: 'Error uploading images', error: localError.message });
+        }
     }
 }));
 
@@ -104,6 +128,7 @@ router.put('/admin/replace-image', upload.single('image'), asyncHandler(async (r
     }
 }));
 
+
 // Legacy route for backward compatibility (single image upload)
 router.post('/', (req, res, next) => {
     console.log('--- BASE UPLOAD ROUTE START ---');
@@ -121,37 +146,69 @@ router.post('/', (req, res, next) => {
         next();
     });
 }, asyncHandler(async (req, res) => {
-    console.log('File info:', req.file ? {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-    } : 'NONE');
+    console.log('[UPLOAD DEBUG] Request received. Folder:', req.body.type || 'products');
+    console.log('[UPLOAD DEBUG] File object present:', !!req.file);
 
     if (!req.file) {
+        console.error('[UPLOAD DEBUG] No file found in request');
         return res.status(400).json({ message: 'No image uploaded after multer pass' });
     }
+
+    console.log('[UPLOAD DEBUG] File details:', {
+        name: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+    });
 
     const folder = req.body.type || 'products';
 
     try {
+        console.log('[UPLOAD DEBUG] Attempting R2 upload...');
         const imageUrl = await r2Service.uploadFile(
             req.file.buffer,
             req.file.originalname,
             req.file.mimetype,
             folder
         );
-        console.log('R2 Success:', imageUrl);
+        console.log('[UPLOAD DEBUG] R2 Success:', imageUrl);
 
         res.json({
             url: imageUrl,
             message: 'Image uploaded successfully'
         });
     } catch (error) {
-        console.error('R2 Service Error:', error);
-        res.status(500).json({ 
-            message: 'Error uploading to R2 service', 
-            error: error.message 
-        });
+        console.error('[UPLOAD DEBUG] R2 Service Error:', error.message);
+        console.log('[UPLOAD DEBUG] Falling back to local storage...');
+        
+        try {
+            const timestamp = Date.now();
+            const fileName = `image-${timestamp}${path.extname(req.file.originalname)}`;
+            const uploadsDir = path.join(__dirname, '../../uploads');
+            
+            console.log('[UPLOAD DEBUG] Local path target:', path.join(uploadsDir, fileName));
+
+            if (!fs.existsSync(uploadsDir)) {
+                console.log('[UPLOAD DEBUG] Creating uploads directory...');
+                fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+            
+            const localPath = path.join(uploadsDir, fileName);
+            fs.writeFileSync(localPath, req.file.buffer);
+            
+            const localUrl = `/uploads/${fileName}`;
+            console.log('[UPLOAD DEBUG] Local Fallback Success:', localUrl);
+
+            res.json({
+                url: localUrl,
+                message: 'Image uploaded to local storage (R2 failure fallback)'
+            });
+        } catch (localError) {
+            console.error('[UPLOAD DEBUG] Local Fallback Error:', localError.message);
+            res.status(500).json({ 
+                message: 'Total upload failure', 
+                error: localError.message 
+            });
+        }
     }
 }));
 
