@@ -3,7 +3,12 @@ import { Navigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const ProtectedRoute = ({ children }) => {
-    const { currentUser } = useStore();
+    const { currentUser, isLoading } = useStore();
+
+    if (isLoading) {
+        // Return null or a loading spinner while we check if the user is logged in
+        return null; 
+    }
 
     if (!currentUser) {
         return <Navigate to="/auth" replace />;

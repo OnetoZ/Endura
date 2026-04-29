@@ -24,7 +24,7 @@ const getCart = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const addToCart = asyncHandler(async (req, res) => {
-    const { assetId, quantity = 1 } = req.body;
+    const { assetId, quantity = 1, size = 'M' } = req.body;
 
     if (!assetId) {
         res.status(400);
@@ -40,12 +40,12 @@ const addToCart = asyncHandler(async (req, res) => {
     // Filter out any ghost items with null/undefined asset refs
     cart.items = cart.items.filter(p => p.asset != null);
 
-    const itemIndex = cart.items.findIndex(p => p.asset && p.asset.toString() === assetId);
+    const itemIndex = cart.items.findIndex(p => p.asset && p.asset.toString() === assetId && (p.size || 'M') === size);
 
     if (itemIndex > -1) {
         cart.items[itemIndex].quantity += Number(quantity);
     } else {
-        cart.items.push({ asset: assetId, quantity: Number(quantity) });
+        cart.items.push({ asset: assetId, quantity: Number(quantity), size });
     }
 
     await cart.save();
@@ -60,7 +60,7 @@ const addToCart = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const updateCartItem = asyncHandler(async (req, res) => {
-    const { assetId, quantity } = req.body;
+    const { assetId, quantity, size = 'M' } = req.body;
 
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) {
@@ -68,7 +68,7 @@ const updateCartItem = asyncHandler(async (req, res) => {
         throw new Error('Cart not found');
     }
 
-    const itemIndex = cart.items.findIndex(p => p.asset.toString() === assetId);
+    const itemIndex = cart.items.findIndex(p => p.asset.toString() === assetId && (p.size || 'M') === size);
     if (itemIndex === -1) {
         res.status(404);
         throw new Error('Item not found in cart');
@@ -92,13 +92,14 @@ const updateCartItem = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const removeFromCart = asyncHandler(async (req, res) => {
+    const { size = 'M' } = req.query;
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) {
         res.status(404);
         throw new Error('Cart not found');
     }
 
-    cart.items = cart.items.filter(item => item.asset.toString() !== req.params.assetId);
+    cart.items = cart.items.filter(item => !(item.asset.toString() === req.params.assetId && (item.size || 'M') === size));
     await cart.save();
 
     const updatedCart = await Cart.findOne({ user: req.user._id }).populate('items.asset');

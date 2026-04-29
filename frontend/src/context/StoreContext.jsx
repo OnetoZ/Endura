@@ -185,7 +185,7 @@ export const AppProvider = ({ children }) => {
         // Backend sync if logged in
         if (currentUser) {
             try {
-                await cartService.addToCart(productWithImage.id, qty);
+                await cartService.addToCart(productWithImage.id, qty, size);
             } catch (error) {
                 console.error('Failed to sync addToCart to backend:', error);
             }
@@ -202,7 +202,7 @@ export const AppProvider = ({ children }) => {
         if (currentUser) {
             try {
                 // Assuming updateCart with 0 quantity or specific remove endpoint
-                await cartService.updateCart(productId, 0);
+                await cartService.removeFromCart(productId, size);
                 await loadCart(); // Re-sync
             } catch (error) {
                 console.error('Failed to sync removeFromCart to backend:', error);
@@ -222,6 +222,17 @@ export const AppProvider = ({ children }) => {
             localStorage.setItem('endura_cart', JSON.stringify(newCart));
             return newCart;
         });
+
+        if (currentUser) {
+            try {
+                const item = cart.find(i => i.id === productId && i.selectedSize === size);
+                if (item) {
+                    await cartService.updateCart(productId, item.quantity + delta, size);
+                }
+            } catch (error) {
+                console.error('Failed to sync updateCartQuantity to backend:', error);
+            }
+        }
     };
 
     const clearCart = () => {

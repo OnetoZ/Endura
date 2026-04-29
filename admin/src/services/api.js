@@ -69,9 +69,6 @@ export const getImageUrl = (path) => {
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 // Add token to requests if available
@@ -295,19 +292,13 @@ export const userService = {
 
 export const uploadService = {
     uploadImage: async (file, folder = 'products') => {
-        try {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('type', folder);
-            const response = await api.post('/upload', formData, {
-                timeout: 120000 // Increased to 120s for Slow 4G support
-            });
-            return response.data.url;
-        } catch (error) {
-            console.error('R2 Upload Error:', error);
-            console.warn('Falling back to instantaneous visual blob.');
-            return URL.createObjectURL(file);
-        }
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('type', folder);
+        const response = await api.post('/upload', formData, {
+            timeout: 120000 // Increased to 120s for Slow 4G support
+        });
+        return response.data.url;
     }
 };
 

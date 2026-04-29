@@ -69,24 +69,6 @@ const collectVaultCard = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id);
 
-    // Check if user already collected this
-    const existingCollection = await VaultItem.findOne({
-        user: req.user._id,
-        vaultCard: card._id
-    });
-
-    if (existingCollection) {
-        // Already collected
-        return res.json({
-            success: true,
-            oldScore: user.credits,
-            newScore: user.credits,
-            creditDelta: 0,
-            alreadyCollected: true,
-            vaultItem: existingCollection
-        });
-    }
-
     // Increment vaultCard mint count
     card.totalMinted += 1;
     await card.save();
@@ -230,23 +212,6 @@ const syncVaultCardByCode = asyncHandler(async (req, res) => {
             res.status(400);
             throw new Error('This protocol code has already been claimed');
         }
-    }
-
-    // Check if user already collected this card via a DIFFERENT code
-    const existingUserCollection = await VaultItem.findOne({
-        user: req.user._id,
-        vaultCard: card._id
-    }).populate('vaultCard', 'name frontImage backImage tier codes description batchId');
-
-    if (existingUserCollection) {
-        return res.json({
-            success: true,
-            message: 'Protocol re-synchronized',
-            oldScore: user.credits,
-            newScore: user.credits,
-            creditDelta: 0,
-            vaultItem: existingUserCollection
-        });
     }
 
     // Increment vaultCard mint count

@@ -745,6 +745,7 @@ const Vault = () => {
                                 <DressItem
                                     item={congratsData?.vaultItem ? {
                                         ...congratsData.vaultItem,
+                                        name: congratsData.vaultItem.vaultCard?.name,
                                         image: congratsData.vaultItem.vaultCard?.frontImage,
                                         backImageUrl: congratsData.vaultItem.vaultCard?.backImage,
                                         tier: congratsData.vaultItem.vaultCard?.tier

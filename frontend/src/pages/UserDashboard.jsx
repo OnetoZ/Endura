@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { Lock, Package, MapPin, Phone, User, Mail, Save, Image as ImageIcon, X } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { authService, assetService, orderService, getImageUrl, vaultService } from '../services/api';
@@ -24,7 +25,7 @@ const DressItem = ({ item, vaultReady }) => {
                 boxShadow: `inset 0 0 60px 10px ${accent}18`,
                 background: `radial-gradient(circle at center, transparent 40%, ${accent}08 100%)`
             }}>
-            <div className="relative w-full h-full flex flex-col items-center justify-center p-8 overflow-visible">
+            <div className="relative w-full h-full flex flex-col items-center justify-center p-4 overflow-visible">
                 <motion.div className="relative z-10 w-full h-full flex items-center justify-center overflow-visible"
                     animate={vaultReady ? { y: [-8, 8, -8] } : {}}
                     transition={{ y: { duration: 4, repeat: Infinity, ease: "easeInOut" } }}>
@@ -36,10 +37,10 @@ const DressItem = ({ item, vaultReady }) => {
                     {isHovered && (
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
                             className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
-                            <div className="absolute top-8 left-8 w-10 h-10 border-t border-l opacity-40" style={{ borderColor: accent }} />
-                            <div className="absolute top-8 right-8 w-10 h-10 border-t border-r opacity-40" style={{ borderColor: accent }} />
-                            <div className="absolute bottom-8 left-8 w-10 h-10 border-b border-l opacity-40" style={{ borderColor: accent }} />
-                            <div className="absolute bottom-8 right-8 w-10 h-10 border-b border-r opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute top-4 left-4 w-10 h-10 border-t border-l opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute top-4 right-4 w-10 h-10 border-t border-r opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute bottom-4 left-4 w-10 h-10 border-b border-l opacity-40" style={{ borderColor: accent }} />
+                            <div className="absolute bottom-4 right-4 w-10 h-10 border-b border-r opacity-40" style={{ borderColor: accent }} />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -67,6 +68,11 @@ const UserDashboard = () => {
     const [showAddressNotification, setShowAddressNotification] = useState(false);
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
+    const [addressMode, setAddressMode] = useState(false);
+    const [editingAddressIdx, setEditingAddressIdx] = useState(-1);
+    const [addressForm, setAddressForm] = useState({
+        fullName: '', address: '', city: '', postalCode: '', country: 'India', phone: ''
+    });
 
     // Fetch user orders from backend
     useEffect(() => {
@@ -89,7 +95,12 @@ const UserDashboard = () => {
 
     const shippingData = {
         address: currentUser?.addresses?.[0] ?
-            `${currentUser.addresses[0].fullName}\n${currentUser.addresses[0].address}\n${currentUser.addresses[0].city}, ${currentUser.addresses[0].postalCode}\n${currentUser.addresses[0].country}` :
+            [
+                currentUser.addresses[0].fullName,
+                currentUser.addresses[0].address,
+                `${currentUser.addresses[0].city}${currentUser.addresses[0].postalCode ? ', ' + currentUser.addresses[0].postalCode : ''}`,
+                currentUser.addresses[0].country
+            ].filter(Boolean).join('\n') :
             "No address set",
         phone: currentUser?.phone || "Not set",
     };
@@ -231,6 +242,52 @@ const UserDashboard = () => {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleSaveAddress = async () => {
+        setIsSaving(true);
+        try {
+            const currentAddresses = [...(currentUser?.addresses || [])];
+            if (editingAddressIdx >= 0) {
+                currentAddresses[editingAddressIdx] = addressForm;
+            } else {
+                currentAddresses.push(addressForm);
+            }
+
+            const updatedData = await authService.updateProfile({
+                addresses: currentAddresses,
+                phone: addressForm.phone
+            });
+
+            await loginWithToken(updatedData);
+            setAddressMode(false);
+            setEditingAddressIdx(-1);
+            toast.success('Address Intel Synchronized');
+        } catch (error) {
+            console.error("Failed to update address", error);
+            const message = error.response?.data?.message || 'Protocol failure during synchronization';
+            toast.error(message);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const openAddressModal = (idx = -1) => {
+        if (idx >= 0 && currentUser?.addresses?.[idx]) {
+            setAddressForm(currentUser.addresses[idx]);
+            setEditingAddressIdx(idx);
+        } else {
+            setAddressForm({
+                fullName: currentUser?.username || '',
+                address: '',
+                city: '',
+                postalCode: '',
+                country: 'India',
+                phone: currentUser?.phone || ''
+            });
+            setEditingAddressIdx(-1);
+        }
+        setAddressMode(true);
     };
 
     const getStatusColor = (status) => {
@@ -604,12 +661,20 @@ const UserDashboard = () => {
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap gap-4 pt-2">
-                                    <button className="px-5 py-2 border border-white/15 text-[10px] font-heading uppercase tracking-widest hover:border-primary hover:text-primary transition-all">
-                                        Edit Address
+                                    <button 
+                                        onClick={() => openAddressModal(0)}
+                                        className="px-5 py-2 border border-white/15 text-[10px] font-heading uppercase tracking-widest hover:border-primary hover:text-primary transition-all"
+                                    >
+                                        {currentUser?.addresses?.length > 0 ? 'Edit Address' : 'Add Address'}
                                     </button>
-                                    <button className="px-5 py-2 border border-white/15 text-[10px] font-heading uppercase tracking-widest hover:border-primary hover:text-primary transition-all">
-                                        Add Address
-                                    </button>
+                                    {currentUser?.addresses?.length > 0 && (
+                                        <button 
+                                            onClick={() => openAddressModal(-1)}
+                                            className="px-5 py-2 border border-white/15 text-[10px] font-heading uppercase tracking-widest hover:border-primary hover:text-primary transition-all"
+                                        >
+                                            Add Another
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
@@ -687,29 +752,29 @@ const UserDashboard = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                             className="relative w-full max-w-lg mx-4 bg-[#050505] border border-white/60 rounded-2xl overflow-hidden shadow-2xl"
+                             className="relative w-full max-w-md mx-4 bg-[#050505] border border-white/60 rounded-2xl overflow-hidden shadow-2xl"
                         >
                             {/* Header */}
-                             <div className="flex justify-between items-center p-5 md:p-6 border-b border-white/5">
+                             <div className="flex justify-between items-center p-4 md:p-5 border-b border-white/5">
                                  <div>
-                                     <h2 className="text-lg md:text-xl font-heading uppercase tracking-widest text-primary">
+                                     <h2 className="text-base md:text-lg font-heading uppercase tracking-widest text-primary">
                                          ARTEFACT INSPECTION
                                      </h2>
-                                     <p className="text-[9px] md:text-[10px] font-mono text-white/40 uppercase tracking-widest mt-1">
+                                     <p className="text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">
                                         ARCHIVE_REF: {selectedAsset._id.slice(-8).toUpperCase()}
                                     </p>
-                                </div>
+                                 </div>
                                 <button
                                     onClick={() => setSelectedAsset(null)}
-                                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                    className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
                                 >
-                                    <X className="w-5 h-5 text-gray-500" />
+                                    <X className="w-4 h-4 text-gray-500" />
                                 </button>
                             </div>
 
                              {/* Interactive Artifact View */}
-                             <div className="p-4">
-                                 <div className="relative aspect-[3/4] max-w-[380px] mx-auto rounded-xl border border-white/40 overflow-hidden bg-black shadow-[0_0_50px_rgba(168,85,247,0.15)] group">
+                             <div className="p-3">
+                                 <div className="relative aspect-[3/4] max-w-[280px] mx-auto rounded-xl border border-white/40 overflow-hidden bg-black shadow-[0_0_50px_rgba(168,85,247,0.15)] group">
                                      <DressItem item={selectedAsset} vaultReady={true} />
                                      
                                      {/* Subtle UI Corners */}
@@ -718,29 +783,128 @@ const UserDashboard = () => {
                              </div>
 
                              {/* Telemetry Footer */}
-                             <div className="p-6 md:p-8 pt-0 space-y-6">
-                                 <div className="text-center space-y-4">
-                                     <h3 className="text-xl md:text-2xl font-black uppercase tracking-[0.1em] text-white">
+                             <div className="p-5 md:p-6 pt-0 space-y-4">
+                                 <div className="text-center space-y-3">
+                                     <h3 className="text-lg md:text-xl font-black uppercase tracking-[0.1em] text-white">
                                          {selectedAsset.serialNumber || '—'}
                                     </h3>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center justify-center gap-4">
-                                            <span className="text-[10px] font-mono tracking-[0.4em] font-bold uppercase" style={{ color: tierAccent(selectedAsset.tier) }}>
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex items-center justify-center gap-3">
+                                            <span className="text-[9px] font-mono tracking-[0.3em] font-bold uppercase" style={{ color: tierAccent(selectedAsset.tier) }}>
                                                 TIER: {selectedAsset.tier || 'COMMON'}
                                             </span>
                                             <span className="w-1 h-1 rounded-full bg-white/20" />
-                                            <span className="text-[10px] font-mono tracking-[0.2em] text-white/40 uppercase">
+                                            <span className="text-[9px] font-mono tracking-[0.15em] text-white/40 uppercase">
                                                 {selectedAsset.serialNumber || '1'} / {selectedAsset.totalCodes || 1}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
-                                    <p className="text-[11px] text-gray-400 leading-relaxed font-medium text-center italic">
+                                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">
+                                    <p className="text-[10px] text-gray-400 leading-relaxed font-medium text-center italic">
                                         {selectedAsset.description || "Experimental digital fabric synthesized through archival protocol overrides. This asset serves as a high-fidelity collectible within the Endura network."}
                                     </p>
                                 </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Address Modal */}
+            <AnimatePresence>
+                {addressMode && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setAddressMode(false)}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                        />
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/20 rounded-2xl overflow-hidden p-8"
+                        >
+                            <h2 className="text-xl font-heading uppercase tracking-widest mb-2 text-white">
+                                {editingAddressIdx >= 0 ? 'REDEFINE ADDRESS' : 'ESTABLISH ADDRESS'}
+                            </h2>
+                            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-8">
+                                PROTOCOL_NODE: SHIPPING_INTEL
+                            </p>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Full Name</label>
+                                        <input
+                                            type="text"
+                                            value={addressForm.fullName}
+                                            onChange={e => setAddressForm(p => ({ ...p, fullName: e.target.value }))}
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 focus:border-primary outline-none text-xs font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Phone</label>
+                                        <input
+                                            type="text"
+                                            value={addressForm.phone}
+                                            onChange={e => setAddressForm(p => ({ ...p, phone: e.target.value }))}
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 focus:border-primary outline-none text-xs font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Street Address</label>
+                                    <input
+                                        type="text"
+                                        value={addressForm.address}
+                                        onChange={e => setAddressForm(p => ({ ...p, address: e.target.value }))}
+                                        className="w-full bg-white/5 border border-white/10 px-4 py-3 focus:border-primary outline-none text-xs font-mono"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">City</label>
+                                        <input
+                                            type="text"
+                                            value={addressForm.city}
+                                            onChange={e => setAddressForm(p => ({ ...p, city: e.target.value }))}
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 focus:border-primary outline-none text-xs font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Postal Code</label>
+                                        <input
+                                            type="text"
+                                            value={addressForm.postalCode}
+                                            onChange={e => setAddressForm(p => ({ ...p, postalCode: e.target.value }))}
+                                            className="w-full bg-white/5 border border-white/10 px-4 py-3 focus:border-primary outline-none text-xs font-mono"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 mt-10">
+                                <button
+                                    onClick={() => setAddressMode(false)}
+                                    className="flex-1 py-4 border border-white/10 text-[10px] font-heading uppercase tracking-widest text-gray-500 hover:text-white transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveAddress}
+                                    disabled={isSaving}
+                                    className="flex-1 py-4 bg-primary text-white font-heading font-black uppercase tracking-widest text-[10px] hover:bg-primary-light transition-all shadow-[0_0_20px_rgba(109,40,217,0.3)]"
+                                >
+                                    {isSaving ? 'SAVING...' : 'CONFIRM ADDRESS'}
+                                </button>
                             </div>
                         </motion.div>
                     </div>

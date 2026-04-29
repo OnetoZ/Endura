@@ -604,8 +604,13 @@ const AdminDashboard = () => {
                                                 />
                                             </div>
                                             <div className="flex-1 text-center md:text-left">
-                                                <p className="text-sm font-black uppercase tracking-widest group-hover:text-primary transition-colors">{item.name}</p>
-                                                <p className="text-[10px] text-gray-500 uppercase tracking-tight mt-1">Edition: #{item.editionNumber || 'GENESIS'} {item.size ? `// Size: ${item.size}` : ''}</p>
+                                                <div className="flex items-center gap-4 mb-2">
+                                                    <p className="text-base font-black uppercase tracking-widest group-hover:text-primary transition-colors">{item.name}</p>
+                                                    <span className="px-4 py-1.5 bg-primary text-black text-xs font-black rounded-none shadow-[4px_4px_0px_rgba(109,40,217,0.3)]">
+                                                        SIZE: {item.size || 'M'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Edition: #{item.editionNumber || 'GENESIS'}</p>
                                             </div>
                                             <div className="flex gap-12 text-center md:text-right">
                                                 <div>

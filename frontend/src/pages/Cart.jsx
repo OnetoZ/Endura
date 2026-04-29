@@ -20,7 +20,6 @@ const Cart = () => {
     // Steps: 1=Review, 2=Address, 3=Confirm, 4=Success
     const [step, setStep] = useState(1);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
-    const [useCredits, setUseCredits] = useState(false);
     const [orderError, setOrderError] = useState('');
     const [placedOrder, setPlacedOrder] = useState(null);
 
@@ -51,21 +50,31 @@ const Cart = () => {
     const shipping = 0;
     const total = subtotal + shipping;
 
-    const availableCredits = currentUser?.credits || 0;
-    const creditDiscount = useCredits ? Math.min(total, availableCredits) : 0;
-    const finalTotal = total - creditDiscount;
+    const finalTotal = total;
 
     const userAddresses = currentUser?.addresses || [];
 
-    // Pre-fill new address phone from user profile
+    // Pre-fill new address from user profile or last used
     useEffect(() => {
-        if (currentUser?.phone && !newAddress.phone) {
-            setNewAddress(prev => ({ ...prev, phone: currentUser.phone }));
+        if (userAddresses.length > 0 && !newAddress.address) {
+            const primary = userAddresses[0];
+            setNewAddress({
+                fullName: primary.fullName || currentUser?.username || '',
+                address: primary.address || '',
+                city: primary.city || '',
+                postalCode: primary.postalCode || '',
+                country: primary.country || 'India',
+                phone: primary.phone || currentUser?.phone || ''
+            });
+        } else {
+            if (currentUser?.phone && !newAddress.phone) {
+                setNewAddress(prev => ({ ...prev, phone: currentUser.phone }));
+            }
+            if (currentUser?.username && !newAddress.fullName) {
+                setNewAddress(prev => ({ ...prev, fullName: currentUser.username }));
+            }
         }
-        if (currentUser?.username && !newAddress.fullName) {
-            setNewAddress(prev => ({ ...prev, fullName: currentUser.username }));
-        }
-    }, [currentUser]);
+    }, [currentUser, userAddresses]);
 
     const handleCheckout = () => {
         if (!currentUser) {
@@ -101,7 +110,30 @@ const Cart = () => {
         }
 
         setOrderError('');
+        
+        // If this is a new address, we might want to save it to the profile
+        if (showNewAddress || userAddresses.length === 0) {
+            saveAddressToProfile(addr);
+        }
+
         setStep(3); // Go to confirmation
+    };
+
+    const saveAddressToProfile = async (addr) => {
+        try {
+            const { authService } = await import('../services/api');
+            const currentAddresses = [...(currentUser?.addresses || [])];
+            
+            // Check if this address already exists to avoid duplicates
+            const exists = currentAddresses.some(a => a.address === addr.address && a.postalCode === addr.postalCode);
+            if (!exists) {
+                currentAddresses.push(addr);
+                const updatedData = await authService.updateProfile({ addresses: currentAddresses });
+                await loginWithToken(updatedData);
+            }
+        } catch (error) {
+            console.error("Failed to sync address to profile", error);
+        }
     };
 
     const getSelectedAddress = () => {
@@ -132,7 +164,7 @@ const Cart = () => {
                 image: item.image || '',
                 quantity: item.quantity,
                 price: item.price,
-                selectedSize: item.selectedSize
+                size: item.selectedSize // Backend expects 'size'
             }));
 
             const shippingData = {
@@ -379,9 +411,6 @@ const Cart = () => {
                                     <CartSummary
                                         subtotal={subtotal}
                                         total={finalTotal}
-                                        credits={availableCredits}
-                                        useCredits={useCredits}
-                                        onToggleCredits={() => setUseCredits(!useCredits)}
                                         onCheckout={handleCheckout}
                                         isCheckingOut={isCheckingOut}
                                     />
@@ -630,12 +659,6 @@ const Cart = () => {
                                         <span className="text-green-400 font-mono">{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                                     </div>
 
-                                    {useCredits && creditDiscount > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-primary">Credits Applied</span>
-                                            <span className="text-primary font-mono">-₹{creditDiscount}</span>
-                                        </div>
-                                    )}
                                     <div className="h-[1px] bg-white/10 my-2" />
                                     <div className="flex justify-between text-lg font-bold">
                                         <span className="text-white">Total</span>

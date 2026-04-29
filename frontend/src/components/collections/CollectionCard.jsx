@@ -61,7 +61,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={handleMouseLeave}
-                className="group relative h-[500px] w-full cursor-none"
+                className="group relative h-[420px] w-full cursor-none"
                 style={{ perspective: 1200 }}
             >
                 {/* Holographic Digital Container */}
@@ -71,7 +71,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                         rotateX: -mousePos.y * 25,
                         z: isHovered ? 50 : 0
                     }}
-                    className="relative w-full h-full glass-purple rounded-3xl overflow-hidden flex flex-col p-6 transition-all duration-300 group-hover:shadow-[0_0_80px_rgba(124,58,237,0.3)]"
+                    className="relative w-full h-full glass-purple rounded-3xl overflow-hidden flex flex-col p-5 transition-all duration-300 group-hover:shadow-[0_0_80px_rgba(124,58,237,0.3)]"
                 >
                     {/* Scanning Line */}
                     <div className="scanning-line" />
@@ -83,7 +83,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                     <div className="holographic-noise" />
 
                     {/* Image Area - 3D Floating */}
-                    <div className="relative w-full aspect-[4/5] mb-6 overflow-hidden rounded-2xl bg-black/60 shadow-inner group-hover:shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+                    <div className="relative w-full aspect-[4/5] mb-4 overflow-hidden rounded-2xl bg-black/60 shadow-inner group-hover:shadow-[0_0_30px_rgba(124,58,237,0.2)]">
                         <motion.img
                             src={item.image}
                             alt={item.name}
@@ -180,7 +180,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={handleMouseLeave}
             onClick={() => navigate(`/product/${item._id || item.id}`)}
-            className="group relative h-[500px] w-full cursor-pointer"
+            className="group relative h-[420px] w-full cursor-pointer"
         >
             {/* Luxury Expansion Frame */}
             <div className="luxury-border" />
@@ -192,7 +192,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                     rotateY: mousePos.x * 10,
                     rotateX: -mousePos.y * 10,
                 }}
-                className="relative w-full h-full bg-[#080808] border border-white/10 rounded-sm overflow-hidden flex flex-col p-6 transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]"
+                className="relative w-full h-full bg-[#080808] border border-white/10 rounded-sm overflow-hidden flex flex-col p-5 transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]"
             >
                 {/* Floating Particles */}
                 <div className="particle-container">
@@ -230,7 +230,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                 </div>
 
                 {/* Image Section - Deep Parallax */}
-                <div className="relative w-full aspect-[4/5] mb-8 overflow-hidden bg-[#111] border border-white/5">
+                <div className="relative w-full aspect-[4/5] mb-6 overflow-hidden bg-[#111] border border-white/5">
                     <div className="absolute inset-0 bg-gradient-to-tr from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-10" />
                     <motion.img
                         src={item.image}
@@ -257,18 +257,19 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
                             </h3>
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em]">{item.category}</span>
-                                {item.selectedSize && (
-                                    <>
-                                        <div className="h-[1px] w-4 bg-accent/20" />
-                                        <span className="text-[10px] font-mono text-accent/60 uppercase tracking-[0.3em]">SIZE: {item.selectedSize}</span>
-                                    </>
-                                )}
+                                <div className="h-[1px] w-4 bg-primary/40" />
+                                <span className="text-[10px] font-mono text-primary font-black uppercase tracking-[0.3em]">SIZE: {item.selectedSize || 'M'}</span>
                                 <div className="h-[1px] w-8 bg-accent/20" />
                             </div>
                         </div>
                         <div className="text-right">
-                            <span className="text-2xl font-heading text-accent/80 price-glow">₹{item.price}</span>
-                            <p className="text-[8px] font-mono text-gray-600 mt-1 uppercase">VAT INCL.</p>
+                            <div className="flex flex-col items-end">
+                                <span className="text-2xl font-heading text-accent/80 price-glow leading-none">₹{item.price}</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[10px] text-gray-600 line-through">₹{Number(item.price) + 1000}</span>
+                                    <span className="text-[8px] font-mono text-[#d4af37] font-black">{Math.round((1000 / (Number(item.price) + 1000)) * 100)}% OFF</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

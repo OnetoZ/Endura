@@ -424,8 +424,13 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     user.username = req.body.username || user.username;
     user.avatar = req.body.avatar || user.avatar;
     user.phone = req.body.phone || user.phone;
+    if (req.body.addresses) {
+        console.log('📬 [AUTH_CONTROLLER] Updating addresses:', req.body.addresses);
+        user.addresses = req.body.addresses;
+    }
 
     const updatedUser = await user.save();
+    console.log('✅ [AUTH_CONTROLLER] Profile updated for:', updatedUser.email, 'Addresses count:', updatedUser.addresses?.length);
     res.json(userResponse(updatedUser));
 });
 

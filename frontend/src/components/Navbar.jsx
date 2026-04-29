@@ -67,7 +67,7 @@ const Navbar = React.forwardRef((props, ref) => {
                         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent animate-[scan_4s_ease-in-out_infinite]" />
                     </div>
 
-                    <div className="max-w-[1920px] mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between">
+                    <div className="max-w-[1920px] mx-auto px-4 md:px-6 h-14 md:h-20 flex items-center justify-between">
                         {/* LEFT: Logo + System Diagnostics */}
                         <div className="flex items-center gap-8">
                             <Link to="/" onClick={handleLogoClick} className="group relative">
@@ -76,7 +76,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                     <img
                                         src="/logo.png"
                                         alt="ENDURA"
-                                        className="h-5 md:h-8 object-contain brightness-150 transition-all duration-500 group-hover:brightness-200 group-hover:drop-shadow-[0_0_20px_rgba(147,112,219,0.6)]"
+                                        className="h-4 md:h-7 object-contain brightness-150 transition-all duration-500 group-hover:brightness-200 group-hover:drop-shadow-[0_0_20px_rgba(147,112,219,0.6)]"
                                     />
                                     {/* Animated Corner Brackets */}
                                     <div className="absolute -top-1 -left-1 w-3 h-3 border-l border-t border-primary/40 group-hover:border-primary transition-all duration-300" />
