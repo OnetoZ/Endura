@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const Asset = require('../models/Asset');
 const Payment = require('../models/Payment');
 const Cart = require('../models/Cart');
+const Coupon = require('../models/Coupon');
 const VaultItem = require('../models/VaultItem');
 const { razorpayInstance, razorpayKeyId } = require('../utils/razorpay');
 const asyncHandler = require('../utils/asyncHandler');
@@ -41,7 +42,7 @@ const generateVaultItems = async (order) => {
  * @access  Private
  */
 const createOrder = asyncHandler(async (req, res) => {
-    const { orderItems, shippingAddress } = req.body;
+    const { orderItems, shippingAddress, couponCode } = req.body;
     const bodyKeys = Object.keys(req.body || {});
 
     console.log('[payment/create-order] Incoming request', {
@@ -140,6 +141,30 @@ const createOrder = asyncHandler(async (req, res) => {
         });
     }
 
+    let discount = 0;
+    let appliedCouponData = null;
+    if (couponCode) {
+        const coupon = await Coupon.findOne({ 
+            code: couponCode.toUpperCase(), 
+            isActive: true,
+            expiryDate: { $gt: Date.now() }
+        });
+        if (coupon && coupon.usedCount < coupon.quantity) {
+            discount = coupon.discountAmount;
+            appliedCouponData = {
+                code: coupon.code,
+                discountAmount: coupon.discountAmount
+            };
+        }
+    }
+
+    calculatedTotal = Math.max(calculatedTotal - discount, 0);
+
+    if (calculatedTotal <= 0 && orderItems.length > 0) {
+        // Handle free orders or edge cases if necessary
+        // For now, let's assume total must be > 0 for Razorpay
+    }
+
     if (calculatedTotal <= 0) {
         console.error('[payment/create-order] Rejected: total amount is 0 or less', { calculatedTotal });
         res.status(400);
@@ -199,13 +224,14 @@ const createOrder = asyncHandler(async (req, res) => {
         paymentMethod: 'ONLINE',
         itemsPrice: calculatedTotal,
         shippingPrice: 0,
-        taxPrice: 0, // already included in calculatedTotal in this logic, but if taxes are separate, we should specify.
+        taxPrice: 0, 
         totalAmount: calculatedTotal,
         currency: 'INR',
         razorpayOrderId: razorpayOrder.id,
-        orderId: razorpayOrder.id, // satisfying stale unique index
+        orderId: razorpayOrder.id,
         paymentStatus: 'pending',
         status: 'Pending',
+        coupon: appliedCouponData
     });
 
     res.status(201).json({
@@ -330,6 +356,14 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
         await Promise.all(stockPromises);
 
+        // Increment coupon usage
+        if (order.coupon && order.coupon.code) {
+            await Coupon.findOneAndUpdate(
+                { code: order.coupon.code },
+                { $inc: { usedCount: 1 } }
+            );
+        }
+
         // Clear the user's cart
         await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
 
@@ -425,6 +459,14 @@ const webhook = asyncHandler(async (req, res) => {
                 );
             });
             await Promise.all(stockPromises);
+
+            // Increment coupon usage
+            if (order.coupon && order.coupon.code) {
+                await Coupon.findOneAndUpdate(
+                    { code: order.coupon.code },
+                    { $inc: { usedCount: 1 } }
+                );
+            }
 
             await Cart.findOneAndUpdate({ user: order.user }, { items: [] });
             await generateVaultItems(order);

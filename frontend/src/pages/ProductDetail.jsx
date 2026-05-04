@@ -200,13 +200,17 @@ const ProductDetail = () => {
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-4">
                                     <p className="text-3xl md:text-4xl font-bold text-accent">₹{product.price}</p>
-                                    <span className="text-lg md:text-xl text-gray-600 line-through font-medium">₹{Number(product.price) + 1000}</span>
+                                    {product.originalPrice > 0 && (
+                                        <span className="text-lg md:text-xl text-gray-600 line-through font-medium">₹{product.originalPrice}</span>
+                                    )}
                                 </div>
-                                <div className="mt-1">
-                                    <span className="text-[9px] md:text-[10px] text-[#d4af37] font-black uppercase tracking-[0.3em]">
-                                        EXCLUSIVE {Math.round((1000 / (Number(product.price) + 1000)) * 100)}% DISCOUNT APPLIED
-                                    </span>
-                                </div>
+                                {product.originalPrice > 0 && (
+                                    <div className="mt-1">
+                                        <span className="text-[9px] md:text-[10px] text-[#d4af37] font-black uppercase tracking-[0.3em]">
+                                            EXCLUSIVE {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% DISCOUNT APPLIED
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                             <p className="text-gray-500 text-[9px] md:text-xs italic pb-1">Local Currency Synchronized</p>
                         </div>

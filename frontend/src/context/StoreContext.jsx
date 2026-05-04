@@ -192,17 +192,17 @@ export const AppProvider = ({ children }) => {
         }
     };
 
-    const removeFromCart = async (productId, size = null) => {
+    const removeFromCart = async (productId, size = 'M') => {
+        const normalizedSize = size || 'M';
         setCart(prev => {
-            const newCart = prev.filter(item => !(item.id === productId && item.selectedSize === size));
+            const newCart = prev.filter(item => !(item.id === productId && (item.selectedSize || 'M') === normalizedSize));
             localStorage.setItem('endura_cart', JSON.stringify(newCart));
             return newCart;
         });
 
         if (currentUser) {
             try {
-                // Assuming updateCart with 0 quantity or specific remove endpoint
-                await cartService.removeFromCart(productId, size);
+                await cartService.removeFromCart(productId, normalizedSize);
                 await loadCart(); // Re-sync
             } catch (error) {
                 console.error('Failed to sync removeFromCart to backend:', error);
@@ -210,10 +210,11 @@ export const AppProvider = ({ children }) => {
         }
     };
 
-    const updateCartQuantity = async (productId, delta, size = null) => {
+    const updateCartQuantity = async (productId, delta, size = 'M') => {
+        const normalizedSize = size || 'M';
         setCart(prev => {
             const newCart = prev.map(item => {
-                if (item.id === productId && item.selectedSize === size) {
+                if (item.id === productId && (item.selectedSize || 'M') === normalizedSize) {
                     const newQty = Math.max(1, item.quantity + delta);
                     return { ...item, quantity: newQty };
                 }
@@ -225,9 +226,10 @@ export const AppProvider = ({ children }) => {
 
         if (currentUser) {
             try {
-                const item = cart.find(i => i.id === productId && i.selectedSize === size);
+                const item = cart.find(i => i.id === productId && (i.selectedSize || 'M') === normalizedSize);
                 if (item) {
-                    await cartService.updateCart(productId, item.quantity + delta, size);
+                    await cartService.updateCart(productId, item.quantity + delta, normalizedSize);
+                    await loadCart();
                 }
             } catch (error) {
                 console.error('Failed to sync updateCartQuantity to backend:', error);

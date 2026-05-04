@@ -106,6 +106,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/vault', require('./routes/vaultRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/coupons', require('./routes/couponRoutes'));
 
 
 // Serve uploads folder statically

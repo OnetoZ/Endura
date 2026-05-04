@@ -43,6 +43,7 @@ const createAsset = asyncHandler(async (req, res) => {
         name,
         description,
         price,
+        originalPrice,
         images,
         type,
         category,
@@ -56,6 +57,7 @@ const createAsset = asyncHandler(async (req, res) => {
         name,
         description,
         price,
+        originalPrice: originalPrice || 0,
         images: images || [],
         type: type || 'Common',
         category,
@@ -79,6 +81,7 @@ const updateAsset = asyncHandler(async (req, res) => {
         name,
         description,
         price,
+        originalPrice,
         images,
         type,
         category,
@@ -94,6 +97,7 @@ const updateAsset = asyncHandler(async (req, res) => {
         asset.name = name || asset.name;
         asset.description = description || asset.description;
         asset.price = price !== undefined ? price : asset.price;
+        asset.originalPrice = originalPrice !== undefined ? originalPrice : asset.originalPrice;
         asset.images = images || asset.images;
         asset.type = type || asset.type;
         asset.category = category || asset.category;

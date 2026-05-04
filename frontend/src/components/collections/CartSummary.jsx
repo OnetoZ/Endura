@@ -31,7 +31,21 @@ const CountUp = ({ value }) => {
     return <span>{displayValue.toLocaleString()}</span>;
 };
 
-const CartSummary = ({ subtotal, total, onCheckout, isCheckingOut }) => {
+const CartSummary = ({ 
+    baseTotal,
+    regularDiscount,
+    subtotal, 
+    couponDiscount,
+    total, 
+    onCheckout, 
+    isCheckingOut,
+    couponCode,
+    onCouponChange,
+    onApplyCoupon,
+    isApplyingCoupon,
+    appliedCoupon,
+    couponError
+}) => {
     return (
         <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -45,27 +59,49 @@ const CartSummary = ({ subtotal, total, onCheckout, isCheckingOut }) => {
                 <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary-light/10 blur-[60px] rounded-full pointer-events-none group-hover:bg-primary-light/20 transition-all duration-1000" />
                 <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-accent/5 blur-[60px] rounded-full pointer-events-none group-hover:bg-accent/10 transition-all duration-1000" />
 
-                <div className="relative z-10 grid grid-cols-2 gap-8 mb-8">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <span className="w-1 h-1 bg-primary-light rounded-full animate-pulse" />
-                            <span className="text-[9px] font-mono text-primary-light/60 uppercase tracking-[0.3em] leading-none">Subtotal_Protocol</span>
-                        </div>
-                        <div className="text-3xl font-heading text-white/90 tracking-tighter">
-                            <span className="text-sm opacity-40 mr-1">₹</span>
-                            <CountUp value={subtotal} />
-                        </div>
-                    </div>
+                <div className="relative z-10 space-y-4 mb-10">
 
-                    <div className="text-right space-y-1">
-                        <div className="flex items-center justify-end gap-2">
-                            <span className="w-1 h-1 bg-accent rounded-full animate-pulse" />
+
+                    <div className="flex justify-between items-end px-1 pt-4">
+                        <div className="space-y-1">
+                            <span className="text-[9px] font-mono text-gray-500 uppercase tracking-[0.4em]">Final_Settlement</span>
+                            <div className="text-[7px] text-gray-600 font-mono tracking-widest">TAX_INCLUDED // SHIPPING_FREE</div>
                         </div>
-                        <div className="text-4xl font-heading text-accent price-glow tracking-tighter">
-                            <span className="text-sm opacity-60 mr-1">₹</span>
+                        <div className="text-5xl font-heading text-white price-glow tracking-tighter">
+                            <span className="text-xl opacity-40 mr-1 font-sans">₹</span>
                             <CountUp value={total} />
                         </div>
                     </div>
+                </div>
+
+                {/* Coupon Section */}
+                <div className="relative z-10 mb-8 p-4 bg-black/40 border border-white/5 rounded-2xl">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                        <span className="text-[8px] font-mono text-gray-500 uppercase tracking-[0.3em]">COUPON_IDENTIFIER</span>
+                        {couponDiscount > 0 && (
+                            <span className="text-[8px] font-mono text-accent uppercase tracking-[0.3em] font-bold">SAVINGS: ₹{couponDiscount}</span>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            value={couponCode}
+                            onChange={(e) => onCouponChange(e.target.value)}
+                            disabled={appliedCoupon}
+                            placeholder={appliedCoupon ? `APPLIED: ${appliedCoupon.code}` : "ENTER CODE..."}
+                            className="flex-1 bg-white/5 border border-white/10 px-4 py-2 text-[10px] font-mono text-white outline-none focus:border-primary-light/30 rounded-xl uppercase tracking-widest disabled:opacity-50"
+                        />
+                        <button 
+                            onClick={onApplyCoupon}
+                            disabled={isApplyingCoupon || appliedCoupon || !couponCode}
+                            className="px-4 py-2 bg-primary-light/20 hover:bg-primary-light/40 text-primary-light text-[9px] font-black uppercase tracking-widest rounded-xl transition-all disabled:opacity-30"
+                        >
+                            {isApplyingCoupon ? '...' : (appliedCoupon ? 'OK' : 'APPLY')}
+                        </button>
+                    </div>
+                    {couponError && (
+                        <p className="text-[7px] text-red-500 font-mono mt-2 uppercase tracking-widest px-1">{couponError}</p>
+                    )}
                 </div>
 
                 {/* Animated Interactive Belt */}
