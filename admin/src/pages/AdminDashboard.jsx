@@ -19,6 +19,7 @@ const INITIAL_PRODUCT_STATE = {
     name: '',
     description: '',
     price: '',
+    originalPrice: '',
     stock: '',
     image: '',
     backImage: '',
@@ -49,6 +50,11 @@ const AdminDashboard = () => {
         name: '', description: '', frontImage: '', backImage: '', tier: 'common'
     });
     const [cardUploads, setCardUploads] = useState({ frontImage: false, backImage: false });
+    const [coupons, setCoupons] = useState([]);
+    const [isAddingCoupon, setIsAddingCoupon] = useState(false);
+    const [couponSaving, setCouponSaving] = useState(false);
+    const [newCoupon, setNewCoupon] = useState({ code: '', discountAmount: '', quantity: '' });
+    const [editingCouponId, setEditingCouponId] = useState(null);
 
     // ── Order Details ──────────────────────────────────────────────────────
     const [viewingOrder, setViewingOrder] = useState(null);
@@ -87,12 +93,13 @@ const AdminDashboard = () => {
         // Phase 2: Hydrate background data
         const loadData = async () => {
             try {
-                const [productsData, ordersData, usersData, cardsData, vaultData] = await Promise.all([
+                const [productsData, ordersData, usersData, cardsData, vaultData, couponsData] = await Promise.all([
                     assetService.getAssets().catch(e => ({ products: [] })),
                     orderService.getAllOrders().catch(e => []),
                     userService.getUsers().catch(e => []),
                     vaultService.getVaultCards().catch(e => []),
-                    vaultService.getVaultItems().catch(e => [])
+                    vaultService.getVaultItems().catch(e => []),
+                    assetService.getCoupons().catch(e => [])
                 ]);
 
                 setAssets(Array.isArray(productsData) ? productsData : (productsData.products || []));
@@ -100,6 +107,7 @@ const AdminDashboard = () => {
                 setUsers(usersData || []);
                 setVaultCards(cardsData || []);
                 setVaultItems(vaultData || []);
+                setCoupons(couponsData || []);
             } catch (error) {
                 console.error('❌ [ADMIN] Background Hydration Failure:', error);
             }
@@ -142,6 +150,9 @@ const AdminDashboard = () => {
                     ]);
                     setVaultCards(cardsData || []);
                     setVaultItems(vaultData || []);
+                } else if (activeTab === 'coupons') {
+                    const couponsData = await assetService.getCoupons().catch(e => []);
+                    setCoupons(couponsData || []);
                 }
             } catch (err) {
                 console.warn('Tab refresh failed:', err);
@@ -149,6 +160,58 @@ const AdminDashboard = () => {
         };
         refreshData();
     }, [activeTab]);
+
+    const handleAddCoupon = async (e) => {
+        e.preventDefault();
+        setCouponSaving(true);
+        try {
+            const couponData = {
+                code: newCoupon.code,
+                discountAmount: Number(newCoupon.discountAmount),
+                quantity: Number(newCoupon.quantity)
+            };
+
+            if (editingCouponId) {
+                await assetService.updateCoupon(editingCouponId, couponData);
+                toast.success('Coupon Updated');
+            } else {
+                await assetService.createCoupon(couponData);
+                toast.success('Coupon Code Generated');
+            }
+
+            setIsAddingCoupon(false);
+            setEditingCouponId(null);
+            setNewCoupon({ code: '', discountAmount: '', quantity: '' });
+            // Refresh coupons
+            const couponsData = await assetService.getCoupons();
+            setCoupons(couponsData);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to process coupon');
+        } finally {
+            setCouponSaving(false);
+        }
+    };
+
+    const handleEditCoupon = (coupon) => {
+        setNewCoupon({
+            code: coupon.code,
+            discountAmount: coupon.discountAmount,
+            quantity: coupon.quantity
+        });
+        setEditingCouponId(coupon._id || coupon.id);
+        setIsAddingCoupon(true);
+    };
+
+    const handleDeleteCoupon = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this coupon?')) return;
+        try {
+            await assetService.deleteCoupon(id);
+            toast.success('Coupon Deleted');
+            setCoupons(coupons.filter(c => (c._id || c.id) !== id));
+        } catch (error) {
+            toast.error('Deletion failed');
+        }
+    };
 
     // ── Products ──────────────────────────────────────────────────────────
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
@@ -327,6 +390,7 @@ const AdminDashboard = () => {
                 ...newProduct,
                 images: [newProduct.image, newProduct.backImage, newProduct.digitalTwinImage, ...newProduct.additionalImages],
                 price: Number(newProduct.price),
+                originalPrice: Number(newProduct.originalPrice),
                 stock: totalStock > 0 ? totalStock : Number(newProduct.stock)
             };
 
@@ -364,13 +428,15 @@ const AdminDashboard = () => {
             name: product.name || '',
             description: product.description || '',
             price: product.price || '',
-            stock: product.stock || '',
-            image: product.images?.[0] || product.image || '',
-            backImage: product.images?.[1] || product.backImage || '',
-            digitalTwinImage: product.images?.[2] || product.digitalTwinImage || '',
-            additionalImages: product.images?.slice(3) || product.additionalImages || [],
+            originalPrice: product.originalPrice || '',
+            stock: product.stock || 0,
+            image: product.image || product.images?.[0] || '',
+            backImage: product.backImage || product.images?.[1] || '',
+            digitalTwinImage: product.digitalTwinImage || product.images?.[2] || '',
+            additionalImages: product.additionalImages || product.images?.slice(3) || [],
             type: product.type || 'Common',
-            shortAtmosphericLine: product.shortAtmosphericLine || ''
+            shortAtmosphericLine: product.shortAtmosphericLine || '',
+            sizes: product.sizes || { S: 0, M: 0, L: 0, XL: 0 }
         });
         setIsAdding(true);
     };
@@ -661,7 +727,7 @@ const AdminDashboard = () => {
                             { id: 'dashboard', label: 'Overview', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
                             { id: 'products', label: 'Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
                             { id: 'orders', label: 'Orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-
+                            { id: 'coupons', label: 'Coupons', icon: 'M15 5v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm0 7v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1z' },
                             { id: 'vault', label: 'Vault', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
                             { id: 'users', label: 'Users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
                         ].map(tab => (
@@ -801,7 +867,7 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Price (INR)</label>
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Discount Price (INR)</label>
                                                     <input
                                                         type="number"
                                                         className="w-full bg-white/5 border border-white/10 p-4 text-sm font-bold uppercase tracking-widest text-accent outline-none focus:border-accent transition-all"
@@ -809,6 +875,16 @@ const AdminDashboard = () => {
                                                         onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
                                                         placeholder="₹0.00"
                                                         required
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Real Price (INR)</label>
+                                                    <input
+                                                        type="number"
+                                                        className="w-full bg-white/5 border border-white/10 p-4 text-sm font-bold uppercase tracking-widest text-gray-400 outline-none focus:border-white/30 transition-all"
+                                                        value={newProduct.originalPrice}
+                                                        onChange={e => setNewProduct({ ...newProduct, originalPrice: e.target.value })}
+                                                        placeholder="₹0.00"
                                                     />
                                                 </div>
                                                 <div className="space-y-4">
@@ -1016,7 +1092,12 @@ const AdminDashboard = () => {
                                                     </td>
                                                     <td className="py-6">
                                                         <p className="font-bold uppercase tracking-tight">{p.name}</p>
-                                                        <p className="text-accent font-mono text-[10px]">₹{p.price}</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-accent font-mono text-[10px]">₹{p.price}</p>
+                                                            {p.originalPrice > 0 && (
+                                                                <p className="text-gray-500 font-mono text-[8px] line-through">₹{p.originalPrice}</p>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="py-6">
                                                         <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border border-${p.type === 'Legendary' ? 'purple-500' : 'primary'}/30 text-white/70`}>
@@ -1045,10 +1126,6 @@ const AdminDashboard = () => {
                                     <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">View and manage order status</p>
                                 </div>
                                 <div className="flex gap-4">
-                                    <div className="glass px-4 py-2 border-white/10 flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                                        <span className="text-[9px] font-bold uppercase text-gray-400">Shopify Linked</span>
-                                    </div>
                                     <select
                                         className="bg-black border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary/50 appearance-none cursor-pointer"
                                         value={orderFilter}
@@ -1333,6 +1410,147 @@ const AdminDashboard = () => {
                             </div>
 
                             {/* Bottom Area Content Removed */}
+                        </div>
+                    )}
+
+                    {activeTab === 'coupons' && (
+                        <div className="animate-in fade-in duration-500">
+                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-4">
+                                <div>
+                                    <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Coupon Management</h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Configure promotional discount identifiers</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (isAddingCoupon) {
+                                            setIsAddingCoupon(false);
+                                            setEditingCouponId(null);
+                                            setNewCoupon({ code: '', discountAmount: '', quantity: '' });
+                                        } else {
+                                            setIsAddingCoupon(true);
+                                        }
+                                    }}
+                                    className={`px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${isAddingCoupon ? 'bg-white text-black' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                                >
+                                    {isAddingCoupon ? 'Cancel Action' : 'Generate New Coupon'}
+                                </button>
+                            </div>
+
+                            <AnimatePresence>
+                                {isAddingCoupon && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden mb-10"
+                                    >
+                                        <div className="glass border-primary/20 p-8 bg-primary/[0.02]">
+                                            <form onSubmit={handleAddCoupon} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Coupon Code</label>
+                                                    <input
+                                                        type="text"
+                                                        required
+                                                        placeholder="E.G. ENDURA50"
+                                                        className="w-full bg-[#111] border border-white/5 p-4 text-xs font-mono text-white outline-none focus:border-primary uppercase tracking-widest"
+                                                        value={newCoupon.code}
+                                                        onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Discount Amount (INR)</label>
+                                                    <input
+                                                        type="number"
+                                                        required
+                                                        placeholder="50"
+                                                        className="w-full bg-[#111] border border-white/5 p-4 text-xs font-mono text-accent outline-none focus:border-accent"
+                                                        value={newCoupon.discountAmount}
+                                                        onChange={e => setNewCoupon({ ...newCoupon, discountAmount: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Quantity (Limit)</label>
+                                                    <input
+                                                        type="number"
+                                                        required
+                                                        placeholder="100"
+                                                        className="w-full bg-[#111] border border-white/5 p-4 text-xs font-mono text-white outline-none focus:border-primary"
+                                                        value={newCoupon.quantity}
+                                                        onChange={e => setNewCoupon({ ...newCoupon, quantity: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="flex items-end">
+                                                    <button
+                                                        type="submit"
+                                                        disabled={couponSaving}
+                                                        className="w-full py-4 bg-primary text-white font-black uppercase tracking-widest text-[10px] hover:brightness-110 transition-all"
+                                                    >
+                                                        {couponSaving ? 'Syncing...' : (editingCouponId ? 'Update Coupon' : 'Deploy Coupon')}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="glass border-white/5 overflow-hidden">
+                                <table className="w-full text-left">
+                                    <thead className="text-[10px] font-black uppercase tracking-widest text-gray-500 bg-white/5 border-b border-white/10">
+                                        <tr>
+                                            <th className="py-4 pl-8">Code</th>
+                                            <th className="py-4">Discount</th>
+                                            <th className="py-4">Usage</th>
+                                            <th className="py-4">Status</th>
+                                            <th className="py-4 pr-8 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {coupons.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="py-20 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em]">No promotional identifiers deployed</td>
+                                            </tr>
+                                        ) : (
+                                            coupons.map(coupon => (
+                                                <tr key={coupon._id || coupon.id} className="hover:bg-white/[0.02] transition-colors">
+                                                    <td className="py-6 pl-8 font-mono text-xs text-primary tracking-widest">{coupon.code}</td>
+                                                    <td className="py-6 font-bold text-accent font-mono text-xs">₹{coupon.discountAmount}</td>
+                                                    <td className="py-6">
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-primary"
+                                                                    style={{ width: `${Math.min((coupon.usedCount / coupon.quantity) * 100, 100)}%` }}
+                                                                />
+                                                            </div>
+                                                            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">{coupon.usedCount} / {coupon.quantity} USED</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-6">
+                                                        <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border ${coupon.usedCount >= coupon.quantity ? 'border-red-500/30 text-red-500' : 'border-primary/30 text-primary'}`}>
+                                                            {coupon.usedCount >= coupon.quantity ? 'EXHAUSTED' : 'ACTIVE'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-6 pr-8 text-right flex justify-end gap-4">
+                                                        <button
+                                                            onClick={() => handleEditCoupon(coupon)}
+                                                            className="text-[8px] font-black text-primary/50 hover:text-primary uppercase tracking-widest transition-colors"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteCoupon(coupon._id || coupon.id)}
+                                                            className="text-[8px] font-black text-red-500/50 hover:text-red-500 uppercase tracking-widest transition-colors"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 

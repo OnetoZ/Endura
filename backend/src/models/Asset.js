@@ -16,6 +16,10 @@ const assetSchema = new mongoose.Schema({
         required: true,
         default: 0,
     },
+    originalPrice: {
+        type: Number,
+        default: 0,
+    },
     images: [{
         type: String,
     }],

@@ -68,6 +68,11 @@ const orderSchema = new mongoose.Schema({
         default: 'Pending',
         index: true
     },
+    // Coupon field
+    coupon: {
+        code: { type: String },
+        discountAmount: { type: Number, default: 0 }
+    },
     // Satisfy stale unique index in DB if present
     orderId: { type: String },
 }, { 

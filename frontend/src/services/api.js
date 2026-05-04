@@ -175,6 +175,10 @@ export const assetService = {
     getPhysicalAssets: async () => {
         const response = await api.get('/assets?type=physical');
         return response.data;
+    },
+    validateCoupon: async (code) => {
+        const response = await api.post('/coupons/validate', { code });
+        return response.data;
     }
 };
 
@@ -238,6 +242,7 @@ export const orderService = {
         const payload = {
             orderItems: normalizedOrderItems,
             shippingAddress: orderData?.shippingAddress || {},
+            couponCode: orderData?.couponCode || null,
         };
 
         // ── Pre-flight diagnostics ──

@@ -191,10 +191,14 @@ const PhysicalProductCard = ({ product }) => {
                             <p className="text-xs md:text-xl font-bold text-white tracking-tighter">₹{product.price}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-[7px] md:text-[9px] text-gray-500 line-through font-medium">₹{Number(product.price) + 1000}</span>
-                            <span className="text-[7px] md:text-[9px] text-[#d4af37] font-black uppercase tracking-widest">
-                                {Math.round((1000 / (Number(product.price) + 1000)) * 100)}% OFF
-                            </span>
+                            {product.originalPrice > 0 && (
+                                <>
+                                    <span className="text-[7px] md:text-[9px] text-gray-500 line-through font-medium">₹{product.originalPrice}</span>
+                                    <span className="text-[7px] md:text-[9px] text-[#d4af37] font-black uppercase tracking-widest">
+                                        {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                                    </span>
+                                </>
+                            )}
                         </div>
                     </div>
                     <p className="hidden md:block text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-1">Batch_001 // LTD_EDTN</p>

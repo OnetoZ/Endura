@@ -30,6 +30,12 @@ const Cart = () => {
         fullName: '', address: '', city: '', postalCode: '', country: 'India', phone: ''
     });
 
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+    const [couponError, setCouponError] = useState('');
+
     // Grid Reference for morphing animations
     const gridRef = useRef(null);
 
@@ -42,13 +48,22 @@ const Cart = () => {
     const checkoutItems = cart;
 
     // Derived Logic
+    const baseTotal = checkoutItems.reduce((acc, item) => {
+        const originalPrice = item.originalPrice || item.product?.originalPrice || item.price || item.product?.price || 0;
+        const qty = item.quantity || 0;
+        return acc + (originalPrice * qty);
+    }, 0);
+
     const subtotal = checkoutItems.reduce((acc, item) => {
         const price = item.price || item.product?.price || 0;
         const qty = item.quantity || 0;
         return acc + (price * qty);
     }, 0);
+
+    const regularDiscount = baseTotal - subtotal;
     const shipping = 0;
-    const total = subtotal + shipping;
+    const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+    const total = Math.max(subtotal + shipping - couponDiscount, 0);
 
     const finalTotal = total;
 
@@ -75,6 +90,23 @@ const Cart = () => {
             }
         }
     }, [currentUser, userAddresses]);
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setIsApplyingCoupon(true);
+        setCouponError('');
+        try {
+            const { assetService } = await import('../services/api');
+            const data = await assetService.validateCoupon(couponCode);
+            setAppliedCoupon(data);
+            toast.success(`Coupon Applied: ₹${data.discountAmount} SAVED`);
+        } catch (error) {
+            setCouponError(error.response?.data?.message || 'Invalid coupon');
+            setAppliedCoupon(null);
+        } finally {
+            setIsApplyingCoupon(false);
+        }
+    };
 
     const handleCheckout = () => {
         if (!currentUser) {
@@ -188,6 +220,7 @@ const Cart = () => {
                 createOrder: () => placeRazorpayOrder({
                     orderItems,
                     shippingAddress: shippingData,
+                    couponCode: appliedCoupon ? appliedCoupon.code : null,
                 }),
                 verifyPayment: (verifyPayload) => verifyRazorpayPayment(verifyPayload),
                 customer: {
@@ -409,10 +442,19 @@ const Cart = () => {
                                 {/* Right Column - Summary */}
                                 <div className="cart-summary lg:sticky lg:top-32 h-fit">
                                     <CartSummary
+                                        baseTotal={baseTotal}
+                                        regularDiscount={regularDiscount}
                                         subtotal={subtotal}
+                                        couponDiscount={couponDiscount}
                                         total={finalTotal}
                                         onCheckout={handleCheckout}
                                         isCheckingOut={isCheckingOut}
+                                        couponCode={couponCode}
+                                        onCouponChange={setCouponCode}
+                                        onApplyCoupon={handleApplyCoupon}
+                                        isApplyingCoupon={isApplyingCoupon}
+                                        appliedCoupon={appliedCoupon}
+                                        couponError={couponError}
                                     />
                                 </div>
                             </div>
@@ -650,19 +692,35 @@ const Cart = () => {
                                 {/* Price Breakdown */}
                                 <div className="mb-8 space-y-3">
                                     <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-4">Price Breakdown</p>
+                                    
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-400">Subtotal</span>
-                                        <span className="text-white font-mono">₹{subtotal}</span>
+                                        <span className="text-gray-400 uppercase tracking-widest text-[10px]">Product Price</span>
+                                        <span className="text-white font-mono">₹{baseTotal}</span>
                                     </div>
+
+                                    {regularDiscount > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-400 uppercase tracking-widest text-[10px]">Product Discount</span>
+                                            <span className="text-red-400 font-mono">-₹{regularDiscount}</span>
+                                        </div>
+                                    )}
+
+                                    {couponDiscount > 0 && (
+                                        <div className="flex justify-between text-sm py-1 border-y border-white/5 bg-white/[0.02]">
+                                            <span className="text-accent font-bold uppercase tracking-widest text-[9px] px-1">Extra Coupon Savings</span>
+                                            <span className="text-accent font-mono px-1">-₹{couponDiscount}</span>
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-400">Shipping</span>
-                                        <span className="text-green-400 font-mono">{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                                        <span className="text-gray-400 uppercase tracking-widest text-[10px]">Shipping</span>
+                                        <span className="text-green-400 font-mono tracking-widest">{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                                     </div>
 
                                     <div className="h-[1px] bg-white/10 my-2" />
                                     <div className="flex justify-between text-lg font-bold">
-                                        <span className="text-white">Total</span>
-                                        <span className="text-accent font-heading">₹{finalTotal}</span>
+                                        <span className="text-white uppercase tracking-widest">Total Amount</span>
+                                        <span className="text-accent font-heading text-2xl tracking-tighter shadow-accent/20 drop-shadow-sm">₹{finalTotal}</span>
                                     </div>
                                 </div>
 
