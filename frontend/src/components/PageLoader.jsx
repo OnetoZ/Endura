@@ -1,43 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 
 const PageLoader = () => {
-    const [isVisible, setIsVisible] = useState(false);
-    const location = useLocation();
+    // Check if splash has already been shown in this session
+    const [shouldShow, setShouldShow] = useState(() => {
+        try {
+            return !sessionStorage.getItem('endura_splash_shown');
+        } catch (e) {
+            // Fallback in case sessionStorage is disabled or not available
+            return true;
+        }
+    });
+
+    const [isVisible, setIsVisible] = useState(shouldShow);
 
     useEffect(() => {
-        // Trigger loader on route change
-        setIsVisible(true);
-        
+        if (!shouldShow) return;
+
         const tl = gsap.timeline({
             onComplete: () => {
-                setTimeout(() => {
-                    setIsVisible(false);
-                }, 800); // Duration to stay visible
+                try {
+                    sessionStorage.setItem('endura_splash_shown', 'true');
+                } catch (e) {
+                    // Fallback
+                }
+                
+                setIsVisible(false);
+                
+                // Allow the 0.4s exit fade animation to complete, then unmount
+                const unmountTimeout = setTimeout(() => {
+                    setShouldShow(false);
+                }, 400);
+
+                return () => clearTimeout(unmountTimeout);
             }
         });
 
-        // Background Fade In
-        tl.to(".page-loader-bg", { opacity: 1, duration: 0.3, ease: "power2.inOut" })
+        // Background starts visible (opacity: 1 is fine to force, but we can start it instantly)
+        tl.to(".page-loader-bg", { opacity: 1, duration: 0.1 })
           // Logo Rise
           .fromTo(".page-loader-logo", 
             { opacity: 0, y: 30, filter: 'blur(10px)' },
-            { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6, ease: "power3.out" }
+            { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5, ease: "power3.out" }
           )
           // Tagline Fade
           .fromTo(".page-loader-tagline",
             { opacity: 0, scale: 0.9 },
-            { opacity: 0.4, scale: 1, duration: 0.4 },
+            { opacity: 0.4, scale: 1, duration: 0.2 },
             "-=0.2"
           )
           // Hold
-          .to({}, { duration: 0.5 })
-          // Exit
-          .to(".page-loader-bg", { opacity: 0, duration: 0.4, ease: "power2.inOut" });
+          .to({}, { duration: 0.3 })
+          // Exit fade
+          .to(".page-loader-bg", { opacity: 0, duration: 0.2, ease: "power2.inOut" });
 
-        return () => tl.kill();
-    }, [location.pathname]);
+        return () => {
+            tl.kill();
+        };
+    }, [shouldShow]);
+
+    if (!shouldShow) {
+        return null;
+    }
 
     return (
         <div 
