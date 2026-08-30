@@ -98,3 +98,16 @@ for (const [path, meta] of Object.entries(ROUTES)) {
 }
 
 console.log(`[prerender] done — ${count} route(s) prerendered.`);
+
+// Keep sitemap.xml in sync with the indexable routes above.
+const today = new Date().toISOString().slice(0, 10);
+const urls = Object.entries(ROUTES)
+  .filter(([, m]) => m.indexable)
+  .map(([path, m]) => {
+    const loc = SITE.origin + (path === '/' ? '/' : path);
+    return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${m.changefreq || 'weekly'}</changefreq>\n    <priority>${(m.priority ?? 0.7).toFixed(1)}</priority>\n  </url>`;
+  })
+  .join('\n');
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+writeFileSync(join(dist, 'sitemap.xml'), sitemap);
+console.log('[prerender] sitemap.xml regenerated.');
