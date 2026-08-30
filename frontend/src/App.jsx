@@ -22,6 +22,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useStore } from './context/StoreContext';
 import Onboarding from './pages/Onboarding';
 import Protocol from './pages/Protocol';
+import { trackPageview } from './utils/analytics';
 
 // These must be inside BrowserRouter to use useLocation,
 // so they are defined here but rendered inside the Router tree.
@@ -30,6 +31,10 @@ import Protocol from './pages/Protocol';
 function ScrollToTop() {
   const { pathname } = useLocation();
   const lenis = useLenis();
+
+  useEffect(() => {
+    trackPageview(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     if (lenis) {
