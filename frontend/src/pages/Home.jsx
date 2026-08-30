@@ -11,6 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 import { useGSAP } from '@gsap/react';
 import SEO from '../components/SEO';
+import { ROUTES } from '../seo/routes';
 
 const Home = () => {
     const mainRef = useRef();
@@ -29,8 +30,8 @@ const Home = () => {
     return (
         <div ref={mainRef} className="relative bg-black text-white selection:bg-accent/30 overflow-x-hidden">
             <SEO 
-                title="official | Luxury Streetwear & Digital Collectibles India"
-                description="ENDURA is a luxury streetwear brand from India. Exclusive drops paired with digital collectibles—crafted not for the masses, but for the chosen few."
+                fullTitle={ROUTES['/'].title}
+                description={ROUTES['/'].description}
                 canonical="/"
                 image="https://wearendura.com/logo.png"
             />

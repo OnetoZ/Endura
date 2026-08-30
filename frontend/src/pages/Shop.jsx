@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { getImageUrl } from '../services/api';
 import SEO from '../components/SEO';
+import { ROUTES } from '../seo/routes';
 
 const Shop = () => {
     const { products, addToCart, currentUser } = useStore();
@@ -18,8 +19,8 @@ const Shop = () => {
     return (
         <div className="min-h-screen bg-black pt-24 pb-20 px-6">
             <SEO 
-                title="Inventory | Premium Streetwear & Digital Collectibles"
-                description="Browse ENDURA's complete inventory. From exclusive luxury apparel to rare digital collectibles in India."
+                fullTitle={ROUTES['/shop'].title}
+                description={ROUTES['/shop'].description}
                 canonical="/shop"
             />
             <div className="container mx-auto">
