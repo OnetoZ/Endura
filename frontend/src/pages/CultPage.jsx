@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import SEO from '../components/SEO';
+import { ROUTES } from '../seo/routes';
 
 const CultPage = () => {
     const containerRef = useRef();
@@ -29,8 +30,8 @@ const CultPage = () => {
     return (
         <div ref={containerRef} className="bg-black text-white min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
             <SEO 
-                title="FACTIONS | Locked"
-                description="Experience the factions of ENDURA. Coming soon to the India luxury streetwear network."
+                fullTitle={ROUTES['/cult'].title}
+                description={ROUTES['/cult'].description}
                 canonical="/cult"
             />
             

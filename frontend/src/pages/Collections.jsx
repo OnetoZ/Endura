@@ -4,6 +4,7 @@ import PhysicalProductCard from '../components/collections/PhysicalProductCard';
 import CollectionsIntro from '../components/collections/CollectionsIntro';
 import { useState } from 'react';
 import SEO from '../components/SEO';
+import { ROUTES } from '../seo/routes';
 
 const Collections = () => {
     const { products, isLoading } = useStore();
@@ -34,8 +35,8 @@ const Collections = () => {
     return (
         <>
             <SEO 
-                title="official | Season_01 Physical Assets"
-                description="Explore ENDURA's Season_01 collection. Premium tactical streetwear and physical assets crafted for the chosen few in India."
+                fullTitle={ROUTES['/collections'].title}
+                description={ROUTES['/collections'].description}
                 canonical="/collections"
             />
             <AnimatePresence>

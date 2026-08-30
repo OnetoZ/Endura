@@ -4,16 +4,17 @@ import { Helmet } from 'react-helmet-async';
 /**
  * SEO Component for managing page metadata.
  * @param {Object} props
- * @param {string} props.title - Page title
+ * @param {string} props.title - Page title (prefixed with the site name)
+ * @param {string} props.fullTitle - Complete <title>, used verbatim (overrides title)
  * @param {string} props.description - Meta description
  * @param {string} props.canonical - Canonical URL (optional)
  * @param {string} props.type - OpenGraph type (default: 'website')
  * @param {string} props.image - OpenGraph image URL (optional)
  * @param {Object} props.schema - JSON-LD schema object (optional)
  */
-const SEO = ({ title, description, canonical, type = 'website', image, schema }) => {
+const SEO = ({ title, fullTitle: fullTitleProp, description, canonical, type = 'website', image, schema }) => {
   const siteName = 'ENDURA';
-  const fullTitle = title ? `${siteName} ${title}` : siteName;
+  const fullTitle = fullTitleProp || (title ? `${siteName} ${title}` : siteName);
   const url = canonical ? `https://wearendura.com${canonical}` : 'https://wearendura.com';
 
   return (

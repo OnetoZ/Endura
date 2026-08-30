@@ -1,6 +1,7 @@
 import React, { useRef, useState, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { productPath } from '../../utils/slug';
 
 const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, ref) => {
     const navigate = useNavigate();
@@ -191,7 +192,7 @@ const CollectionCard = forwardRef(({ item, type, onRemove, onUpdateQuantity }, r
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={handleMouseLeave}
-            onClick={() => navigate(`/product/${item._id || item.id}`)}
+            onClick={() => navigate(productPath(item))}
             className="group relative h-[420px] w-full cursor-pointer"
         >
             {/* Luxury Expansion Frame */}

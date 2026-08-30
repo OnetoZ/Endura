@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { getImageUrl } from '../services/api';
 import SEO from '../components/SEO';
+import { ROUTES } from '../seo/routes';
+import { productPath } from '../utils/slug';
 
 const Shop = () => {
     const { products, addToCart, currentUser } = useStore();
@@ -18,8 +20,8 @@ const Shop = () => {
     return (
         <div className="min-h-screen bg-black pt-24 pb-20 px-6">
             <SEO 
-                title="Inventory | Premium Streetwear & Digital Collectibles"
-                description="Browse ENDURA's complete inventory. From exclusive luxury apparel to rare digital collectibles in India."
+                fullTitle={ROUTES['/shop'].title}
+                description={ROUTES['/shop'].description}
                 canonical="/shop"
             />
             <div className="container mx-auto">
@@ -70,7 +72,7 @@ const Shop = () => {
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                                     <div className="flex flex-col gap-4 w-48">
                                         <Link
-                                            to={`/product/${product.id}`}
+                                            to={productPath(product)}
                                             className="py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest text-center hover:bg-primary hover:text-white transition-all"
                                         >
                                             View Intel
@@ -102,7 +104,7 @@ const Shop = () => {
                             <div className="mt-8 flex justify-between items-start">
                                 <div>
                                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{product.category}</p>
-                                    <Link to={`/product/${product.id}`}>
+                                    <Link to={productPath(product)}>
                                         <h3 className="text-2xl font-oswald font-bold uppercase group-hover:text-primary transition-colors">{product.name}</h3>
                                     </Link>
                                 </div>

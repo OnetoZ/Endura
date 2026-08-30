@@ -1,10 +1,37 @@
+# ENDURA — https://wearendura.com
 User-agent: *
 Allow: /
 
-# Sitemaps
-Sitemap: https://wearendura.com/sitemap.xml
-
-# Disallow admin paths
+# Disallow private / non-content routes
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /onboarding/
+Disallow: /cart
+Disallow: /auth
+Disallow: /order-success
+Disallow: /order-failed
+
+# AI / answer-engine crawlers — explicitly allowed (2026: traffic increasingly
+# arrives via ChatGPT, Perplexity, Google AI Overviews citing the site).
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+Sitemap: https://wearendura.com/sitemap.xml

@@ -22,6 +22,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useStore } from './context/StoreContext';
 import Onboarding from './pages/Onboarding';
 import Protocol from './pages/Protocol';
+import About from './pages/About';
+import FAQ from './pages/FAQ';
+import Lore from './pages/Lore';
+import FactionPage from './pages/FactionPage';
+import { trackPageview } from './utils/analytics';
 
 // These must be inside BrowserRouter to use useLocation,
 // so they are defined here but rendered inside the Router tree.
@@ -30,6 +35,10 @@ import Protocol from './pages/Protocol';
 function ScrollToTop() {
   const { pathname } = useLocation();
   const lenis = useLenis();
+
+  useEffect(() => {
+    trackPageview(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     if (lenis) {
@@ -107,6 +116,10 @@ function AppLayout() {
             </ProtectedRoute>
           } />
           <Route path="/protocol" element={<Protocol />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/lore" element={<Lore />} />
+          <Route path="/factions/:slug" element={<FactionPage />} />
           <Route path="/auth" element={
             currentUser && !location.search.includes('admin2fa') && !location.search.includes('tempToken') && !location.search.includes('token')
               ? <Navigate to="/" replace />
