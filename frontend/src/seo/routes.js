@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { faqSchema } from './faq.js';
+import { factionRoutes } from './factions.js';
 
 export const SITE = {
   name: 'ENDURA',
@@ -128,6 +129,8 @@ export const ROUTES = {
     priority: 0.7,
     changefreq: 'monthly',
   },
+  // Faction pages (/factions/<slug>) — spread in from factions.js.
+  ...factionRoutes(),
   // Protected / private — never indexed or prerendered.
   '/vault': { title: 'The Vault | ENDURA', description: '', indexable: false },
 };

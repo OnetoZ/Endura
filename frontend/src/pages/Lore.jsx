@@ -31,7 +31,8 @@ const Lore = () => (
     <p>
       Kael Vestan carries the Crownless Shard, born from the myth of Icarus — golden wings, the climb
       toward the sun, and the collapse of every hierarchy that said some are above and some below.
-      The Crownless Era stands for the fall of the crown and the freedom after it. Its garment is the{' '}
+      <Link to="/factions/crownless-era" className="text-primary underline">The Crownless Era</Link>{' '}
+      stands for the fall of the crown and the freedom after it. Its garment is the{' '}
       <strong>Icarus Ascension</strong> tee, and its mantra is: <em>Nothing above. Nothing beneath.</em>
     </p>
 
@@ -39,16 +40,18 @@ const Lore = () => (
     <p>
       Draven Osk carries the Celestial Core, shaped by cosmic collision — impact, pressure, and the
       bull as the symbol of endurance that is made, not given. The Forged believe strength is the
-      residue of what you survive. Its garment is the <strong>Cosmic Bull</strong> tee, and its
-      mantra is: <em>Built through impact. Forged through pressure.</em>
+      residue of what you survive.{' '}
+      <Link to="/factions/the-forged" className="text-primary underline">The Forged</Link> is bound to the{' '}
+      <strong>Cosmic Bull</strong> tee, and its mantra is: <em>Built through impact. Forged through pressure.</em>
     </p>
 
     <H3>Lyra Voss — The Hollow</H3>
     <p>
       Lyra Voss carries the Silence Codex, written for those who feel too deeply — the reaching
       hands, the space between connection and emptiness. The Hollow is the faction of the liminal,
-      the in-between, the quiet. Its garment is the <strong>Liminal Touch</strong> tee, and its
-      mantra is: <em>Between everything. And nothing.</em>
+      the in-between, the quiet.{' '}
+      <Link to="/factions/the-hollow" className="text-primary underline">The Hollow</Link> is bound to the{' '}
+      <strong>Liminal Touch</strong> tee, and its mantra is: <em>Between everything. And nothing.</em>
     </p>
 
     <H2>How the mythology becomes a garment</H2>
