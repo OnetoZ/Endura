@@ -34,8 +34,10 @@ const Footer = () => {
                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Navigation</h4>
                     <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                         <li><Link to="/" className="hover:text-primary transition-all">Home</Link></li>
-                        <li><Link to="/vault" className="hover:text-primary transition-all">Vault</Link></li>
                         <li><Link to="/collections" className="hover:text-primary transition-all">Collections</Link></li>
+                        <li><Link to="/cult" className="hover:text-primary transition-all">Factions</Link></li>
+                        <li><Link to="/lore" className="hover:text-primary transition-all">Lore</Link></li>
+                        <li><Link to="/vault" className="hover:text-primary transition-all">Vault</Link></li>
                         <li><Link to="/dashboard" className="hover:text-primary transition-all">Account</Link></li>
                     </ul>
                 </div>
@@ -47,9 +49,9 @@ const Footer = () => {
                         <li><Link to="/protocol#terms" className="hover:text-primary transition-all">Terms</Link></li>
                         <li><Link to="/protocol#exchange" className="hover:text-primary transition-all">Exchange Policy</Link></li>
                         <li><Link to="/protocol#privacy" className="hover:text-primary transition-all">Privacy Policy</Link></li>
-                        <li><Link to="/protocol#faq" className="hover:text-primary transition-all">FAQ</Link></li>
+                        <li><Link to="/faq" className="hover:text-primary transition-all">FAQ</Link></li>
                         <li><Link to="/protocol#care" className="hover:text-primary transition-all">Care</Link></li>
-                        <li><Link to="/protocol#about" className="hover:text-primary transition-all">About Us</Link></li>
+                        <li><Link to="/about" className="hover:text-primary transition-all">About Us</Link></li>
                     </ul>
                 </div>
 

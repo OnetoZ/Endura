@@ -45,6 +45,9 @@ function headFor(path, m) {
     `<meta property="twitter:title" content="${t}" />`,
     `<meta property="twitter:description" content="${d}" />`,
     `<meta property="twitter:image" content="${img}" />`,
+    m.jsonld
+      ? `<script type="application/ld+json">${JSON.stringify(m.jsonld)}</script>`
+      : '',
   ]
     .filter(Boolean)
     .join('\n  ');

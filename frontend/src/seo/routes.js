@@ -10,6 +10,8 @@
 // kept < 160 chars per the client SEO checklist.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { faqSchema } from './faq.js';
+
 export const SITE = {
   name: 'ENDURA',
   origin: 'https://wearendura.com',
@@ -75,6 +77,52 @@ export const ROUTES = {
     body: [
       'ENDURA is built on a living mythology — THE ORDER, the mirror-shard throne, and the First Vessels who lead each faction.',
       'The Crownless Era, The Forged, and The Hollow each bind a tee to a digital artifact and a story. Discover the world behind every drop.',
+    ],
+    indexable: true,
+    priority: 0.7,
+    changefreq: 'monthly',
+  },
+  '/about': {
+    title: 'About ENDURA | Founders & the “We Exist Twice” Story',
+    description:
+      'ENDURA was founded on one idea: every person exists twice. Meet the Bangalore founders behind India’s physical-and-digital streetwear brand.',
+    keywords:
+      'ENDURA founders streetwear Bangalore, about ENDURA, We Exist Twice, streetwear brand story India',
+    h1: 'We Exist Twice',
+    body: [
+      'ENDURA was founded on one idea: every person exists twice — once in the physical world, once as a digital identity. We build premium streetwear for that truth, from Bangalore, India.',
+      'Founded by a small in-house team (Sheldon, Ajay, Franklin and Aditya), ENDURA pairs every Rare-tier garment with a redeemable digital artifact, so what you wear also exists as something you own permanently in The Vault.',
+    ],
+    indexable: true,
+    priority: 0.6,
+    changefreq: 'monthly',
+  },
+  '/faq': {
+    title: 'FAQ | Sizing, Shipping & Digital Artifacts | ENDURA',
+    description:
+      'Answers on ENDURA sizing, shipping across India, and how to redeem your Digital Artifact. Everything you need before you order.',
+    keywords:
+      'ENDURA FAQ, digital artifact redemption, ENDURA sizing, shipping India',
+    h1: 'Frequently Asked Questions',
+    jsonld: faqSchema,
+    body: [
+      'Common questions about ENDURA — our physical-and-digital streetwear, the Digital Artifact system, The Vault, sizing and shipping across India.',
+      'ENDURA is a premium streetwear brand from Bangalore. Every garment is bound to a redeemable digital artifact; Genesis Rare-tier tees are priced under ₹3,000 as founding-cohort access.',
+    ],
+    indexable: true,
+    priority: 0.6,
+    changefreq: 'monthly',
+  },
+  '/lore': {
+    title: 'The Lore of ENDURA | Mythology Behind the Brand',
+    description:
+      'The full mythology behind ENDURA — THE ORDER, the mirror-shard throne, the First Vessels, and the factions behind every drop. Free to read.',
+    keywords:
+      'mythology streetwear brand, ENDURA lore, THE ORDER origin story, First Vessels, faction mythology',
+    h1: 'The Lore',
+    body: [
+      'The mythology behind ENDURA is free to read — no login required. THE ORDER, the mirror-shard throne, the First Vessels and the factions behind every drop.',
+      'Kael Vestan leads The Crownless Era (Icarus Ascension tee, Crownless Shard). Draven Osk leads The Forged (Cosmic Bull tee, Celestial Core). Lyra Voss leads The Hollow (Liminal Touch tee, Silence Codex).',
     ],
     indexable: true,
     priority: 0.7,

@@ -6,6 +6,7 @@ import { useStore } from '../context/StoreContext';
 
 import SEO from '../components/SEO';
 import { getImageUrl } from '../services/api';
+import { slugify, findProduct } from '../utils/slug';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -21,7 +22,7 @@ const ProductDetail = () => {
     const collectedItem = location.state?.item;
 
     useEffect(() => {
-        const found = products.find(p => p._id === id || p.id === id);
+        const found = findProduct(products, id);
         if (found) setProduct(found);
     }, [id, products]);
 
@@ -35,12 +36,16 @@ const ProductDetail = () => {
             "@type": "Brand",
             "name": "ENDURA"
         },
+        "sku": product._id || product.id,
+        "category": product.category,
         "offers": {
             "@type": "Offer",
-            "url": `https://wearendura.com/product/${id}`,
+            "url": `https://wearendura.com/product/${slugify(product.name)}`,
             "priceCurrency": "INR",
             "price": product.price,
-            "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            "itemCondition": "https://schema.org/NewCondition",
+            "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "seller": { "@type": "Organization", "name": "ENDURA" }
         }
     } : null;
 
@@ -101,7 +106,7 @@ const ProductDetail = () => {
             <SEO
                 title={product.name}
                 description={product.description}
-                canonical={`/product/${id}`}
+                canonical={`/product/${slugify(product.name)}`}
                 image={getImageUrl(product.images?.[0] || product.image)}
                 schema={productSchema}
             />
