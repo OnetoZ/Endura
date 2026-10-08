@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 import PhysicalProductCard from '../components/collections/PhysicalProductCard';
-import CollectionsIntro from '../components/collections/CollectionsIntro';
+// import CollectionsIntro from '../components/collections/CollectionsIntro';
 import { useState } from 'react';
 import SEO from '../components/SEO';
 import { ROUTES } from '../seo/routes';
@@ -39,9 +39,9 @@ const Collections = () => {
                 description={ROUTES['/collections'].description}
                 canonical="/collections"
             />
-            <AnimatePresence>
+            {/* <AnimatePresence>
                 {showIntro && <CollectionsIntro onComplete={handleIntroComplete} />}
-            </AnimatePresence>
+            </AnimatePresence> */}
 
             <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             {/* Main Content */}
@@ -49,26 +49,22 @@ const Collections = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1 }}
-                className="relative pt-32 pb-24 px-6 md:px-12 lg:px-24"
+                className="relative pt-28 md:pt-32 pb-24 px-6 md:px-12 lg:px-24"
             >
-                {/* Header Section */}
-                <div className="max-w-7xl mx-auto mb-20 text-center">
+                {/* Hero Dashboard Banner Section */}
+                <div className="max-w-7xl mx-auto mb-12 md:mb-16">
                     <motion.div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
+                        className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] group"
                     >
-                        <h2 className="text-[12px] font-bold text-[#d4af37] uppercase tracking-[0.8em] mb-4">
-                            Season_01 // Physical Assets
-                        </h2>
-                        <h1 className="group/title cursor-default text-5xl md:text-8xl font-oswald font-bold uppercase tracking-tighter mb-6">
-                            THE <span className="text-transparent transition-all duration-700 ease-in-out group-hover/title:text-[#d4af37] group-hover/title:drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.3)' }}>COLLECTION</span>
-                        </h1>
-                        <div className="flex items-center justify-center gap-4">
-                            <div className="h-[1px] w-12 bg-white/20"></div>
-                            <p className="text-gray-500 text-[10px] uppercase tracking-widest font-medium">Tactical Engineering meets Premium Fabric</p>
-                            <div className="h-[1px] w-12 bg-white/20"></div>
-                        </div>
+                        <img 
+                            src="/collection-dashboard.jpg" 
+                            alt="Genesis Edition - Collections" 
+                            className="w-full h-auto object-cover rounded-2xl md:rounded-3xl transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                        />
+                        <div className="absolute inset-0 rounded-2xl md:rounded-3xl ring-1 ring-inset ring-white/10 pointer-events-none" />
                     </motion.div>
                 </div>
 
