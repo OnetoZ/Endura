@@ -61,7 +61,7 @@ const Navbar = React.forwardRef((props, ref) => {
                 <div className="hidden md:block absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
                 {/* Main Navbar Container - Dynamic Transparency */}
-                <div className={`relative transition-all duration-500 ${scrolled ? 'bg-black/60 border-b border-primary/20 blur-extreme' : 'bg-transparent border-b border-transparent'}`}>
+                <div className={`relative transition-all duration-500 ${scrolled ? 'bg-black/90 border-b border-white/10 blur-extreme' : 'bg-black/80 border-b border-white/5 backdrop-blur-md'}`}>
                     {/* Animated Scan Line - Desktop only */}
                     <div className="hidden md:block absolute top-0 left-0 right-0 h-full overflow-hidden pointer-events-none">
                         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent animate-[scan_4s_ease-in-out_infinite]" />
@@ -87,13 +87,13 @@ const Navbar = React.forwardRef((props, ref) => {
                             {/* System Time + Status */}
                             <div className="hidden lg:flex items-center gap-4 border-l border-white/10 pl-6">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-1 h-1 bg-accent rounded-full animate-pulse" />
-                                    <span className="font-mono text-[9px] text-white/40 tracking-[0.2em]">
+                                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse shadow-[0_0_8px_#d4af37]" />
+                                    <span className="font-mono text-[9px] text-white/50 tracking-[0.2em]">
                                         {istTime}
                                     </span>
                                 </div>
                                 <div className="w-px h-4 bg-white/10" />
-                                <span className="font-mono text-[8px] text-accent/60 tracking-[0.3em]">
+                                <span className="font-mono text-[8px] text-accent tracking-[0.3em] font-bold">
                                     SYNC_ACTIVE
                                 </span>
                             </div>
@@ -102,16 +102,18 @@ const Navbar = React.forwardRef((props, ref) => {
                         {/* CENTER: Navigation Links */}
                         <div className="hidden md:flex items-center gap-1">
                             {[
-                                { to: '/', label: 'Home', accent: false },
-                                { to: '/cult', label: 'Factions', locked: true },
+                                { to: '/', label: 'HOME', accent: false },
+                                { to: '/cult', label: 'FACTIONS', locked: true },
                                 { to: '/collections', label: 'COLLECTIONS', accent: false },
-                                { to: '/vault', label: 'The Vault', accent: true }
-                            ].map((link, idx) => (
+                                { to: '/vault', label: 'THE VAULT', accent: true }
+                            ].map((link, idx) => {
+                                const isActive = location.pathname === link.to;
+                                return (
                                 <Link
                                     key={idx}
                                     to={link.to}
                                     onClick={link.locked ? (e) => e.preventDefault() : (link.to === '/' ? handleLogoClick : undefined)}
-                                    className={`relative px-6 py-3 group overflow-hidden ${link.accent ? 'text-accent' : 'text-white/70'} ${link.locked ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    className={`relative px-6 py-3 group overflow-hidden ${isActive ? 'text-accent' : (link.accent ? 'text-accent/90' : 'text-white/70')} ${link.locked ? 'cursor-not-allowed opacity-50' : ''}`}
                                 >
                                     {link.locked && (
                                         <div className="absolute top-1 right-2">
@@ -121,21 +123,22 @@ const Navbar = React.forwardRef((props, ref) => {
                                         </div>
                                     )}
                                     {/* Hover Background */}
-                                    <div className={`absolute inset-0 ${link.accent ? 'bg-accent/10' : 'bg-primary/5'} translate-y-full group-hover:translate-y-0 transition-transform duration-300`} />
+                                    <div className={`absolute inset-0 ${isActive || link.accent ? 'bg-accent/10' : 'bg-primary/5'} translate-y-full group-hover:translate-y-0 transition-transform duration-300`} />
 
-                                    {/* Animated Border */}
-                                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/0 to-transparent group-hover:via-primary/60 transition-all duration-500" />
+                                    {/* Animated Border / Active Indicator */}
+                                    <div className={`absolute bottom-0 left-0 right-0 h-px transition-all duration-500 ${isActive ? 'bg-accent shadow-[0_0_8px_#d4af37]' : 'bg-gradient-to-r from-transparent via-primary/0 to-transparent group-hover:via-primary/60'}`} />
 
                                     {/* Text */}
-                                    <span className="relative z-10 text-[10px] font-black tracking-[0.3em] uppercase group-hover:text-white transition-colors duration-300">
+                                    <span className={`relative z-10 text-[10px] font-black tracking-[0.3em] uppercase transition-colors duration-300 ${isActive ? 'text-accent drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]' : 'group-hover:text-white'}`}>
                                         {link.label}
                                     </span>
 
                                     {/* Corner Indicators */}
-                                    <div className="absolute top-0 left-0 w-1 h-1 bg-primary/0 group-hover:bg-primary transition-all duration-300" />
-                                    <div className="absolute bottom-0 right-0 w-1 h-1 bg-primary/0 group-hover:bg-primary transition-all duration-300" />
+                                    <div className={`absolute top-0 left-0 w-1 h-1 transition-all duration-300 ${isActive ? 'bg-accent' : 'bg-primary/0 group-hover:bg-primary'}`} />
+                                    <div className={`absolute bottom-0 right-0 w-1 h-1 transition-all duration-300 ${isActive ? 'bg-accent' : 'bg-primary/0 group-hover:bg-primary'}`} />
                                 </Link>
-                            ))}
+                                );
+                            })}
 
                         </div>
 

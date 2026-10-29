@@ -7,384 +7,312 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 import { useStore } from '../context/StoreContext';
-import { assetService, getImageUrl, vaultService } from '../services/api';
+import { getImageUrl, vaultService, assetService } from '../services/api';
 import VaultLoadingScreen from '../components/Vault/UI/VaultLoadingScreen';
-import CollectionHero from '../components/collections/CollectionHero';
 import RewardUnlockOverlay from '../components/Vault/UI/RewardUnlockOverlay';
-import '../components/collections/collections.css';
-import { useVaultScore } from '../hooks/useVaultScore';
 import VaultCongratsOverlay from '../components/Vault/UI/VaultCongratsOverlay';
 import SEO from '../components/SEO';
-import { X } from 'lucide-react';
+import {
+    Lock,
+    Unlock,
+    Shield,
+    Crown,
+    Gem,
+    Box,
+    Sparkles,
+    X,
+    ArrowRight,
+    AlertCircle,
+    CheckCircle2,
+    RefreshCw,
+    ExternalLink
+} from 'lucide-react';
 
-// ─── Tier Accent ────────────────────────────────────────────────────────────
+// ─── Tier Accent Color Mapping ───────────────────────────────────────────────
 const tierAccent = (tier) => {
     const t = tier ? tier.toLowerCase() : '';
-    if (t === 'common') return '#c0c0c0'; // Silver
-    if (t === 'rare') return '#3b82f6';   // Blue / Diamond
-    if (t === 'epic') return '#d4af37';   // Gold
-    if (t === 'legendary') return '#a855f7'; // Purple
-    return '#c0c0c0';
+    if (t === 'legendary') return '#D4AF37'; // Gold
+    if (t === 'rare') return '#a855f7';     // Deep Electric Purple
+    if (t === 'epic') return '#f59e0b';     // Amber/Gold
+    if (t === 'common') return '#9ca3af';   // Understated Charcoal/Silver
+    return '#9ca3af';
 };
 
-// ─── Coin Burst Animation ──────────────────────────────────────────────────
-const CoinBurst = ({ x, y, onComplete }) => {
-    const coins = useMemo(() => Array.from({ length: 8 }).map((_, i) => ({
-        id: i,
-        angle: (i / 8) * Math.PI * 2,
-        dist: 40 + Math.random() * 40
-    })), []);
-
-    return (
-        <div className="fixed inset-0 pointer-events-none z-[100]">
-            {coins.map(coin => (
-                <motion.div
-                    key={coin.id}
-                    initial={{ x, y, opacity: 1, scale: 1 }}
-                    animate={{
-                        x: x + Math.cos(coin.angle) * coin.dist,
-                        y: y + Math.sin(coin.angle) * coin.dist - 50,
-                        opacity: 0,
-                        scale: 0.5,
-                        rotate: 360
-                    }}
-                    transition={{ duration: 0.8, ease: "circOut" }}
-                    onAnimationComplete={coin.id === 0 ? onComplete : undefined}
-                    className="absolute w-4 h-4 rounded-full bg-[#d4af37] border border-black/20 flex items-center justify-center font-black text-[8px] text-black shadow-[0_0_10px_rgba(212,175,55,0.6)]"
-                >
-                    $
-                </motion.div>
-            ))}
-        </div>
-    );
-};
-
-const AssetBackground = ({ tier, isHovered }) => {
-    return (
-        <motion.div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden bg-[#050505]"
-            animate={{ scale: isHovered ? 1.1 : 1 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+// ─── Gothic Keyhole Arch (Top Center Hero Icon) ──────────────────────────────
+const GothicKeyholeArch = () => (
+    <div className="relative flex items-center justify-center mb-4">
+        {/* Ambient violet glow backdrop */}
+        <div className="absolute inset-0 bg-[#a855f7]/25 blur-xl rounded-full scale-150 pointer-events-none" />
+        <svg
+            width="46"
+            height="54"
+            viewBox="0 0 44 52"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="relative z-10 drop-shadow-[0_0_16px_rgba(168,85,247,0.75)]"
         >
-            {/* Geometric Grid Pattern */}
-            <div className="absolute inset-0 opacity-20"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, #ffffff11 1px, transparent 1px)',
-                    backgroundSize: '20px 20px'
-                }}
+            {/* Outer Pointed Gothic Arch */}
+            <path
+                d="M22 2 C31 10, 40 21, 40 34 C40 46, 38 50, 38 50 L6 50 C6 50, 4 46, 4 34 C4 21, 13 10, 22 2 Z"
+                stroke="#a855f7"
+                strokeWidth="1.8"
+                fill="rgba(168,85,247,0.08)"
             />
-
-            {/* Dynamic Radial Glow */}
-            <div className="absolute inset-0 opacity-40 bg-radial-gradient from-white/10 via-transparent to-transparent" />
-
-            {/* Tier-Specific Bottom Glow */}
-            <motion.div
-                animate={{ opacity: isHovered ? 0.6 : 0.3 }}
-                className="absolute inset-x-0 bottom-0 h-1/2"
-                style={{
-                    background: `linear-gradient(to top, ${tierAccent(tier)}33, transparent)`
-                }}
+            {/* Inner Arch Accent */}
+            <path
+                d="M22 7 C29 14, 35 23, 35 34 C35 44, 33 46, 33 46 L11 46 C11 46, 9 44, 9 34 C9 23, 15 14, 22 7 Z"
+                stroke="#c084fc"
+                strokeWidth="1"
+                strokeDasharray="2 2"
+                fill="none"
+                opacity="0.6"
             />
+            {/* Keyhole Head */}
+            <circle cx="22" cy="27" r="4" stroke="#f3e8ff" strokeWidth="1.5" fill="#a855f7" fillOpacity="0.4" />
+            {/* Keyhole Shaft */}
+            <path d="M20.2 29 L19 37 L25 37 L23.8 29 Z" stroke="#f3e8ff" strokeWidth="1.2" fill="#a855f7" fillOpacity="0.4" />
+        </svg>
+    </div>
+);
 
-            {/* Tier-based Edge Glow */}
-            <motion.div
-                className="absolute inset-0 z-10 pointer-events-none opacity-100 transition-opacity duration-1000"
-                style={{
-                    boxShadow: `inset 0 0 100px 20px ${tierAccent(tier)}33`,
-                    background: `radial-gradient(circle at center, transparent 30%, ${tierAccent(tier)}11 100%)`
-                }}
-            />
-        </motion.div>
-    );
-};
+// ─── Isometric 3D Cube Icon (Card Footer) ────────────────────────────────────
+const IsometricCubeIcon = () => (
+    <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        className="text-white/40 group-hover:text-white/80 transition-colors"
+    >
+        <path d="M12 2L3 7L12 12L21 7L12 2Z" strokeLinejoin="round" />
+        <path d="M3 7V17L12 22V12L3 7Z" strokeLinejoin="round" />
+        <path d="M21 7V17L12 22V12L21 7Z" strokeLinejoin="round" />
+    </svg>
+);
 
-// ─── Collectible Vault Card (Flip Feature) ───────────────────────────────────
-const VaultCard = ({
-    item,
-    vaultReady
-}) => {
-    const [isFlipped, setIsFlipped] = useState(false);
+// ─── Geometric Occult Emblem (Side Banners) ──────────────────────────────────
+const SideBannerEmblem = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-white/25 mt-2">
+        <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
+        <polygon points="12,2 22,18 2,18" opacity="0.4" />
+        <circle cx="12" cy="12" r="3.5" />
+    </svg>
+);
+
+// ─── 3D Garment Inspector for Preview Modal ───────────────────────────────────
+const DressItem = ({ item, vaultReady = true }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const accent = tierAccent(item.tier);
 
     return (
         <div
-            className="relative w-full max-w-[280px] md:max-w-none mx-auto h-[350px] md:h-[420px] [perspective:1000px] group cursor-pointer"
-            onClick={() => setIsFlipped(!isFlipped)}
-        >
-            <motion.div
-                className="relative w-full h-full duration-1000 [transform-style:preserve-3d]"
-                animate={{
-                    rotateY: isFlipped ? 180 : 0,
-                }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            >
-                {/* ─── FRONT SIDE ─── */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl bg-black border border-white/10 overflow-hidden">
-                    <img
-                        src={getImageUrl(item.image)}
-                        alt={item.name}
-                        className="w-full h-full object-cover p-2 rounded-2xl"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <div className="absolute bottom-6 left-0 right-0 text-center px-4">
-                        <p className="text-[10px] font-mono text-accent uppercase tracking-[0.2em]">{item.name}</p>
-                    </div>
-                </div>
-
-                {/* ─── BACK SIDE ─── */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl bg-black border border-white/10 overflow-hidden">
-                    <DressItem item={item} vaultReady={vaultReady} />
-                </div>
-            </motion.div>
-        </div>
-    );
-};
-
-// ─── Dress Item (floating, reflect, hover corners) ─────────────────────────
-const DressItem = ({
-    item,
-    vaultReady
-}) => {
-    const [isHovered, setIsHovered] = useState(true);
-    const accent = tierAccent(item.tier);
-
-    return (
-        <div
-            className="relative w-full h-full bg-black overflow-hidden group/dress border border-white/40 rounded-xl"
+            className="relative w-full h-full bg-black/90 overflow-hidden group/dress border border-white/20 rounded-2xl flex items-center justify-center"
             style={{
-                boxShadow: `inset 0 0 120px 30px #a855f722`,
+                boxShadow: `inset 0 0 100px 20px ${accent}22`,
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
+            <motion.div
+                className="relative z-10 w-full h-full flex items-center justify-center p-6"
+                animate={vaultReady ? { y: [-6, 6, -6] } : {}}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+                <img
+                    src={getImageUrl(item.backImageUrl || item.backImage || item.image || item.frontImageUrl || item.frontImage)}
+                    alt={item.name}
+                    className="w-full h-full object-contain block transition-transform duration-700"
+                    style={{ transform: isHovered ? 'scale(1.08)' : 'scale(1)' }}
+                />
+            </motion.div>
 
-
-            {/* Central Content */}
-            <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
-                {/* Always Floating Dress Artwork */}
-                <motion.div
-                    className="relative z-10 w-full h-full flex items-center justify-center overflow-visible"
-                    animate={vaultReady ? {
-                        y: [-8, 8, -8],
-                    } : {}}
-                    transition={{
-                        y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-                    }}
-                >
-                    <img
-                        src={getImageUrl(item.backImageUrl || item.backImage || item.image || item.frontImage)}
-                        alt={item.name}
-                        className="w-full h-full object-contain block transition-transform duration-700 p-4"
-                        style={{
-                            transform: isHovered ? 'scale(1.1)' : 'scale(1)'
-                        }}
-                    />
-                </motion.div>
-
-                {/* technical Reveal HUD overlay - ONLY ON HOVER */}
-                <AnimatePresence>
-                    {isHovered && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.05 }}
-                            className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none"
-                        >
-                            <div className="absolute top-8 left-8 w-12 h-12 border-t-2 border-l-2" style={{ borderColor: accent }} />
-                            <div className="absolute top-8 right-8 w-12 h-12 border-t-2 border-r-2" style={{ borderColor: accent }} />
-                            <div className="absolute bottom-8 left-8 w-12 h-12 border-b-2 border-l-2" style={{ borderColor: accent }} />
-                            <div className="absolute bottom-8 right-8 w-12 h-12 border-b-2 border-r-2" style={{ borderColor: accent }} />
-
-                            {/* Scan Line */}
-                            <motion.div
-                                initial={{ top: '10%' }}
-                                animate={{ top: '90%' }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                className="absolute inset-x-8 h-[1px] opacity-40"
-                                style={{ background: accent }}
-                            />
-
-                            {/* Item Info Reveal */}
-
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            {/* Subtle HUD corner marks */}
+            <div className="absolute top-4 left-4 w-4 h-4 border-t border-l" style={{ borderColor: accent }} />
+            <div className="absolute top-4 right-4 w-4 h-4 border-t border-r" style={{ borderColor: accent }} />
+            <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l" style={{ borderColor: accent }} />
+            <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r" style={{ borderColor: accent }} />
         </div>
     );
 };
 
-const Counter = ({ value }) => {
-    const [displayValue, setDisplayValue] = useState(value);
-    useEffect(() => {
-        const duration = 1000;
-        const start = displayValue;
-        const end = value;
-        const startTime = Date.now();
-        const animate = () => {
-            const now = Date.now();
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const current = Math.floor(start + (end - start) * progress);
-            setDisplayValue(current);
-            if (progress < 1) requestAnimationFrame(animate);
-        };
-        requestAnimationFrame(animate);
-    }, [value]);
-    return <span>{displayValue}</span>;
-};
-
-// ─── Hero Images ────────────────────────────────────────────────────────────
-const vaultHeroImages = [
-    '/cart page/cartimg1.png',
-    '/cart page/cartimg2.png',
-    '/cart page/cartimg3.png',
-    '/cart page/cartimg4.png',
-    '/cart page/img1.png',
-    '/cart page/img2.png'
-];
-
+// ─── Main Vault Page Component ───────────────────────────────────────────────
 const Vault = () => {
     const pageRef = useRef(null);
     const headingRef = useRef(null);
     const navigate = useNavigate();
-    const { loginWithToken } = useStore();
-    const { collectItem } = useVaultScore();
+    const { currentUser } = useStore();
 
-    const [vaultItems, setDbCards] = useState([]);
+    // Data State
+    const [ownedAssets, setOwnedAssets] = useState([]);
+    const [globalGallery, setGlobalGallery] = useState([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
 
-    // Server-side State
-    const [unlockedIds, setUnlockedIds] = useState([]);
-    const [stats, setStats] = useState({ common: 0, rare: 0, epic: 0, legendary: 0 });
-    const [credits, setCredits] = useState(0);
+    // Active View Mode: 'owned' (default) vs 'all'
+    const [viewMode, setViewMode] = useState('owned');
 
-    // Update local credits when user synchronizes
-    useEffect(() => {
-        const userInfo = localStorage.getItem('userInfo');
-        if (userInfo) {
-            const parsed = JSON.parse(userInfo);
-            setCredits(parsed.credits || 0);
-        }
-    }, []);
-
-    const updatePersistence = (ids, score, currentStats) => {
-        // Mock persistence or sync with store if needed
-        console.log("Persistence update:", { ids, score, currentStats });
-    };
-
-    useEffect(() => {
-        // Vault protocol: Start empty. Items are only revealed via manual protocol synchronization in the current session.
-        setDbCards([]);
-        setUnlockedIds([]);
-    }, []);
-    const [ritualId, setRitualId] = useState(null);
-    const [collectionFilter, setCollectionFilter] = useState('All');
+    // UI & Loading States
     const [loadingDone, setLoadingDone] = useState(false);
     const [vaultReady, setVaultReady] = useState(false);
-    const [exiting, setExiting] = useState(false);
-    const [isVaultActive, setIsVaultActive] = useState(false);
-    const [isAccessUnlocked, setIsAccessUnlocked] = useState(true);
-    const [bursts, setBursts] = useState([]);
+    const [credits, setCredits] = useState(currentUser?.credits || 0);
 
-    // Unlock Modal State
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [unlockCode, setUnlockCode] = useState('');
-    const [targetItem, setTargetItem] = useState(null);
-    const [clickPos, setClickPos] = useState({ x: 0, y: 0 });
-    const [rewardUnlockItem, setRewardUnlockItem] = useState(null);
+    // Redemption Form State
+    const [syncCode, setSyncCode] = useState('');
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncError, setSyncError] = useState(null);
+
+    // Overlays & Inspection
     const [previewItem, setPreviewItem] = useState(null);
     const [showCongrats, setShowCongrats] = useState(false);
     const [congratsData, setCongratsData] = useState(null);
+    const [rewardUnlockItem, setRewardUnlockItem] = useState(null);
     const [showPurchasePopup, setShowPurchasePopup] = useState(false);
-    const [showSyncOverlay, setShowSyncOverlay] = useState(false);
-    const [syncCode, setSyncCode] = useState('');
-    const [isSyncing, setIsSyncing] = useState(false);
-    const [syncError, setSyncError] = useState(false);
-    const [globalGallery, setGlobalGallery] = useState([]);
 
-    const fetchGlobalGallery = useCallback(async () => {
+    // ─── Load Vault Data (User Owned + Global Registry) ──────────────────────
+    const loadVaultData = useCallback(async () => {
+        setIsLoadingData(true);
         try {
-            const data = await vaultService.getGlobalVaultItems();
-            setGlobalGallery(data);
+            // 1. Fetch user-specific owned vault items
+            let userOwned = [];
+            try {
+                const userVaultRes = await vaultService.getUserVault();
+                if (userVaultRes && Array.isArray(userVaultRes.protocols)) {
+                    userOwned = userVaultRes.protocols.map((p, idx) => ({
+                        id: p._id,
+                        _id: p._id,
+                        serialNumber: p.serialNumber || (idx + 1),
+                        totalCodes: p.vaultCard?.codes?.length || 10,
+                        name: p.vaultCard?.name === '1/10' ? `SHADOW PROTOCOL HOODIE` : (p.vaultCard?.name || p.assetName || 'Synchronized Protocol'),
+                        description: p.vaultCard?.description || '',
+                        image: p.vaultCard?.backImage || p.vaultCard?.frontImage || p.assetImage,
+                        frontImageUrl: p.vaultCard?.frontImage || p.assetImage,
+                        backImageUrl: p.vaultCard?.backImage || p.vaultCard?.frontImage,
+                        tier: (p.vaultCard?.tier || 'rare').toLowerCase(),
+                        syncCode: p.syncCode || '',
+                        isOwned: true,
+                        isUnlocked: true,
+                        _source: 'protocol'
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to fetch user vault items:", err);
+            }
+
+            // 2. Fetch global gallery
+            let gallery = [];
+            try {
+                const galleryRes = await vaultService.getGlobalVaultItems();
+                if (Array.isArray(galleryRes)) {
+                    gallery = galleryRes.map((item, idx) => ({
+                        id: item.id || item._id,
+                        _id: item.id || item._id,
+                        userName: item.userName || 'Anonymous Agent',
+                        userAvatar: item.userAvatar,
+                        name: item.cardName === '1/10' ? `SHADOW ARCHIVE 1/10` : (item.cardName || 'Archive Protocol'),
+                        tier: (item.cardTier || 'rare').toLowerCase(),
+                        image: item.frontImage,
+                        frontImageUrl: item.frontImage,
+                        backImageUrl: item.backImage,
+                        serialNumber: item.serialNumber || (idx + 1),
+                        totalCodes: item.totalCodes || 10,
+                        vaultCardId: item.vaultCardId,
+                        isCollected: true,
+                        _source: 'global'
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to fetch global gallery:", err);
+            }
+
+            setOwnedAssets(userOwned);
+            setGlobalGallery(gallery);
+
+            // Update user credits from storage or profile
+            const userInfoRaw = localStorage.getItem('userInfo');
+            if (userInfoRaw) {
+                const parsed = JSON.parse(userInfoRaw);
+                setCredits(parsed.credits || 0);
+            }
         } catch (error) {
-            console.error("Failed to fetch global gallery:", error);
+            console.error("Vault data sync error:", error);
+        } finally {
+            setIsLoadingData(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchGlobalGallery();
-    }, [fetchGlobalGallery]);
-
-    const handlePreview = (item) => {
-        setPreviewItem(item);
-    };
-
-    const handleUnlockRequest = (item, e) => {
-        if (e) {
-            e.stopPropagation();
-            setClickPos({ x: e.clientX, y: e.clientY });
-        }
-        setTargetItem(item);
-        setShowPurchasePopup(true);
-    };
+        loadVaultData();
+    }, [loadVaultData]);
 
     const handleLoadingComplete = useCallback(() => {
         setLoadingDone(true);
         setVaultReady(true);
-        gsap.to(pageRef.current, { opacity: 1, duration: 0.5 });
-        gsap.to(headingRef.current, { opacity: 1, y: 0, duration: 0.5 });
+        gsap.to(pageRef.current, { opacity: 1, duration: 0.6 });
+        gsap.to(headingRef.current, { opacity: 1, y: 0, duration: 0.6 });
     }, []);
 
-    const handleGoCollected = useCallback(() => {
-        setExiting(true);
-        gsap.to(pageRef.current, {
-            opacity: 0, y: -20, duration: 0.6, ease: 'power2.inOut',
-            onComplete: () => navigate('/collected')
-        });
-    }, [navigate]);
+    // ─── Redemption Submission Handler ───────────────────────────────────────
+    const handleRedeem = async (e) => {
+        if (e) e.preventDefault();
+        const codeToSync = syncCode.trim().toUpperCase();
+        if (!codeToSync || isSyncing) return;
 
-    const handleResetVault = () => {
-        if (window.confirm('RESET VAULT PROTOCOL? THIS WILL LOCK ALL ASSETS.')) {
-            localStorage.removeItem('endura_vault_persistence');
-            setUnlockedIds([]);
-            setCredits(50);
-            setStats({ common: 0, rare: 0, epic: 0, legendary: 0 });
-            toast.success('VAULT PROTOCOL RESET');
+        setIsSyncing(true);
+        setSyncError(null);
+
+        try {
+            const result = await vaultService.syncVaultWithCode(codeToSync);
+            if (result && (result.success || result.vaultItem)) {
+                toast.success('DECRYPTION PROTOCOL VERIFIED & SYNCHRONIZED');
+                setCongratsData(result);
+                setSyncCode('');
+                setShowCongrats(true);
+                // Refresh data to immediately show newly redeemed card in Owned Assets
+                await loadVaultData();
+            } else {
+                setSyncError('Invalid Decryption Protocol');
+                toast.error('Invalid Decryption Protocol');
+            }
+        } catch (error) {
+            console.error("Sync failed:", error);
+            const msg = error.response?.data?.message || 'Invalid Decryption Protocol';
+            setSyncError(msg);
+            toast.error(msg);
+        } finally {
+            setIsSyncing(false);
         }
     };
 
-    const chunkedItems = useMemo(() => {
-        const rows = [];
-        const filtered = vaultItems.filter(item => unlockedIds.includes(item.id || item._id));
-        for (let i = 0; i < filtered.length; i += 3) {
-            rows.push(filtered.slice(i, i + 3));
+    // ─── Derived Real Data Metrics ───────────────────────────────────────────
+    const ownedCount = ownedAssets.length;
+    const totalPossible = Math.max(15, globalGallery.length || 15);
+    const progressPercent = Math.min(100, Math.round((ownedCount / totalPossible) * 100));
+
+    // Dynamic Tier Counts derived from real application data
+    // (If owned count is 0, we can also display pool stats for reference)
+    const legendaryCount = ownedAssets.filter(item => item.tier === 'legendary').length;
+    const rareCount = ownedAssets.filter(item => item.tier === 'rare' || item.tier === 'epic').length;
+    const commonCount = ownedAssets.filter(item => item.tier === 'common').length;
+
+    // Active displayed cards based on viewMode
+    const displayAssets = useMemo(() => {
+        if (viewMode === 'owned') {
+            return ownedAssets;
         }
-        return rows;
-    }, [vaultItems, unlockedIds]);
+        // 'all' mode: show global archive items
+        if (globalGallery.length > 0) return globalGallery;
+        return ownedAssets;
+    }, [viewMode, ownedAssets, globalGallery]);
 
-    /* 
-    useEffect(() => {
-        if (!loadingDone) return;
-
-        const ctx = gsap.context(() => {
-            gsap.utils.toArray('.vault-row').forEach((row) => {
-                gsap.from(row.querySelectorAll('.vault-card-reveal'), {
-                    scrollTrigger: {
-                        trigger: row,
-                        start: "top 85%",
-                        toggleActions: "play reverse play reverse"
-                    },
-                    y: 50,
-                    opacity: 0,
-                    scale: 0.94,
-                    duration: 1.8,
-                    stagger: 0.2,
-                    ease: "power3.out"
-                });
-            });
-        }, pageRef);
-
-        return () => ctx.revert();
-    }, [loadingDone]);
-    */
+    // Format asset identifier matching reference image (L-001, R-042, C-117)
+    const getAssetIdentifier = (item, index) => {
+        const tier = (item.tier || 'common').toLowerCase();
+        const num = item.serialNumber || (index + 1);
+        if (tier === 'legendary') return `L-${String(num).padStart(3, '0')}`;
+        if (tier === 'rare' || tier === 'epic') return `R-${String(num).padStart(3, '0')}`;
+        return `C-${String(num).padStart(3, '0')}`;
+    };
 
     return (
         <>
@@ -393,256 +321,507 @@ const Vault = () => {
                 description="Secure your digital future with ENDURA's Vault. Collect rare digital archives and unlock exclusive luxury streetwear rewards in India."
                 canonical="/vault"
             />
+
             <AnimatePresence>
                 {!loadingDone && <VaultLoadingScreen onComplete={handleLoadingComplete} />}
             </AnimatePresence>
 
-            {loadingDone && <CollectionHero images={vaultHeroImages} />}
-
-            <div ref={pageRef} className="min-h-screen bg-black text-white font-body selection:bg-accent/30 opacity-0 relative pt-12">
+            <div
+                ref={pageRef}
+                className="min-h-screen bg-[#050505] text-white font-body selection:bg-accent/30 opacity-0 relative overflow-x-hidden pt-16 md:pt-20"
+            >
                 <Toaster position="top-right" />
 
-                <div className="fixed inset-0 pointer-events-none bg-gradient-radial from-accent/5 via-transparent to-transparent opacity-10" />
+                {/* ─── BACKGROUND ARCHITECTURAL ATMOSPHERE & PURPLE UPLIGHTS ─── */}
+                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    {/* Deep charcoal background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#09080d] via-[#050505] to-[#040404]" />
 
-                <header className="relative z-10 pt-16 pb-12">
-                    <div className="max-w-[1600px] mx-auto px-12">
-                        <div className="flex flex-col items-center justify-center mb-8">
-                            <h1 ref={headingRef} className="text-4xl md:text-6xl font-heading font-black tracking-[0.2em] text-white opacity-0 translate-y-4 text-center">
-                                THE <span
-                                    className={`vault-word-reveal cursor-pointer transition-all ${isVaultActive ? 'active' : ''}`}
-                                    onClick={() => setIsVaultActive(!isVaultActive)}
-                                >VAULT</span>
-                            </h1>
-                        </div>
+                    {/* Twin Left & Right Colonnade Purple Spotlight Glows */}
+                    <div className="absolute top-1/4 -left-20 w-[450px] h-[700px] bg-[#a855f7]/15 blur-[140px] rounded-full" />
+                    <div className="absolute top-1/4 -right-20 w-[450px] h-[700px] bg-[#a855f7]/15 blur-[140px] rounded-full" />
 
-                        {/* ─── ENCRYPTION OVERRIDE HUD (Always Visible) ─── */}
-                        <div className="flex items-center justify-center pt-8 pb-12 px-4 reveal">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="relative w-full max-w-[400px] glass border border-white/60 rounded-[30px] p-8 md:p-10 flex flex-col items-center justify-center text-center overflow-hidden shadow-[0_0_100px_rgba(255,255,255,0.05)]"
-                            >
-                                {/* Geometric Circles / Radar Effect */}
-                                <div className="absolute inset-0 flex justify-center items-center -z-10 opacity-10">
-                                    <div className="w-[120%] aspect-square border-2 border-dashed border-white/20 rounded-full animate-[spin_60s_linear_infinite]" />
-                                </div>
+                    {/* Central Sanctuary Uplight */}
+                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[550px] bg-gradient-to-b from-[#a855f7]/18 via-[#7e22ce]/8 to-transparent blur-[120px] rounded-full" />
 
-                                {/* Authorization Pill */}
-                                <div className="inline-block px-8 py-2 border border-[#d4af37]/30 rounded-full bg-[#d4af37]/5 mb-10">
-                                    <span className="text-[11px] font-mono font-bold tracking-[0.4em] text-[#d4af37] uppercase">
-                                        Authorization Required
+                    {/* Subtle Floor Reflection Glow */}
+                    <div className="absolute top-[580px] left-1/2 -translate-x-1/2 w-[600px] h-[180px] bg-[#a855f7]/12 blur-[80px] rounded-full" />
+
+                    {/* Subtle Architectural Grid Lines */}
+                    <div
+                        className="absolute inset-0 opacity-[0.035]"
+                        style={{
+                            backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+                            backgroundSize: '80px 80px'
+                        }}
+                    />
+                </div>
+
+                {/* ─── FLOATING SIDE ARCHIVAL BANNERS (Framing like Reference Image) ─── */}
+                <div className="hidden xl:flex fixed left-8 top-36 z-20 flex-col items-center gap-4 pointer-events-none">
+                    <div className="w-px h-16 bg-gradient-to-b from-transparent via-white/20 to-white/10" />
+                    <div className="px-3 py-6 rounded-md bg-black/60 border border-white/5 backdrop-blur-md flex flex-col items-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+                        <span className="text-[9px] font-mono tracking-[0.35em] text-white/40 uppercase leading-loose font-bold [writing-mode:vertical-rl] rotate-180">
+                            WE EXIST TWICE
+                        </span>
+                        <SideBannerEmblem />
+                    </div>
+                </div>
+
+                <div className="hidden xl:flex fixed right-8 top-36 z-20 flex-col items-center gap-4 pointer-events-none">
+                    <div className="w-px h-16 bg-gradient-to-b from-transparent via-white/20 to-white/10" />
+                    <div className="px-3 py-6 rounded-md bg-black/60 border border-white/5 backdrop-blur-md flex flex-col items-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+                        <span className="text-[9px] font-mono tracking-[0.35em] text-white/40 uppercase leading-loose font-bold [writing-mode:vertical-rl] rotate-180">
+                            PHYSICAL X DIGITAL
+                        </span>
+                        <SideBannerEmblem />
+                    </div>
+                </div>
+
+                {/* ─── HERO ARCHIVE ACCESS & REDEMPTION SECTION ─── */}
+                <header className="relative z-10 pt-10 pb-8 px-4 sm:px-6">
+                    <div className="max-w-[1400px] mx-auto flex flex-col items-center text-center">
+                        {/* 1. Gothic Arch Keyhole Icon */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <GothicKeyholeArch />
+                        </motion.div>
+
+                        {/* 2. Eyebrow: THE */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                            className="text-[#D4AF37] font-cinzel text-xs md:text-sm font-semibold tracking-[0.55em] uppercase mb-1 drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+                        >
+                            THE
+                        </motion.div>
+
+                        {/* 3. Main Heading: VAULT (Oversized Serif Display Font) */}
+                        <motion.h1
+                            ref={headingRef}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-cinzel font-normal tracking-[0.12em] uppercase leading-none select-none bg-gradient-to-b from-white via-[#f5f3ff] to-[#c084fc] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(168,85,247,0.35)]"
+                        >
+                            VAULT
+                        </motion.h1>
+
+                        {/* 4. Subtitle: — PRIVATE ARCHIVE ACCESS — */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.35 }}
+                            className="flex items-center justify-center gap-3 md:gap-4 mt-3 mb-6"
+                        >
+                            <div className="w-8 md:w-16 h-px bg-gradient-to-r from-transparent to-[#D4AF37]/70" />
+                            <span className="text-[#D4AF37] text-[10px] sm:text-xs md:text-sm font-mono font-medium tracking-[0.4em] uppercase">
+                                PRIVATE ARCHIVE ACCESS
+                            </span>
+                            <div className="w-8 md:w-16 h-px bg-gradient-to-l from-transparent to-[#D4AF37]/70" />
+                        </motion.div>
+
+                        {/* 5. Supporting Mission Text */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.45 }}
+                            className="space-y-1 text-center max-w-lg mb-10"
+                        >
+                            <p className="text-white/60 text-xs sm:text-sm font-body tracking-[0.08em]">
+                                Your access. Your legacy.
+                            </p>
+                            <p className="text-white/40 text-[11px] sm:text-xs font-body tracking-[0.06em]">
+                                Every physical piece leaves a{' '}
+                                <span className="text-[#c084fc] drop-shadow-[0_0_8px_rgba(168,85,247,0.7)] font-semibold">
+                                    digital echo.
+                                </span>
+                            </p>
+                        </motion.div>
+
+                        {/* 6. Centered Redemption Panel */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.55 }}
+                            className="relative w-full max-w-[460px] mx-auto"
+                        >
+                            {/* Purple puddle reflection on the floor underneath panel */}
+                            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-4/5 h-16 bg-[#a855f7]/25 blur-2xl rounded-full pointer-events-none" />
+
+                            <div className="relative bg-[#09090d]/95 backdrop-blur-2xl border border-white/10 hover:border-white/20 rounded-2xl p-6 sm:p-8 text-center shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(168,85,247,0.12)] transition-all duration-300">
+                                {/* Top Badge: AUTHORIZATION REQUIRED */}
+                                <div className="flex items-center justify-center gap-2 mb-3">
+                                    <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                                    <span className="text-[9px] font-mono tracking-[0.25em] text-[#D4AF37] font-bold uppercase">
+                                        AUTHORIZATION REQUIRED
                                     </span>
                                 </div>
 
-                                {/* Heading Group */}
-                                <div className="space-y-2 mb-10">
-                                    <h2 className="text-4xl md:text-6xl font-oswald font-black text-white leading-tight tracking-[0.1em] uppercase">
-                                        Encryption
-                                    </h2>
-                                    <h2 className="text-4xl md:text-6xl font-oswald font-black text-[#d4af37] leading-tight tracking-[0.1em] uppercase">
-                                        Override
-                                    </h2>
-                                </div>
+                                {/* Heading: ENTER REDEMPTION CODE */}
+                                <h3 className="text-white text-xs sm:text-sm font-heading font-black tracking-[0.25em] uppercase mb-6">
+                                    ENTER REDEMPTION CODE
+                                </h3>
 
-                                {/* Protocol Description */}
-                                <p className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.2em] leading-relaxed max-w-[320px] mb-8">
-                                    Deploy designated decryption protocol to access restricted luxury assets in the archive.
-                                </p>
+                                {/* Form & Input */}
+                                <form onSubmit={handleRedeem} className="space-y-4">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={syncCode}
+                                            onChange={(e) => {
+                                                setSyncCode(e.target.value.toUpperCase());
+                                                if (syncError) setSyncError(null);
+                                            }}
+                                            placeholder="ENTER CODE"
+                                            disabled={isSyncing}
+                                            className="w-full bg-[#050507] border border-white/10 rounded-lg py-3.5 px-4 font-mono text-center text-xs sm:text-sm text-[#D4AF37] tracking-[0.35em] placeholder:text-white/20 placeholder:tracking-[0.25em] focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all uppercase disabled:opacity-50"
+                                        />
 
-                                {/* Trigger Sync Overlay */}
-                                <div className="w-full">
+                                        {syncError && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -4 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="flex items-center justify-center gap-1.5 mt-2 text-red-400 font-mono text-[9px] tracking-widest uppercase"
+                                            >
+                                                <AlertCircle className="w-3 h-3" />
+                                                <span>{syncError}</span>
+                                            </motion.div>
+                                        )}
+                                    </div>
+
+                                    {/* Wide Gold Redeem Button */}
                                     <button
-                                        onClick={() => setShowSyncOverlay(true)}
-                                        className="w-full py-4 bg-[#d4af37] text-black font-oswald font-black text-xs uppercase tracking-[0.5em] hover:bg-white transition-all duration-700 shadow-[0_15px_30px_rgba(212,175,55,0.15)]"
+                                        type="submit"
+                                        disabled={isSyncing || !syncCode.trim()}
+                                        className="w-full py-3.5 px-6 rounded-lg bg-gradient-to-r from-[#D4AF37] via-[#e5c158] to-[#c59d2a] hover:from-white hover:to-white text-black font-heading font-black text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_8px_25px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed group active:scale-[0.99]"
                                     >
-                                        Initialize Protocol
+                                        {isSyncing ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />
+                                                <span>AUTHENTICATING...</span>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <span>REDEEM ASSET</span>
+                                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                            </>
+                                        )}
                                     </button>
+                                </form>
+
+                                {/* Bottom Security Footer */}
+                                <div className="flex items-center justify-center gap-2 mt-5 text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/30 uppercase">
+                                    <Shield className="w-3.5 h-3.5 text-white/30" />
+                                    <span>AUTHORIZED HOLDERS ONLY</span>
                                 </div>
-
-
-                                {/* Edge Anchors */}
-                                <div className="absolute top-8 left-8 w-4 h-4 border-t border-l border-white/20" />
-                                <div className="absolute top-8 right-8 w-4 h-4 border-t border-r border-white/20" />
-                                <div className="absolute bottom-8 left-8 w-4 h-4 border-b border-l border-white/20" />
-                                <div className="absolute bottom-8 right-8 w-4 h-4 border-b border-r border-white/20" />
-                            </motion.div>
-                        </div>
+                            </div>
+                        </motion.div>
                     </div>
                 </header>
 
-                <main className="relative z-10 max-w-[1400px] mx-auto px-6 pt-12 pb-48 transition-all duration-1000">
-                    <div className="flex flex-col gap-32">
-                        {/* Session Unlocked Items (New Syncs) */}
-                        {unlockedIds.length > 0 && (
-                            <div className="space-y-12">
-                                <h3 className="text-xl font-heading font-black text-white/40 tracking-[0.8em] uppercase text-center md:text-left flex items-center gap-4">
-                                    <div className="w-8 h-px bg-white/10" />
-                                    New Protocols Detected
-                                    <div className="w-8 h-px bg-white/10" />
-                                </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 lg:gap-16">
-                                    {vaultItems.filter(c => unlockedIds.includes(c.id)).map(item => (
-                                        <div key={item.id} className="vault-row">
-                                            <VaultCard
-                                                item={item}
-                                                vaultReady={vaultReady}
-                                                onClick={() => handlePreview(item)}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                {/* ─── MAIN ASSET GRID & BOTTOM ARCHIVE SUMMARY ─── */}
+                <main className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
+                    {/* Section Header: OWNED ASSETS & VIEW ALL ASSETS */}
+                    <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_10px_#a855f7] animate-pulse" />
+                            <h2 className="text-xs sm:text-sm md:text-base font-mono font-bold tracking-[0.25em] text-white uppercase">
+                                {viewMode === 'owned' ? 'OWNED ASSETS' : 'GLOBAL ARCHIVE ASSETS'}
+                            </h2>
+                            <span className="text-[10px] font-mono text-white/40">
+                                ({displayAssets.length})
+                            </span>
+                        </div>
 
-                        {/* Global Registry Archive */}
-                        {globalGallery.length > 0 && (
-                            <div className="space-y-16">
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-white/5 pb-12">
-                                    <div className="text-center md:text-left">
-                                        <h3 className="text-2xl md:text-4xl font-heading font-black text-white tracking-widest uppercase mb-2">
-                                            Global Archive
-                                        </h3>
-                                        <p className="text-[10px] font-mono text-white/30 tracking-[0.5em] uppercase">
-                                            Public Registry of Synchronized Artifacts
-                                        </p>
-                                    </div>
-                                    <div className="flex gap-12">
-                                        <div className="text-center">
-                                            <p className="text-[8px] font-mono text-white/20 tracking-[0.4em] mb-1 uppercase">Synchronized</p>
-                                            <p className="text-2xl font-heading text-accent">{globalGallery.length}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
-                                    {globalGallery.map((item, index) => (
-                                        <motion.div
-                                            key={item.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            viewport={{ once: true }}
-                                            className="group relative bg-[#0a0a0a] border border-white/20 p-5 rounded-2xl hover:border-accent/40 transition-all duration-700 cursor-pointer shadow-lg"
-                                            onClick={() => handlePreview({
-                                                ...item,
-                                                id: item.id, // Using the VaultItem ID
-                                                vaultCardId: item.vaultCardId,
-                                                name: item.cardName,
-                                                tier: item.cardTier,
-                                                image: item.frontImage,
-                                                isCollected: true
-                                            })}
-                                        >
-                                            <div className="aspect-[3/4] rounded-xl overflow-hidden mb-6 relative">
-                                                <img
-                                                    src={getImageUrl(item.frontImage)}
-                                                    alt={item.cardName}
-                                                    className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
-                                                />
-                                                <div className="absolute inset-x-0 bottom-0 py-4 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <p className="text-center text-[7px] font-mono text-accent tracking-[0.5em] uppercase">ENTER_ENCRYPTION</p>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <h4 className="text-xs font-heading font-black text-white/80 group-hover:text-white uppercase tracking-wider mb-1">
-                                                            {item.cardName === '1/10' ? `${item.serialNumber} / ${item.totalCodes}` : item.cardName}
-                                                        </h4>
-                                                        <p className="text-[7px] font-mono text-accent uppercase tracking-widest">
-                                                            Tier: {item.cardTier}
-                                                        </p>
-                                                    </div>
-                                                    <p className="text-[9px] font-mono text-white/30 font-bold">{item.serialNumber} / {item.totalCodes}</p>
-                                                </div>
-                                                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                                                    <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">Agent</span>
-                                                    <span className="text-[9px] font-heading font-bold text-white/60 tracking-wider group-hover:text-accent transition-colors">
-                                                        {item.userName}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        {/* Right-side Toggle / Action */}
+                        <button
+                            onClick={() => {
+                                if (viewMode === 'owned') {
+                                    if (globalGallery.length > 0) {
+                                        setViewMode('all');
+                                    } else {
+                                        navigate('/collections');
+                                    }
+                                } else {
+                                    setViewMode('owned');
+                                }
+                            }}
+                            className="flex items-center gap-2 text-[10px] sm:text-xs font-mono tracking-[0.2em] text-white/50 hover:text-[#D4AF37] uppercase transition-colors group cursor-pointer"
+                        >
+                            <span>
+                                {viewMode === 'owned' ? 'VIEW ALL ASSETS' : 'VIEW OWNED ONLY'}
+                            </span>
+                            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                        </button>
                     </div>
-                </main>
 
-                {bursts.map(b => (
-                    <CoinBurst key={b.id} x={b.x} y={b.y} onComplete={() => setBursts(p => p.filter(i => i.id !== b.id))} />
-                ))}
+                    {/* Asset Cards Grid */}
+                    {displayAssets.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
+                            {displayAssets.map((item, index) => {
+                                const tier = (item.tier || 'rare').toLowerCase();
+                                const isLegendary = tier === 'legendary';
+                                const isRare = tier === 'rare' || tier === 'epic';
+                                const assetId = getAssetIdentifier(item, index);
 
-                <AnimatePresence>
-                    {ritualId && (
-                        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-xl">
-                            {/* Subway Surfers style reveal: Pop and Glow */}
-                            <motion.div
-                                initial={{ scale: 0, rotate: -10, opacity: 0 }}
-                                animate={{ scale: [0, 1.2, 1], rotate: 0, opacity: 1 }}
-                                transition={{
-                                    duration: 0.8,
-                                    ease: [0.34, 1.56, 0.64, 1], // Custom spring-like easing
-                                }}
-                                className="w-[320px] relative"
-                                onAnimationComplete={() => {
-                                    const it = targetItem;
-                                    if (!it) return;
-                                    // Removed setUnlockedIds and setStats here
-                                    // This moves the card to global gallery instead of vault session
+                                return (
+                                    <motion.div
+                                        key={item.id || item._id || index}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
+                                        onClick={() => setPreviewItem(item)}
+                                        className={`group relative rounded-2xl bg-[#08080c] overflow-hidden transition-all duration-500 cursor-pointer border flex flex-col justify-between ${
+                                            isLegendary
+                                                ? 'border-[#D4AF37]/40 hover:border-[#D4AF37]/80 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_45px_rgba(212,175,55,0.2)]'
+                                                : isRare
+                                                ? 'border-[#a855f7]/40 hover:border-[#a855f7]/80 shadow-[0_0_30px_rgba(168,85,247,0.12)] hover:shadow-[0_0_45px_rgba(168,85,247,0.25)]'
+                                                : 'border-white/10 hover:border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.03)]'
+                                        }`}
+                                    >
+                                        {/* Top Meta Bar */}
+                                        <div className="p-4 sm:p-5 flex items-center justify-between z-10">
+                                            {/* Rarity Pill Badge */}
+                                            <span
+                                                className={`text-[8px] sm:text-[9px] font-mono font-bold tracking-[0.2em] uppercase px-2.5 py-1 rounded-sm ${
+                                                    isLegendary
+                                                        ? 'border border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/10'
+                                                        : isRare
+                                                        ? 'border border-[#a855f7]/50 text-[#c084fc] bg-[#a855f7]/10'
+                                                        : 'border border-white/20 text-white/70 bg-white/5'
+                                                }`}
+                                            >
+                                                {tier.toUpperCase()}
+                                            </span>
 
-                                    setTimeout(() => {
-                                        if (it._source === 'db') {
-                                            vaultService.collectVaultCard(it.id)
-                                                .then(d => {
-                                                    setCongratsData(d);
-                                                    setCredits(d.newScore);
-                                                    setShowCongrats(true);
-                                                    setRitualId(null);
-                                                })
-                                                .catch(() => {
-                                                    setShowCongrats(true);
-                                                    setRitualId(null);
-                                                });
-                                        } else {
-                                            setCredits(credits + 1);
-                                            setRewardUnlockItem(it);
-                                            setRitualId(null);
-                                        }
-                                    }, 1000);
-                                }}
-                            >
-                                {/* Glow Effect Behind */}
-                                <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full animate-pulse" />
+                                            {/* Asset Serial Identifier */}
+                                            <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-white/40 font-semibold">
+                                                {assetId}
+                                            </span>
+                                        </div>
 
-                                <VaultCard
-                                    item={vaultItems.find(it => it.id === ritualId)}
-                                    vaultReady={true}
-                                />
+                                        {/* Central Product Image */}
+                                        <div className="relative aspect-[3/4] w-full flex items-center justify-center overflow-hidden px-4">
+                                            {/* Ambient backdrop glow for image */}
+                                            <div
+                                                className={`absolute inset-0 opacity-20 transition-opacity duration-700 group-hover:opacity-40 ${
+                                                    isLegendary
+                                                        ? 'bg-radial-gradient from-[#D4AF37]/30 to-transparent'
+                                                        : isRare
+                                                        ? 'bg-radial-gradient from-[#a855f7]/30 to-transparent'
+                                                        : 'bg-radial-gradient from-white/10 to-transparent'
+                                                }`}
+                                            />
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                    className="absolute -bottom-20 left-0 right-0 text-center"
+                                            <img
+                                                src={getImageUrl(item.image || item.frontImageUrl || item.frontImage || item.backImageUrl)}
+                                                alt={item.name}
+                                                className="w-full h-full object-contain p-2 rounded-lg transition-transform duration-700 ease-out group-hover:scale-105"
+                                            />
+
+                                            {/* Subtle bottom gradient to blend image into card footer */}
+                                            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#08080c] to-transparent pointer-events-none" />
+                                        </div>
+
+                                        {/* Bottom Information Row */}
+                                        <div className="p-4 sm:p-5 z-10 relative">
+                                            <div className="flex items-end justify-between gap-4">
+                                                <div>
+                                                    <h3 className="text-xs sm:text-sm font-heading font-black text-white uppercase tracking-wider mb-1 line-clamp-1 group-hover:text-[#D4AF37] transition-colors">
+                                                        {item.name}
+                                                    </h3>
+                                                    <div className="text-[8px] font-mono tracking-[0.2em] text-white/40 uppercase space-y-0.5">
+                                                        <p>PHYSICAL ASSET</p>
+                                                        <p>DIGITAL ECHO</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col items-end">
+                                                    <IsometricCubeIcon />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Centered Bottom Border Emblem (Crown for Legendary, Gem for Rare, Cube for Common) */}
+                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
+                                            <div
+                                                className={`w-7 h-7 rounded-full bg-[#08080c] border flex items-center justify-center shadow-lg ${
+                                                    isLegendary
+                                                        ? 'border-[#D4AF37] text-[#D4AF37]'
+                                                        : isRare
+                                                        ? 'border-[#a855f7] text-[#c084fc]'
+                                                        : 'border-white/20 text-white/50'
+                                                }`}
+                                            >
+                                                {isLegendary ? (
+                                                    <Crown className="w-3.5 h-3.5 fill-[#D4AF37]/20" />
+                                                ) : isRare ? (
+                                                    <Gem className="w-3.5 h-3.5 fill-[#a855f7]/20" />
+                                                ) : (
+                                                    <Box className="w-3.5 h-3.5" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        /* Empty State when User has no Owned Assets */
+                        <div className="rounded-2xl bg-[#09090d]/80 border border-white/10 p-12 text-center max-w-xl mx-auto my-12 backdrop-blur-xl">
+                            <div className="w-16 h-16 rounded-full bg-[#a855f7]/10 border border-[#a855f7]/30 flex items-center justify-center mx-auto mb-6 text-[#c084fc]">
+                                <Lock className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-white font-heading font-black text-base sm:text-lg tracking-[0.2em] uppercase mb-2">
+                                NO ASSETS CURRENTLY IN ARCHIVE
+                            </h3>
+                            <p className="text-white/40 text-xs font-mono uppercase tracking-widest leading-relaxed mb-6">
+                                Enter a redemption protocol code above to decrypt your exclusive pieces, or explore the global registry.
+                            </p>
+                            <div className="flex flex-wrap items-center justify-center gap-4">
+                                {globalGallery.length > 0 && (
+                                    <button
+                                        onClick={() => setViewMode('all')}
+                                        className="px-6 py-3 bg-[#D4AF37] text-black font-heading font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white transition-all rounded-md"
+                                    >
+                                        EXPLORE GLOBAL ARCHIVE ({globalGallery.length})
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => navigate('/collections')}
+                                    className="px-6 py-3 border border-white/20 text-white/70 hover:text-white hover:border-white font-mono text-[10px] uppercase tracking-[0.2em] transition-all rounded-md"
                                 >
-                                    <h2 className="text-2xl font-heading font-black text-accent tracking-[0.5em] animate-pulse">UNLOCKED</h2>
-                                </motion.div>
-                            </motion.div>
+                                    BROWSE COLLECTIONS
+                                </button>
+                            </div>
                         </div>
                     )}
-                </AnimatePresence>
 
+                    {/* ─── COLLECTION PROGRESS & RARITY SUMMARY PANEL ─── */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="rounded-2xl bg-[#08080c] border border-white/10 p-6 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+                    >
+                        {/* 1. Circular Progress Donut */}
+                        <div className="flex items-center gap-5 w-full lg:w-auto justify-center lg:justify-start">
+                            <div className="relative w-14 h-14 flex items-center justify-center">
+                                <svg className="w-14 h-14 -rotate-90">
+                                    <circle
+                                        cx="28"
+                                        cy="28"
+                                        r="24"
+                                        stroke="rgba(255,255,255,0.08)"
+                                        strokeWidth="4"
+                                        fill="transparent"
+                                    />
+                                    <circle
+                                        cx="28"
+                                        cy="28"
+                                        r="24"
+                                        stroke="#a855f7"
+                                        strokeWidth="4"
+                                        strokeDasharray={2 * Math.PI * 24}
+                                        strokeDashoffset={(2 * Math.PI * 24) * (1 - progressPercent / 100)}
+                                        strokeLinecap="round"
+                                        fill="transparent"
+                                        className="transition-all duration-1000 ease-out drop-shadow-[0_0_8px_rgba(168,85,247,0.7)]"
+                                    />
+                                </svg>
+                            </div>
 
+                            <div>
+                                <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/40 uppercase mb-0.5">
+                                    COLLECTION PROGRESS
+                                </div>
+                                <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wider flex items-baseline gap-1.5">
+                                    <span>{String(ownedCount).padStart(2, '0')}</span>
+                                    <span className="text-white/40 font-normal text-base sm:text-lg">/</span>
+                                    <span className="text-white/40 font-normal text-base sm:text-lg">
+                                        {String(totalPossible).padStart(2, '0')}
+                                    </span>
+                                </div>
+                                <div className="text-[8px] font-mono tracking-[0.25em] text-white/40 uppercase">
+                                    ASSETS OWNED
+                                </div>
+                            </div>
+                        </div>
 
-                {rewardUnlockItem && (
-                    <RewardUnlockOverlay
-                        item={rewardUnlockItem}
-                        onClose={() => setRewardUnlockItem(null)}
-                    />
-                )}
+                        {/* Divider */}
+                        <div className="hidden lg:block w-px h-12 bg-white/10" />
 
+                        {/* 2. Legendary Count */}
+                        <div className="flex flex-col items-center text-center">
+                            <Crown className="w-4 h-4 text-[#D4AF37] mb-1 drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+                            <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wide">
+                                {legendaryCount}
+                            </div>
+                            <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-[#D4AF37] font-bold uppercase">
+                                LEGENDARY
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="hidden lg:block w-px h-12 bg-white/10" />
+
+                        {/* 3. Rare Count */}
+                        <div className="flex flex-col items-center text-center">
+                            <Gem className="w-4 h-4 text-[#a855f7] mb-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]" />
+                            <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wide">
+                                {rareCount}
+                            </div>
+                            <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-[#c084fc] font-bold uppercase">
+                                RARE
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="hidden lg:block w-px h-12 bg-white/10" />
+
+                        {/* 4. Common Count */}
+                        <div className="flex flex-col items-center text-center">
+                            <Box className="w-4 h-4 text-white/40 mb-1" />
+                            <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wide">
+                                {commonCount}
+                            </div>
+                            <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/40 font-bold uppercase">
+                                COMMON
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="hidden lg:block w-px h-12 bg-white/10" />
+
+                        {/* 5. Lock Icon & Mission Slogan */}
+                        <div className="flex items-center gap-4 w-full lg:w-auto justify-center lg:justify-start">
+                            <div className="w-12 h-12 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 flex items-center justify-center text-[#c084fc] shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                                <Lock className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <div className="text-[#a855f7] font-mono font-bold text-[9px] sm:text-[10px] tracking-[0.25em] uppercase mb-0.5">
+                                    HOLD. REDEEM. OWN.
+                                </div>
+                                <div className="text-white/40 font-mono text-[8px] sm:text-[9px] tracking-[0.15em] leading-tight">
+                                    Your access.
+                                    <br />
+                                    Your legacy.
+                                    <br />
+                                    Stored forever.
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </main>
+
+                {/* ─── CARD INSPECTION & DETAILS MODAL (Preserved Feature) ─── */}
                 <AnimatePresence>
                     {previewItem && (
                         <div
@@ -650,75 +829,79 @@ const Vault = () => {
                             onClick={() => setPreviewItem(null)}
                         >
                             <motion.div
-                                 initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                                 exit={{ scale: 1.1, opacity: 0, y: -50 }}
-                                 className="relative w-full max-w-4xl bg-black/80 border border-white/60 shadow-[0_0_60px_rgba(168,85,247,0.3)] rounded-3xl overflow-hidden glass p-6 md:p-12 flex flex-col items-center justify-center min-h-[40vh]"
-                                 onClick={(e) => e.stopPropagation()}
+                                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 30 }}
+                                className="relative w-full max-w-4xl bg-[#09090d] border border-white/20 shadow-[0_0_80px_rgba(168,85,247,0.3)] rounded-3xl overflow-hidden p-6 md:p-12 flex flex-col items-center justify-center min-h-[40vh]"
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Close Button */}
                                 <button
                                     onClick={() => setPreviewItem(null)}
-                                    className="absolute top-6 right-6 z-[2010] text-white/40 hover:text-white transition-colors"
+                                    className="absolute top-6 right-6 z-[2010] text-white/40 hover:text-white transition-colors p-2"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
 
-                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-center w-full px-2 md:px-4 mt-8 md:mt-0">
-                                     <div className="relative h-[340px] md:h-[500px] flex items-center justify-center">
-                                        <div className="absolute inset-0 bg-primary/10 blur-[150px] rounded-full" />
-                                        <DressItem
-                                            item={{ ...previewItem, image: previewItem.image }}
-                                            vaultReady={true}
-                                        />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full px-2 md:px-4 mt-6 md:mt-0">
+                                    <div className="relative h-[300px] md:h-[460px] flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-[#a855f7]/15 blur-[120px] rounded-full pointer-events-none" />
+                                        <DressItem item={previewItem} vaultReady={true} />
                                     </div>
 
-                                    <div className="space-y-10 text-center md:text-left">
-                                        <div className="space-y-4">
-                                             <span className="font-mono text-[10px] text-[#d4af37] tracking-[0.2em] uppercase">
-                                                 ARCHIVE: // {previewItem.tier}
-                                             </span>
-                                             <h2 className="text-3xl md:text-7xl font-heading font-black tracking-tight uppercase leading-none break-words">
-                                                 {previewItem.serialNumber
-                                                     ? `${previewItem.serialNumber} / ${previewItem.totalCodes || ''}`
-                                                     : previewItem.name}
-                                             </h2>
+                                    <div className="space-y-6 text-center md:text-left">
+                                        <div className="space-y-3">
+                                            <span
+                                                className="font-mono text-[10px] font-bold tracking-[0.25em] uppercase px-3 py-1 rounded-sm border inline-block"
+                                                style={{
+                                                    color: tierAccent(previewItem.tier),
+                                                    borderColor: `${tierAccent(previewItem.tier)}55`,
+                                                    backgroundColor: `${tierAccent(previewItem.tier)}15`
+                                                }}
+                                            >
+                                                ARCHIVE TIER: // {previewItem.tier}
+                                            </span>
+                                            <h2 className="text-2xl md:text-4xl font-heading font-black tracking-tight uppercase leading-tight text-white">
+                                                {previewItem.name}
+                                            </h2>
                                             <div className="flex items-center justify-center md:justify-start gap-3">
-                                                <div className="h-px w-8 bg-[#d4af37]/30" />
-                                                <span className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Protocol Verified</span>
+                                                <div className="h-px w-8 bg-[#D4AF37]/50" />
+                                                <span className="text-[10px] font-mono text-white/50 tracking-widest uppercase">
+                                                    PROTOCOL VERIFIED
+                                                </span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-6">
-                                            {/* Hide codes and show collector info */}
-                                            {(previewItem.isCollected || previewItem.userName) ? (
-                                                <div className="space-y-4">
-                                                    <p className="hidden md:block text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] mb-4">Protocol Synchronized By</p>
-                                                    <div className="flex flex-col gap-2 md:items-start items-center font-heading uppercase tracking-widest">
-                                                        <span className="opacity-40 text-[10px] md:text-[11px]">Agent:</span>
-                                                        <span className="text-xl md:text-2xl font-black leading-none text-[#d4af37]">{previewItem.userName || 'Unknown Agent'}</span>
-                                                    </div>
+                                        <div className="space-y-4">
+                                            {previewItem.userName && (
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-mono text-white/40 uppercase tracking-[0.2em]">
+                                                        Synchronized By
+                                                    </p>
+                                                    <p className="text-lg md:text-xl font-heading font-black text-[#D4AF37]">
+                                                        AGENT {previewItem.userName.toUpperCase()}
+                                                    </p>
                                                 </div>
-                                            ) : (
-                                                <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
-                                                    {previewItem.description && !previewItem.description.includes('8394726150')
-                                                        ? previewItem.description
-                                                        : "Experimental digital artifact bound to physical luxury. Part of the Endura protocol."}
-                                                </p>
                                             )}
 
-                                            <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-tight text-[#d4af37]/60">
+                                            <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
+                                                {previewItem.description && !previewItem.description.includes('8394726150')
+                                                    ? previewItem.description
+                                                    : "Experimental digital artifact bound to physical luxury. Official piece of the Endura Vault protocol."}
+                                            </p>
+
+                                            <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-tight text-[#D4AF37]/80">
                                                 <span>PHASE: 01_DECRYPTION</span>
-                                                <span className="text-white/10">|</span>
+                                                <span className="text-white/20">|</span>
                                                 <span>REWARDS: SYNC_READY</span>
                                             </div>
                                         </div>
 
-                                         <div className="pt-6 md:pt-10 border-t border-white/5 flex flex-wrap gap-3 md:gap-4 justify-center md:justify-start">
-                                            <div className="px-5 py-2.5 border border-[#d4af37]/20 bg-[#d4af37]/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-[#d4af37]">
+                                        <div className="pt-6 border-t border-white/10 flex flex-wrap gap-3 justify-center md:justify-start">
+                                            <div className="px-4 py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-[#D4AF37]">
                                                 LEGACY STATUS: ACTIVE
                                             </div>
-                                            <div className="px-5 py-2.5 border border-white/10 bg-white/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-white/40">
+                                            <div className="px-4 py-2 border border-white/10 bg-white/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-white/40">
                                                 DATA_SECURED
                                             </div>
                                         </div>
@@ -729,201 +912,45 @@ const Vault = () => {
                     )}
                 </AnimatePresence>
 
+                {/* ─── SYNCHRONIZATION CONGRATULATIONS OVERLAY ─── */}
                 <AnimatePresence>
                     {showCongrats && (
                         <VaultCongratsOverlay
                             oldScore={congratsData?.oldScore}
                             newScore={congratsData?.newScore}
                             creditDelta={congratsData?.creditDelta}
-                            accent={congratsData?.vaultCard?.tier ? tierAccent(congratsData.vaultCard.tier) : (targetItem ? tierAccent(targetItem.tier) : '#d4af37')}
-                            serialNumber={`${congratsData?.vaultItem?.serialNumber || targetItem?.serialNumber || '1'} / ${congratsData?.vaultItem?.vaultCard?.codes?.length || 1}`}
-                            tier={congratsData?.vaultItem?.vaultCard?.tier || targetItem?.tier || 'COMMON'}
-                            onEnterDashboard={() => navigate('/dashboard')}
+                            accent={tierAccent(congratsData?.vaultItem?.vaultCard?.tier || 'rare')}
+                            serialNumber={`${congratsData?.vaultItem?.serialNumber || '1'} / ${congratsData?.vaultItem?.vaultCard?.codes?.length || 10}`}
+                            tier={congratsData?.vaultItem?.vaultCard?.tier || 'RARE'}
+                            onEnterDashboard={() => {
+                                setShowCongrats(false);
+                                navigate('/dashboard');
+                            }}
                             onClose={() => setShowCongrats(false)}
                         >
-                            <div className="relative w-full h-full rounded-2xl bg-black border border-white/40 overflow-hidden shadow-[0_0_80px_rgba(168,85,247,0.2)]">
+                            <div className="relative w-full h-full rounded-2xl bg-black border border-white/40 overflow-hidden shadow-[0_0_80px_rgba(168,85,247,0.3)]">
                                 <DressItem
-                                    item={congratsData?.vaultItem ? {
-                                        ...congratsData.vaultItem,
-                                        name: congratsData.vaultItem.vaultCard?.name,
-                                        image: congratsData.vaultItem.vaultCard?.frontImage,
-                                        backImageUrl: congratsData.vaultItem.vaultCard?.backImage,
-                                        tier: congratsData.vaultItem.vaultCard?.tier
-                                    } : { ...targetItem, image: targetItem.image }}
+                                    item={{
+                                        ...congratsData?.vaultItem,
+                                        name: congratsData?.vaultItem?.vaultCard?.name,
+                                        image: congratsData?.vaultItem?.vaultCard?.frontImage,
+                                        backImageUrl: congratsData?.vaultItem?.vaultCard?.backImage,
+                                        tier: congratsData?.vaultItem?.vaultCard?.tier
+                                    }}
                                     vaultReady={true}
                                 />
-                                
-                                {/* HUD Definition Corners */}
-                                <div className="absolute inset-0 pointer-events-none border border-white/20 m-2 rounded-xl" />
                             </div>
                         </VaultCongratsOverlay>
                     )}
                 </AnimatePresence>
-                <AnimatePresence>
-                    {showSyncOverlay && (
-                        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/95 backdrop-blur-2xl">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                className="relative w-full max-w-md glass border border-white/10 p-12 overflow-hidden shadow-[0_0_100px_rgba(212,175,55,0.05)]"
-                            >
-                                {/* Close Button */}
-                                <button
-                                    onClick={() => {
-                                        setShowSyncOverlay(false);
-                                        setSyncCode('');
-                                        setSyncError(false);
-                                    }}
-                                    className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50 p-2"
-                                >
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="2" />
-                                    </svg>
-                                </button>
 
-                                {/* Diagonal scanning line */}
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-accent/20 animate-[scan_3s_linear_infinite]" />
-
-                                <div className="relative z-10 space-y-8">
-                                    <div className="text-center space-y-2">
-                                        <h3 className="text-2xl font-oswald font-black text-white tracking-[0.2em] uppercase">Manual Override</h3>
-                                        <p className="text-[9px] font-mono text-gray-500 tracking-widest uppercase">Enter Decryption Protocol</p>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={syncCode}
-                                                onChange={(e) => {
-                                                    setSyncCode(e.target.value.toUpperCase());
-                                                    setSyncError(false);
-                                                }}
-                                                placeholder="PROTOCOL_CODE"
-                                                className="w-full bg-white/5 border border-white/10 p-5 font-mono text-center text-accent tracking-[0.5em] outline-none focus:border-accent transition-all uppercase placeholder:text-white/10"
-                                            />
-                                            {syncError && (
-                                                <motion.p
-                                                    initial={{ opacity: 0, y: -5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className="absolute -top-6 left-0 right-0 text-center text-red-500 font-mono text-[8px] uppercase tracking-widest"
-                                                >
-                                                    Error: Invalid Decryption Protocol
-                                                </motion.p>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            disabled={isSyncing || !syncCode}
-                                            onClick={async () => {
-                                                setIsSyncing(true);
-                                                setSyncError(false);
-                                                try {
-                                                    const result = await vaultService.syncVaultWithCode(syncCode);
-                                                    if (result.success) {
-                                                        const newProtocol = {
-                                                            id: result.vaultItem._id,
-                                                            _id: result.vaultItem._id,
-                                                            serialNumber: result.vaultItem.serialNumber,
-                                                            batchId: result.vaultItem.vaultCard?.batchId || 1,
-                                                            name: result.vaultItem.vaultCard?.name || 'Protocol Sync',
-                                                            description: result.vaultItem.vaultCard?.description || '',
-                                                            image: result.vaultItem.vaultCard?.frontImage,
-                                                            backImageUrl: result.vaultItem.vaultCard?.backImage,
-                                                            tier: result.vaultItem.vaultCard?.tier || 'rare',
-                                                            isUnlocked: true,
-                                                            _source: 'protocol'
-                                                        };
-
-                                                        setCongratsData(result);
-                                                        setSyncCode('');
-                                                        setShowSyncOverlay(false);
-                                                        setShowCongrats(true);
-                                                        fetchGlobalGallery();
-                                                        // We don't add it to setDbCards or setUnlockedIds here 
-                                                        // because the user wants nothing visible in the vault after collecting.
-                                                    }
-                                                } catch (error) {
-                                                    console.error("Sync failed:", error);
-                                                    setSyncError(true);
-                                                } finally {
-                                                    setIsSyncing(false);
-                                                }
-                                            }}
-                                            className="w-full py-5 bg-accent text-black font-oswald font-black text-xs uppercase tracking-[0.4em] hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all relative overflow-hidden group"
-                                        >
-                                            {isSyncing ? (
-                                                <div className="flex items-center justify-center gap-3">
-                                                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" />
-                                                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-bounce [animation-delay:0.2s]" />
-                                                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-bounce [animation-delay:0.4s]" />
-                                                </div>
-                                            ) : (
-                                                'Deploy Sync'
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    <button
-                                        onClick={() => {
-                                            setShowSyncOverlay(false);
-                                            setSyncCode('');
-                                            setSyncError(false);
-                                        }}
-                                        className="w-full text-center py-2 text-[8px] font-mono text-white/30 hover:text-white uppercase tracking-widest transition-colors"
-                                    >
-                                        Cancel Uplink
-                                    </button>
-                                </div>
-
-                                {/* Decorative corner details */}
-                                <div className="absolute top-4 left-4 w-2 h-2 border-t border-l border-white/20" />
-                                <div className="absolute bottom-4 right-4 w-2 h-2 border-b border-r border-white/20" />
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                    {showPurchasePopup && (
-                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 backdrop-blur-3xl bg-black/80">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                                className="glass p-12 max-w-lg w-full border-white/10 text-center relative overflow-hidden"
-                            >
-                                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent" />
-
-                                <div className="w-20 h-20 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-8 bg-accent/5">
-                                    <div className="w-2 h-2 bg-accent rounded-full animate-ping" />
-                                </div>
-
-                                <div className="space-y-6">
-                                    <h3 className="text-2xl font-heading font-black tracking-[0.2em] text-white">PURCHASE PROTOCOL</h3>
-                                    <p className="text-[11px] font-mono text-white/60 leading-relaxed uppercase tracking-widest">
-                                        Purchase an ENDURA product to receive a unique decryption protocol for your digital collectible cards.
-                                    </p>
-                                    <div className="pt-8 flex flex-col gap-4">
-                                        <button
-                                            onClick={() => navigate('/collections')}
-                                            className="w-full py-4 bg-accent text-black font-heading font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-all shadow-[0_0_30px_rgba(212,175,55,0.1)]"
-                                        >
-                                            Browse Collections
-                                        </button>
-                                        <button
-                                            onClick={() => setShowPurchasePopup(false)}
-                                            className="w-full py-4 border border-white/10 text-white/40 font-mono text-[9px] uppercase tracking-widest hover:text-white hover:border-white transition-all"
-                                        >
-                                            Close Uplink
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
+                {/* ─── REWARD UNLOCK OVERLAY (Preserved) ─── */}
+                {rewardUnlockItem && (
+                    <RewardUnlockOverlay
+                        item={rewardUnlockItem}
+                        onClose={() => setRewardUnlockItem(null)}
+                    />
+                )}
             </div>
         </>
     );
