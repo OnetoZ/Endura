@@ -20,7 +20,7 @@ const AuthSuccess = () => {
 
                     // If this is a popup, notify parent and close
                     if (window.opener && window.name === 'OAuthPopup') {
-                        window.opener.postMessage({ type: 'AUTH_FINAL_SUCCESS', userData }, window.location.origin);
+                        window.opener.postMessage({ type: 'AUTH_FINAL_SUCCESS', userData }, '*');
                         window.close();
                         return;
                     }
@@ -36,7 +36,7 @@ const AuthSuccess = () => {
                     localStorage.removeItem('userInfo');
 
                     if (window.opener && window.name === 'OAuthPopup') {
-                        window.opener.postMessage({ type: 'AUTH_FINAL_ERROR', error: 'sync_failed' }, window.location.origin);
+                        window.opener.postMessage({ type: 'AUTH_FINAL_ERROR', error: 'sync_failed' }, '*');
                         window.close();
                         return;
                     }
@@ -45,7 +45,7 @@ const AuthSuccess = () => {
                 });
         } else {
             if (window.opener && window.name === 'OAuthPopup') {
-                window.opener.postMessage({ type: 'AUTH_FINAL_ERROR', error: 'no_token' }, window.location.origin);
+                window.opener.postMessage({ type: 'AUTH_FINAL_ERROR', error: 'no_token' }, '*');
                 window.close();
                 return;
             }

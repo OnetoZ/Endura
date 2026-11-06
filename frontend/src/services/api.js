@@ -21,8 +21,8 @@ const resolveApiBaseUrl = () => {
 const API_BASE_URL = resolveApiBaseUrl();
 
 export const getImageUrl = (path) => {
-    // Return placeholder if path is missing to prevent broken link icons
-    const placeholder = 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800';
+    // Return authentic Endura Tarot Card if path is missing to prevent broken or placeholder links
+    const placeholder = '/tarot-card-13.png';
     if (!path) return placeholder;
 
     // If it's already a Base64 string or a local blob, return it as is

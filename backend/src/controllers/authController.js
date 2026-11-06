@@ -261,17 +261,30 @@ const googleCallback = asyncHandler(async (req, res) => {
 
     const isSourceAdmin = stateObj.source === 'admin';
 
-    // Dynamically determine targetUrl from env vars (fall back to localhost for dev)
-    let targetUrl = isSourceAdmin
+    // Determine default target URL based on source
+    let defaultTarget = isSourceAdmin
         ? (process.env.ADMIN_CLIENT_URL || 'http://localhost:5174')
         : (process.env.CLIENT_URL || 'http://localhost:5173');
 
-    // If the OAuth state contains the requester's origin and no explicit env var was set,
-    // trust the origin (e.g. the browser that initiated the login).
+    defaultTarget = defaultTarget.replace(/\/+$/, '');
+    let targetUrl = defaultTarget;
+
+    // If OAuth state contains requester's origin (e.g. http://localhost:5173 during dev),
+    // validate and prioritize it so local developers stay on their local environment!
     if (stateObj.origin) {
-        const envKey = isSourceAdmin ? 'ADMIN_CLIENT_URL' : 'CLIENT_URL';
-        if (!process.env[envKey]) {
-            targetUrl = stateObj.origin;
+        try {
+            const parsedOrigin = new URL(stateObj.origin).origin;
+            const isLocal = parsedOrigin.includes('localhost') || parsedOrigin.includes('127.0.0.1');
+            const isEnduraDomain = parsedOrigin.endsWith('wearendura.com') || parsedOrigin.endsWith('.wearendura.com');
+            const isConfiguredEnv = [process.env.CLIENT_URL, process.env.ADMIN_CLIENT_URL, process.env.FRONTEND_URL]
+                .filter(Boolean)
+                .some(url => url.includes(parsedOrigin));
+
+            if (isLocal || isEnduraDomain || isConfiguredEnv) {
+                targetUrl = parsedOrigin.replace(/\/+$/, '');
+            }
+        } catch (_) {
+            // Keep defaultTarget
         }
     }
 

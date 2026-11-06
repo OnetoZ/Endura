@@ -32,8 +32,8 @@ import {
 const tierAccent = (tier) => {
     const t = tier ? tier.toLowerCase() : '';
     if (t === 'legendary') return '#D4AF37'; // Gold
-    if (t === 'rare') return '#a855f7';     // Deep Electric Purple
-    if (t === 'epic') return '#f59e0b';     // Amber/Gold
+    if (t === 'epic') return '#a855f7';     // Deep Electric Purple
+    if (t === 'rare') return '#38bdf8';     // Diamond Cyan
     if (t === 'common') return '#9ca3af';   // Understated Charcoal/Silver
     return '#9ca3af';
 };
@@ -75,23 +75,6 @@ const GothicKeyholeArch = () => (
     </div>
 );
 
-// ─── Isometric 3D Cube Icon (Card Footer) ────────────────────────────────────
-const IsometricCubeIcon = () => (
-    <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        className="text-white/40 group-hover:text-white/80 transition-colors"
-    >
-        <path d="M12 2L3 7L12 12L21 7L12 2Z" strokeLinejoin="round" />
-        <path d="M3 7V17L12 22V12L3 7Z" strokeLinejoin="round" />
-        <path d="M21 7V17L12 22V12L21 7Z" strokeLinejoin="round" />
-    </svg>
-);
-
 // ─── Geometric Occult Emblem (Side Banners) ──────────────────────────────────
 const SideBannerEmblem = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-white/25 mt-2">
@@ -105,6 +88,24 @@ const SideBannerEmblem = () => (
 const DressItem = ({ item, vaultReady = true }) => {
     const [isHovered, setIsHovered] = useState(false);
     const accent = tierAccent(item.tier);
+    const rawImage = item.backImageUrl || item.backImage || item.image || item.assetImage || item.frontImageUrl || item.frontImage;
+    const [imgSrc, setImgSrc] = useState(() => getImageUrl(rawImage));
+
+    useEffect(() => {
+        setImgSrc(getImageUrl(rawImage));
+    }, [rawImage]);
+
+    const handleImgError = () => {
+        if (imgSrc && imgSrc.includes('/uploads/')) {
+            const fileName = imgSrc.split('/uploads/')[1];
+            const renderUrl = `https://endura-2.onrender.com/uploads/${fileName}`;
+            if (imgSrc !== renderUrl) {
+                setImgSrc(renderUrl);
+                return;
+            }
+        }
+        setImgSrc('/tarot-card-13.png');
+    };
 
     return (
         <div
@@ -121,8 +122,9 @@ const DressItem = ({ item, vaultReady = true }) => {
                 transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             >
                 <img
-                    src={getImageUrl(item.backImageUrl || item.backImage || item.image || item.frontImageUrl || item.frontImage)}
-                    alt={item.name}
+                    src={imgSrc}
+                    alt={item.name || 'Endura Asset'}
+                    onError={handleImgError}
                     className="w-full h-full object-contain block transition-transform duration-700"
                     style={{ transform: isHovered ? 'scale(1.08)' : 'scale(1)' }}
                 />
@@ -134,6 +136,194 @@ const DressItem = ({ item, vaultReady = true }) => {
             <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l" style={{ borderColor: accent }} />
             <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r" style={{ borderColor: accent }} />
         </div>
+    );
+};
+
+// ─── Format asset identifier matching reference image (L-001, E-001, R-042, C-117) ──
+const getAssetIdentifier = (item, index) => {
+    const tier = (item.tier || 'epic').toLowerCase();
+    const num = item.serialNumber || (index + 1);
+    if (tier === 'legendary') return `L-${String(num).padStart(3, '0')}`;
+    if (tier === 'epic') return `E-${String(num).padStart(3, '0')}`;
+    if (tier === 'rare') return `R-${String(num).padStart(3, '0')}`;
+    return `C-${String(num).padStart(3, '0')}`;
+};
+
+// ─── Interactive 3D Rotating Vault Card (Tarot Front <-> Garment Back) ────────
+const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
+    const [isFlipped, setIsFlipped] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const tier = (item.tier || 'epic').toLowerCase();
+    const isLegendary = tier === 'legendary';
+    const isEpic = tier === 'epic';
+    const isRare = tier === 'rare';
+    const assetId = getAssetIdentifier(item, index);
+
+    // Front Face = Purple Tarot Card Artwork (Image 2)
+    const frontUrl = getImageUrl(item.frontImageUrl || item.frontImage || '/tarot-card-13.png');
+    // Back Face = Physical Garment / T-Shirt Artwork (Image 1)
+    const backUrl = getImageUrl(item.backImageUrl || item.backImage || item.image || item.assetImage || '/tarot-card-13.png');
+
+    // On desktop, hover rotates it. On mobile, touch/click toggles isFlipped.
+    const isRotated = isHovered || isFlipped;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
+            onClick={() => onInspect(item)}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={`group relative rounded-2xl bg-[#08080c] overflow-hidden transition-all duration-500 border flex flex-col justify-between w-full max-w-[260px] sm:max-w-[275px] md:max-w-[285px] mx-auto sm:mx-0 flex-shrink-0 cursor-pointer ${
+                isLegendary
+                    ? 'border-[#D4AF37]/40 hover:border-[#D4AF37]/80 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_45px_rgba(212,175,55,0.2)]'
+                    : isEpic
+                    ? 'border-[#a855f7]/40 hover:border-[#a855f7]/80 shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:shadow-[0_0_45px_rgba(168,85,247,0.3)]'
+                    : isRare
+                    ? 'border-[#38bdf8]/40 hover:border-[#38bdf8]/80 shadow-[0_0_30px_rgba(56,189,248,0.12)] hover:shadow-[0_0_45px_rgba(56,189,248,0.25)]'
+                    : 'border-white/10 hover:border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.03)]'
+            }`}
+        >
+            {/* Top Meta Bar */}
+            <div className="p-3.5 sm:p-4 flex items-center justify-between z-10">
+                {/* Rarity Pill Badge */}
+                <span
+                    className={`text-[7px] sm:text-[8px] font-mono font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded-sm ${
+                        isLegendary
+                            ? 'border border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/10'
+                            : isEpic
+                            ? 'border border-[#a855f7]/50 text-[#c084fc] bg-[#a855f7]/10'
+                            : isRare
+                            ? 'border border-[#38bdf8]/50 text-[#38bdf8] bg-[#38bdf8]/10'
+                            : 'border border-white/20 text-white/70 bg-white/5'
+                    }`}
+                >
+                    {tier.toUpperCase()}
+                </span>
+
+                {/* Flip indicator on mobile + Serial Identifier */}
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsFlipped(prev => !prev);
+                        }}
+                        className="flex sm:hidden items-center gap-1 text-[8px] font-mono tracking-widest text-white/50 hover:text-white uppercase px-2 py-0.5 rounded bg-white/5 border border-white/10 active:scale-95 transition-all"
+                    >
+                        <RefreshCw className="w-2.5 h-2.5 text-[#D4AF37]" />
+                        <span>FLIP</span>
+                    </button>
+                    <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-white/40 font-semibold">
+                        {assetId}
+                    </span>
+                </div>
+            </div>
+
+            {/* Central 3D Flippable Card Frame (Tarot Front <-> Garment Back) */}
+            <div
+                className="relative aspect-[3/4] w-full flex items-center justify-center overflow-hidden px-2.5 sm:px-3 select-none"
+                style={{ perspective: 1200 }}
+            >
+                {/* Ambient backdrop glow for image */}
+                <div
+                    className={`absolute inset-0 opacity-20 transition-opacity duration-700 group-hover:opacity-40 pointer-events-none ${
+                        isLegendary
+                            ? 'bg-radial-gradient from-[#D4AF37]/30 to-transparent'
+                            : isEpic
+                            ? 'bg-radial-gradient from-[#a855f7]/30 to-transparent'
+                            : isRare
+                            ? 'bg-radial-gradient from-[#38bdf8]/30 to-transparent'
+                            : 'bg-radial-gradient from-white/10 to-transparent'
+                    }`}
+                />
+
+                {/* 3D Rotating Container */}
+                <div
+                    className="relative w-full h-full"
+                    style={{
+                        transformStyle: 'preserve-3d',
+                        WebkitTransformStyle: 'preserve-3d',
+                        transform: isRotated ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                        transition: 'transform 0.75s cubic-bezier(0.2, 0.85, 0.4, 1.15)',
+                    }}
+                >
+                    {/* ─── FRONT FACE: TAROT CARD (Image 2) ─── */}
+                    <div
+                        className="absolute inset-0 w-full h-full flex items-center justify-center p-0.5 overflow-hidden rounded-xl"
+                        style={{
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                        }}
+                    >
+                        <img
+                            src={frontUrl}
+                            alt={`${item.name} Tarot Archive Card`}
+                            onError={(e) => {
+                                if (frontUrl && frontUrl.includes('/uploads/')) {
+                                    const fileName = frontUrl.split('/uploads/')[1];
+                                    const renderUrl = `https://endura-2.onrender.com/uploads/${fileName}`;
+                                    if (e.currentTarget.src !== renderUrl) {
+                                        e.currentTarget.src = renderUrl;
+                                        return;
+                                    }
+                                }
+                                e.currentTarget.src = '/tarot-card-13.png';
+                            }}
+                            className="w-full h-full object-cover scale-[1.06] rounded-xl drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#08080c] to-transparent pointer-events-none" />
+                    </div>
+
+                    {/* ─── BACK FACE: PHYSICAL GARMENT (Image 1) ─── */}
+                    <div
+                        className="absolute inset-0 w-full h-full flex items-center justify-center p-1 overflow-hidden rounded-xl"
+                        style={{
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            transform: 'rotateY(180deg)',
+                        }}
+                    >
+                        <img
+                            src={backUrl}
+                            alt={`${item.name} Physical Garment`}
+                            onError={(e) => {
+                                if (backUrl && backUrl.includes('/uploads/')) {
+                                    const fileName = backUrl.split('/uploads/')[1];
+                                    const renderUrl = `https://endura-2.onrender.com/uploads/${fileName}`;
+                                    if (e.currentTarget.src !== renderUrl) {
+                                        e.currentTarget.src = renderUrl;
+                                        return;
+                                    }
+                                }
+                                e.currentTarget.src = '/tarot-card-13.png';
+                            }}
+                            className="w-full h-full object-contain scale-[1.06] rounded-xl drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#08080c] to-transparent pointer-events-none" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Information Row */}
+            <div className="p-3.5 sm:p-4 z-10 relative">
+                <div className="flex items-end justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                        <h3 className="text-xs sm:text-[13px] font-heading font-black text-white uppercase tracking-wider mb-0.5 line-clamp-1 group-hover:text-[#D4AF37] transition-colors">
+                            {item.userName || currentUser?.username || item.name || 'AGENT'}
+                        </h3>
+                        <div className="text-[7px] sm:text-[8px] font-mono tracking-[0.18em] text-white/40 uppercase space-y-0.5">
+                            <p>PHYSICAL ASSET</p>
+                            <p>DIGITAL ECHO</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </motion.div>
     );
 };
 
@@ -183,12 +373,13 @@ const Vault = () => {
                         _id: p._id,
                         serialNumber: p.serialNumber || (idx + 1),
                         totalCodes: p.vaultCard?.codes?.length || 10,
-                        name: p.vaultCard?.name === '1/10' ? `SHADOW PROTOCOL HOODIE` : (p.vaultCard?.name || p.assetName || 'Synchronized Protocol'),
+                        userName: p.userName || p.user?.username || currentUser?.username || 'Authorized Agent',
+                        name: p.vaultCard?.name === '1/10' ? `SHADOW PROTOCOL HOODIE` : (p.name || p.vaultCard?.name || p.assetName || 'Synchronized Protocol'),
                         description: p.vaultCard?.description || '',
-                        image: p.vaultCard?.backImage || p.vaultCard?.frontImage || p.assetImage,
-                        frontImageUrl: p.vaultCard?.frontImage || p.assetImage,
-                        backImageUrl: p.vaultCard?.backImage || p.vaultCard?.frontImage,
-                        tier: (p.vaultCard?.tier || 'rare').toLowerCase(),
+                        image: p.vaultCard?.backImage || p.image || p.assetImage || p.vaultCard?.frontImage || '/tarot-card-13.png',
+                        frontImageUrl: p.vaultCard?.frontImage || p.frontImage || p.assetImage || '/tarot-card-13.png',
+                        backImageUrl: p.vaultCard?.backImage || p.backImage || p.assetImage || p.vaultCard?.frontImage || '/tarot-card-13.png',
+                        tier: (p.tier || p.cardTier || p.vaultCard?.tier || 'epic').toLowerCase(),
                         syncCode: p.syncCode || '',
                         isOwned: true,
                         isUnlocked: true,
@@ -209,11 +400,11 @@ const Vault = () => {
                         _id: item.id || item._id,
                         userName: item.userName || 'Anonymous Agent',
                         userAvatar: item.userAvatar,
-                        name: item.cardName === '1/10' ? `SHADOW ARCHIVE 1/10` : (item.cardName || 'Archive Protocol'),
+                        name: item.userName || (item.cardName && item.cardName !== '1/10' ? item.cardName : 'Agent Protocol'),
                         tier: (item.cardTier || 'rare').toLowerCase(),
-                        image: item.frontImage,
-                        frontImageUrl: item.frontImage,
-                        backImageUrl: item.backImage,
+                        image: item.frontImage || item.image || item.backImage || '/tarot-card-13.png',
+                        frontImageUrl: item.frontImage || item.image || '/tarot-card-13.png',
+                        backImageUrl: item.backImage || item.frontImage || '/tarot-card-13.png',
                         serialNumber: item.serialNumber || (idx + 1),
                         totalCodes: item.totalCodes || 10,
                         vaultCardId: item.vaultCardId,
@@ -289,30 +480,14 @@ const Vault = () => {
     const totalPossible = Math.max(15, globalGallery.length || 15);
     const progressPercent = Math.min(100, Math.round((ownedCount / totalPossible) * 100));
 
-    // Dynamic Tier Counts derived from real application data
-    // (If owned count is 0, we can also display pool stats for reference)
+    // Dynamic Tier Counts derived from real application data (all 4 tiers)
     const legendaryCount = ownedAssets.filter(item => item.tier === 'legendary').length;
-    const rareCount = ownedAssets.filter(item => item.tier === 'rare' || item.tier === 'epic').length;
+    const epicCount = ownedAssets.filter(item => item.tier === 'epic').length;
+    const rareCount = ownedAssets.filter(item => item.tier === 'rare').length;
     const commonCount = ownedAssets.filter(item => item.tier === 'common').length;
 
-    // Active displayed cards based on viewMode
-    const displayAssets = useMemo(() => {
-        if (viewMode === 'owned') {
-            return ownedAssets;
-        }
-        // 'all' mode: show global archive items
-        if (globalGallery.length > 0) return globalGallery;
-        return ownedAssets;
-    }, [viewMode, ownedAssets, globalGallery]);
-
-    // Format asset identifier matching reference image (L-001, R-042, C-117)
-    const getAssetIdentifier = (item, index) => {
-        const tier = (item.tier || 'common').toLowerCase();
-        const num = item.serialNumber || (index + 1);
-        if (tier === 'legendary') return `L-${String(num).padStart(3, '0')}`;
-        if (tier === 'rare' || tier === 'epic') return `R-${String(num).padStart(3, '0')}`;
-        return `C-${String(num).padStart(3, '0')}`;
-    };
+    // Active displayed cards: strictly user's redeemed/owned assets
+    const displayAssets = ownedAssets;
 
     return (
         <>
@@ -526,151 +701,31 @@ const Vault = () => {
 
                 {/* ─── MAIN ASSET GRID & BOTTOM ARCHIVE SUMMARY ─── */}
                 <main className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
-                    {/* Section Header: OWNED ASSETS & VIEW ALL ASSETS */}
+                    {/* Section Header: OWNED ASSETS */}
                     <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-8">
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_10px_#a855f7] animate-pulse" />
                             <h2 className="text-xs sm:text-sm md:text-base font-mono font-bold tracking-[0.25em] text-white uppercase">
-                                {viewMode === 'owned' ? 'OWNED ASSETS' : 'GLOBAL ARCHIVE ASSETS'}
+                                OWNED ASSETS
                             </h2>
                             <span className="text-[10px] font-mono text-white/40">
-                                ({displayAssets.length})
+                                ({ownedAssets.length})
                             </span>
                         </div>
-
-                        {/* Right-side Toggle / Action */}
-                        <button
-                            onClick={() => {
-                                if (viewMode === 'owned') {
-                                    if (globalGallery.length > 0) {
-                                        setViewMode('all');
-                                    } else {
-                                        navigate('/collections');
-                                    }
-                                } else {
-                                    setViewMode('owned');
-                                }
-                            }}
-                            className="flex items-center gap-2 text-[10px] sm:text-xs font-mono tracking-[0.2em] text-white/50 hover:text-[#D4AF37] uppercase transition-colors group cursor-pointer"
-                        >
-                            <span>
-                                {viewMode === 'owned' ? 'VIEW ALL ASSETS' : 'VIEW OWNED ONLY'}
-                            </span>
-                            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                        </button>
                     </div>
 
                     {/* Asset Cards Grid */}
                     {displayAssets.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
-                            {displayAssets.map((item, index) => {
-                                const tier = (item.tier || 'rare').toLowerCase();
-                                const isLegendary = tier === 'legendary';
-                                const isRare = tier === 'rare' || tier === 'epic';
-                                const assetId = getAssetIdentifier(item, index);
-
-                                return (
-                                    <motion.div
-                                        key={item.id || item._id || index}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
-                                        onClick={() => setPreviewItem(item)}
-                                        className={`group relative rounded-2xl bg-[#08080c] overflow-hidden transition-all duration-500 cursor-pointer border flex flex-col justify-between ${
-                                            isLegendary
-                                                ? 'border-[#D4AF37]/40 hover:border-[#D4AF37]/80 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_45px_rgba(212,175,55,0.2)]'
-                                                : isRare
-                                                ? 'border-[#a855f7]/40 hover:border-[#a855f7]/80 shadow-[0_0_30px_rgba(168,85,247,0.12)] hover:shadow-[0_0_45px_rgba(168,85,247,0.25)]'
-                                                : 'border-white/10 hover:border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.03)]'
-                                        }`}
-                                    >
-                                        {/* Top Meta Bar */}
-                                        <div className="p-4 sm:p-5 flex items-center justify-between z-10">
-                                            {/* Rarity Pill Badge */}
-                                            <span
-                                                className={`text-[8px] sm:text-[9px] font-mono font-bold tracking-[0.2em] uppercase px-2.5 py-1 rounded-sm ${
-                                                    isLegendary
-                                                        ? 'border border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/10'
-                                                        : isRare
-                                                        ? 'border border-[#a855f7]/50 text-[#c084fc] bg-[#a855f7]/10'
-                                                        : 'border border-white/20 text-white/70 bg-white/5'
-                                                }`}
-                                            >
-                                                {tier.toUpperCase()}
-                                            </span>
-
-                                            {/* Asset Serial Identifier */}
-                                            <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-white/40 font-semibold">
-                                                {assetId}
-                                            </span>
-                                        </div>
-
-                                        {/* Central Product Image */}
-                                        <div className="relative aspect-[3/4] w-full flex items-center justify-center overflow-hidden px-4">
-                                            {/* Ambient backdrop glow for image */}
-                                            <div
-                                                className={`absolute inset-0 opacity-20 transition-opacity duration-700 group-hover:opacity-40 ${
-                                                    isLegendary
-                                                        ? 'bg-radial-gradient from-[#D4AF37]/30 to-transparent'
-                                                        : isRare
-                                                        ? 'bg-radial-gradient from-[#a855f7]/30 to-transparent'
-                                                        : 'bg-radial-gradient from-white/10 to-transparent'
-                                                }`}
-                                            />
-
-                                            <img
-                                                src={getImageUrl(item.image || item.frontImageUrl || item.frontImage || item.backImageUrl)}
-                                                alt={item.name}
-                                                className="w-full h-full object-contain p-2 rounded-lg transition-transform duration-700 ease-out group-hover:scale-105"
-                                            />
-
-                                            {/* Subtle bottom gradient to blend image into card footer */}
-                                            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#08080c] to-transparent pointer-events-none" />
-                                        </div>
-
-                                        {/* Bottom Information Row */}
-                                        <div className="p-4 sm:p-5 z-10 relative">
-                                            <div className="flex items-end justify-between gap-4">
-                                                <div>
-                                                    <h3 className="text-xs sm:text-sm font-heading font-black text-white uppercase tracking-wider mb-1 line-clamp-1 group-hover:text-[#D4AF37] transition-colors">
-                                                        {item.name}
-                                                    </h3>
-                                                    <div className="text-[8px] font-mono tracking-[0.2em] text-white/40 uppercase space-y-0.5">
-                                                        <p>PHYSICAL ASSET</p>
-                                                        <p>DIGITAL ECHO</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex flex-col items-end">
-                                                    <IsometricCubeIcon />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Centered Bottom Border Emblem (Crown for Legendary, Gem for Rare, Cube for Common) */}
-                                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
-                                            <div
-                                                className={`w-7 h-7 rounded-full bg-[#08080c] border flex items-center justify-center shadow-lg ${
-                                                    isLegendary
-                                                        ? 'border-[#D4AF37] text-[#D4AF37]'
-                                                        : isRare
-                                                        ? 'border-[#a855f7] text-[#c084fc]'
-                                                        : 'border-white/20 text-white/50'
-                                                }`}
-                                            >
-                                                {isLegendary ? (
-                                                    <Crown className="w-3.5 h-3.5 fill-[#D4AF37]/20" />
-                                                ) : isRare ? (
-                                                    <Gem className="w-3.5 h-3.5 fill-[#a855f7]/20" />
-                                                ) : (
-                                                    <Box className="w-3.5 h-3.5" />
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
+                        <div className="flex flex-wrap items-start justify-center sm:justify-start gap-5 sm:gap-6 md:gap-8 mb-12 sm:mb-16">
+                            {displayAssets.map((item, index) => (
+                                <VaultCollectibleCard
+                                    key={item.id || item._id || index}
+                                    item={item}
+                                    index={index}
+                                    onInspect={setPreviewItem}
+                                    currentUser={currentUser}
+                                />
+                            ))}
                         </div>
                     ) : (
                         /* Empty State when User has no Owned Assets */
@@ -682,17 +737,9 @@ const Vault = () => {
                                 NO ASSETS CURRENTLY IN ARCHIVE
                             </h3>
                             <p className="text-white/40 text-xs font-mono uppercase tracking-widest leading-relaxed mb-6">
-                                Enter a redemption protocol code above to decrypt your exclusive pieces, or explore the global registry.
+                                Enter a redemption protocol code above to decrypt your exclusive pieces.
                             </p>
                             <div className="flex flex-wrap items-center justify-center gap-4">
-                                {globalGallery.length > 0 && (
-                                    <button
-                                        onClick={() => setViewMode('all')}
-                                        className="px-6 py-3 bg-[#D4AF37] text-black font-heading font-black text-[10px] uppercase tracking-[0.25em] hover:bg-white transition-all rounded-md"
-                                    >
-                                        EXPLORE GLOBAL ARCHIVE ({globalGallery.length})
-                                    </button>
-                                )}
                                 <button
                                     onClick={() => navigate('/collections')}
                                     className="px-6 py-3 border border-white/20 text-white/70 hover:text-white hover:border-white font-mono text-[10px] uppercase tracking-[0.2em] transition-all rounded-md"
@@ -706,15 +753,14 @@ const Vault = () => {
                     {/* ─── COLLECTION PROGRESS & RARITY SUMMARY PANEL ─── */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="rounded-2xl bg-[#08080c] border border-white/10 p-6 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+                        className="rounded-2xl bg-[#08080c] border border-white/10 p-5 sm:p-6 lg:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
                     >
                         {/* 1. Circular Progress Donut */}
-                        <div className="flex items-center gap-5 w-full lg:w-auto justify-center lg:justify-start">
-                            <div className="relative w-14 h-14 flex items-center justify-center">
-                                <svg className="w-14 h-14 -rotate-90">
+                        <div className="flex items-center gap-4 sm:gap-5 w-full lg:w-auto justify-center lg:justify-start">
+                            <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-12 h-12 sm:w-14 sm:h-14 -rotate-90">
                                     <circle
                                         cx="28"
                                         cy="28"
@@ -755,55 +801,69 @@ const Vault = () => {
                             </div>
                         </div>
 
-                        {/* Divider */}
+                        {/* Divider (Desktop) */}
                         <div className="hidden lg:block w-px h-12 bg-white/10" />
 
-                        {/* 2. Legendary Count */}
-                        <div className="flex flex-col items-center text-center">
-                            <Crown className="w-4 h-4 text-[#D4AF37] mb-1 drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
-                            <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wide">
-                                {legendaryCount}
+                        {/* 2. All 4 Tiers Counter (Mobile: 4-column compact grid, Desktop: flex row) */}
+                        <div className="grid grid-cols-4 gap-2 sm:gap-4 w-full lg:w-auto lg:flex lg:items-center lg:gap-8 py-3 lg:py-0 border-y lg:border-y-0 border-white/5">
+                            {/* Legendary */}
+                            <div className="flex flex-col items-center text-center">
+                                <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] mb-1 drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
+                                <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
+                                    {legendaryCount}
+                                </div>
+                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-[#D4AF37] font-bold uppercase truncate max-w-full">
+                                    LEGENDARY
+                                </div>
                             </div>
-                            <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-[#D4AF37] font-bold uppercase">
-                                LEGENDARY
+
+                            <div className="hidden lg:block w-px h-12 bg-white/10" />
+
+                            {/* Epic */}
+                            <div className="flex flex-col items-center text-center">
+                                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#a855f7] mb-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]" />
+                                <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
+                                    {epicCount}
+                                </div>
+                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-[#c084fc] font-bold uppercase truncate max-w-full">
+                                    EPIC
+                                </div>
+                            </div>
+
+                            <div className="hidden lg:block w-px h-12 bg-white/10" />
+
+                            {/* Rare */}
+                            <div className="flex flex-col items-center text-center">
+                                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#38bdf8] mb-1 drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]" />
+                                <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
+                                    {rareCount}
+                                </div>
+                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-[#38bdf8] font-bold uppercase truncate max-w-full">
+                                    RARE
+                                </div>
+                            </div>
+
+                            <div className="hidden lg:block w-px h-12 bg-white/10" />
+
+                            {/* Common */}
+                            <div className="flex flex-col items-center text-center">
+                                <Box className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/40 mb-1" />
+                                <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
+                                    {commonCount}
+                                </div>
+                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-white/40 font-bold uppercase truncate max-w-full">
+                                    COMMON
+                                </div>
                             </div>
                         </div>
 
-                        {/* Divider */}
+                        {/* Divider (Desktop) */}
                         <div className="hidden lg:block w-px h-12 bg-white/10" />
 
-                        {/* 3. Rare Count */}
-                        <div className="flex flex-col items-center text-center">
-                            <Gem className="w-4 h-4 text-[#a855f7] mb-1 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]" />
-                            <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wide">
-                                {rareCount}
-                            </div>
-                            <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-[#c084fc] font-bold uppercase">
-                                RARE
-                            </div>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="hidden lg:block w-px h-12 bg-white/10" />
-
-                        {/* 4. Common Count */}
-                        <div className="flex flex-col items-center text-center">
-                            <Box className="w-4 h-4 text-white/40 mb-1" />
-                            <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wide">
-                                {commonCount}
-                            </div>
-                            <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/40 font-bold uppercase">
-                                COMMON
-                            </div>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="hidden lg:block w-px h-12 bg-white/10" />
-
-                        {/* 5. Lock Icon & Mission Slogan */}
-                        <div className="flex items-center gap-4 w-full lg:w-auto justify-center lg:justify-start">
-                            <div className="w-12 h-12 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 flex items-center justify-center text-[#c084fc] shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-                                <Lock className="w-5 h-5" />
+                        {/* 3. Lock Icon & Mission Slogan */}
+                        <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto justify-center lg:justify-start">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 flex items-center justify-center text-[#c084fc] shadow-[0_0_15px_rgba(168,85,247,0.2)] flex-shrink-0">
+                                <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                             </div>
                             <div className="text-left">
                                 <div className="text-[#a855f7] font-mono font-bold text-[9px] sm:text-[10px] tracking-[0.25em] uppercase mb-0.5">
@@ -862,7 +922,7 @@ const Vault = () => {
                                                 ARCHIVE TIER: // {previewItem.tier}
                                             </span>
                                             <h2 className="text-2xl md:text-4xl font-heading font-black tracking-tight uppercase leading-tight text-white">
-                                                {previewItem.name}
+                                                {previewItem.userName ? previewItem.userName.toUpperCase() : (previewItem.name || 'AUTHENTICATED ASSET')}
                                             </h2>
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 <div className="h-px w-8 bg-[#D4AF37]/50" />
@@ -934,6 +994,7 @@ const Vault = () => {
                                         ...congratsData?.vaultItem,
                                         name: congratsData?.vaultItem?.vaultCard?.name,
                                         image: congratsData?.vaultItem?.vaultCard?.frontImage,
+                                        frontImageUrl: congratsData?.vaultItem?.vaultCard?.frontImage,
                                         backImageUrl: congratsData?.vaultItem?.vaultCard?.backImage,
                                         tier: congratsData?.vaultItem?.vaultCard?.tier
                                     }}
