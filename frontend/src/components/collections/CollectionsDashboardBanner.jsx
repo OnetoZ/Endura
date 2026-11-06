@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowDown, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const VIEWS = [
   {
@@ -82,13 +83,14 @@ const COLLECTIONS = [
   }
 ];
 
-const CollectionsDashboardBanner = () => {
-  const [activeViewIndex, setActiveViewIndex] = useState(0);
+const CollectionsDashboardBanner = ({ initialViewIndex = 0, autoRotate = true }) => {
+  const navigate = useNavigate();
+  const [activeViewIndex, setActiveViewIndex] = useState(initialViewIndex);
   const [selectedCollectionId, setSelectedCollectionId] = useState('icarus');
   const [hoveredCollectionId, setHoveredCollectionId] = useState(null);
   const [isHoveredOverBanner, setIsHoveredOverBanner] = useState(false);
 
-  const currentView = VIEWS[activeViewIndex];
+  const currentView = VIEWS[activeViewIndex] || VIEWS[0];
   const isLookbook = currentView.id === 'campaign';
   const isLineup = currentView.id === 'artifacts';
 
@@ -98,19 +100,21 @@ const CollectionsDashboardBanner = () => {
 
   // Subtle auto-rotation between the two dashboard images when user is idle
   useEffect(() => {
-    if (isHoveredOverBanner || hoveredCollectionId) return;
+    if (!autoRotate || isHoveredOverBanner || hoveredCollectionId) return;
 
     const timer = setInterval(() => {
       setActiveViewIndex((prev) => (prev + 1) % VIEWS.length);
     }, 12000);
 
     return () => clearInterval(timer);
-  }, [isHoveredOverBanner, hoveredCollectionId]);
+  }, [autoRotate, isHoveredOverBanner, hoveredCollectionId]);
 
   const handleScrollToGrid = (targetId) => {
     const target = document.getElementById(targetId || 'products-archive');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      navigate('/collections');
     }
   };
 

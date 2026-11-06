@@ -65,8 +65,19 @@ router.get('/google', (req, res, next) => {
         stateObj.source = 'admin';
     }
 
-    // Capture requester origin for dynamic callback redirect (failsafe)
-    stateObj.origin = req.query.origin || req.headers.referer?.split('?')[0].replace(/\/$/, '');
+    // Capture requester origin for dynamic callback redirect
+    let clientOrigin = req.query.origin;
+    if (!clientOrigin && req.headers.referer) {
+        try {
+            clientOrigin = new URL(req.headers.referer).origin;
+        } catch (_) {}
+    }
+    if (!clientOrigin && req.headers.origin) {
+        clientOrigin = req.headers.origin;
+    }
+    if (clientOrigin) {
+        stateObj.origin = clientOrigin.replace(/\/+$/, '');
+    }
 
     if (Object.keys(stateObj).length > 0) {
         options.state = Buffer.from(JSON.stringify(stateObj)).toString('base64');
@@ -83,7 +94,10 @@ router.get('/google', (req, res, next) => {
 });
 // Step 2: Google redirects back here
 router.get('/google/callback',
-    passport.authenticate('google', { session: true, failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/auth?error=oauth_failed` }),
+    passport.authenticate('google', {
+        session: true,
+        failureRedirect: `${(process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/+$/, '')}/auth?error=oauth_failed`
+    }),
     googleCallback
 );
 

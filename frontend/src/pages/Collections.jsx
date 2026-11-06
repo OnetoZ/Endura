@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 import PhysicalProductCard from '../components/collections/PhysicalProductCard';
-import CollectionsDashboardBanner from '../components/collections/CollectionsDashboardBanner';
+import CollectionsHeroBanner from '../components/collections/CollectionsHeroBanner';
 import SEO from '../components/SEO';
 import { ROUTES } from '../seo/routes';
 
@@ -32,9 +32,9 @@ const Collections = () => {
             />
 
             <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
-                {/* Full Horizontal Hero Dashboard Section */}
-                <div className="relative pt-24 sm:pt-28 md:pt-32 pb-8 sm:pb-12 w-full">
-                    <CollectionsDashboardBanner />
+                {/* Full-bleed Hero Section fitting edge-to-edge behind transparent Navbar */}
+                <div className="relative w-full">
+                    <CollectionsHeroBanner />
                 </div>
 
                 {/* Main Content & Product Grid */}
@@ -43,7 +43,7 @@ const Collections = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="relative pb-24 px-6 md:px-12 lg:px-24 scroll-mt-24"
+                    className="relative pt-16 sm:pt-20 md:pt-24 pb-24 px-6 md:px-12 lg:px-24 scroll-mt-20"
                 >
                     {/* Section Header */}
                     <div className="max-w-7xl mx-auto mb-8 md:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/5 pb-6">

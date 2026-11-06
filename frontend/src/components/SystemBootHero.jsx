@@ -1,55 +1,84 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useStore } from '../context/StoreContext';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
+import heroCampaignImg from '../assets/hero-campaign.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
  * SystemBootHero Component
  * 
- * Ultra-cinematic restricted archive entrance for ENDURA.
+ * Cinematic Luxury Campaign Hero:
+ * - Clean photoshoot background without baked-in text
+ * - Dynamic HTML/CSS typography matching the exact editorial font styling:
+ *     Left: "WE EXIST" (Luxury all-caps Serif) + "Twice" (Flowing Calligraphic Cursive)
+ *     Right: "NEW GEN" "STREETWEAR" (Spaced High-Fashion Serif)
+ * - Cinematic GSAP entrance, ambient floating, and scroll parallax animations
  */
 const SystemBootHero = () => {
-    const [bootStage, setBootStage] = useState(0);
-    const [glitchActive, setGlitchActive] = useState(false);
-    const { currentUser } = useStore();
     const containerRef = useRef();
     const bgRef = useRef();
-    const contentRef = useRef();
-
-    useEffect(() => {
-        const stages = [
-            { delay: 0, stage: 0 },
-            { delay: 400, stage: 1 },   // Ambience - FASTER
-            { delay: 800, stage: 2 },   // System Status
-            { delay: 1200, stage: 3 },  // Restricted Warning
-            { delay: 1600, stage: 4 },  // Logo / Identity
-            { delay: 2000, stage: 5 },  // Subtitle
-            { delay: 2400, stage: 6 },  // Secondary Status
-        ];
-
-        stages.forEach(({ delay, stage }) => {
-            setTimeout(() => setBootStage(stage), delay);
-        });
-
-        const glitchInterval = setInterval(() => {
-            if (Math.random() > 0.7) {
-                setGlitchActive(true);
-                setTimeout(() => setGlitchActive(false), 150);
-            }
-        }, 3000);
-
-        return () => clearInterval(glitchInterval);
-    }, []);
+    const leftTextRef = useRef();
+    const weExistRef = useRef();
+    const twiceRef = useRef();
+    const rightTextRef = useRef();
+    const hintRef = useRef();
 
     useGSAP(() => {
-        // Parallax and Fade on Scroll
+        // =============================================================
+        // 1. ENTRANCE TIMELINE (Cinematic Staggered Reveal on Load)
+        // =============================================================
+        const entranceTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+        // Left "WE EXIST" reveal
+        entranceTl.fromTo(weExistRef.current, 
+            { opacity: 0, y: 25, letterSpacing: '0.35em' },
+            { opacity: 1, y: 0, letterSpacing: '0.28em', duration: 1.2, clearProps: "all" },
+            0.15
+        );
+
+        // Left cursive "Twice" signature reveal (flows in with scale & sheen)
+        entranceTl.fromTo(twiceRef.current,
+            { opacity: 0, y: 20, scale: 0.94 },
+            { opacity: 1, y: 0, scale: 1, duration: 1.4, ease: "power2.out", clearProps: "opacity" },
+            0.4
+        );
+
+        // Right "NEW GEN STREETWEAR" reveal (stays 100% visible)
+        entranceTl.fromTo(rightTextRef.current,
+            { opacity: 0, x: 25 },
+            { opacity: 1, x: 0, duration: 1.2, clearProps: "opacity" },
+            0.6
+        );
+
+        // Bottom "Shop now" button fade in
+        entranceTl.fromTo(hintRef.current,
+            { opacity: 0, y: 15 },
+            { opacity: 1, y: 0, duration: 1.0, clearProps: "opacity" },
+            0.8
+        );
+
+        // =============================================================
+        // 2. AMBIENT LUXURY BREATHING (Floating Cursive)
+        // =============================================================
+        gsap.to(twiceRef.current, {
+            y: -6,
+            duration: 3.6,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: 1.8
+        });
+
+        // =============================================================
+        // 3. SCROLL PARALLAX - ALWAYS 100% VISIBLE (NO FADE TO OPACITY 0)
+        // =============================================================
+        // Background parallax drift (pure Y-translation, no scale downsampling)
         gsap.to(bgRef.current, {
-            y: 100,
-            scale: 1.1,
+            y: 50,
+            ease: "none",
             scrollTrigger: {
                 trigger: containerRef.current,
                 start: "top top",
@@ -58,184 +87,139 @@ const SystemBootHero = () => {
             }
         });
 
-        gsap.to(contentRef.current, {
-            opacity: 0,
-            y: -50,
-            filter: "blur(10px)",
+        // Left text gentle parallax on scroll - stays 100% visible and razor sharp
+        gsap.to(leftTextRef.current, {
+            y: -40,
+            ease: "none",
             scrollTrigger: {
                 trigger: containerRef.current,
-                start: "20% top",
-                end: "80% top",
+                start: "top top",
+                end: "bottom top",
+                scrub: true
+            }
+        });
+
+        // Right text gentle parallax on scroll - stays 100% visible and razor sharp
+        gsap.to(rightTextRef.current, {
+            y: -40,
+            ease: "none",
+            scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top top",
+                end: "bottom top",
+                scrub: true
+            }
+        });
+
+        // Bottom "Shop now" parallax drift on scroll (stays visible with section)
+        gsap.to(hintRef.current, {
+            y: -30,
+            ease: "none",
+            scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top top",
+                end: "bottom top",
                 scrub: true
             }
         });
     }, { scope: containerRef });
 
     return (
-        <section ref={containerRef} id="hero" className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
-            {/* Screen Reader / SEO H1 (Hidden Visually) */}
+        <section 
+            ref={containerRef} 
+            id="hero" 
+            className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black select-none"
+        >
+            {/* Screen Reader / SEO H1 */}
             <h1 className="sr-only">ENDURA official | Luxury Streetwear & Digital Collectibles India</h1>
 
-            {/* Master Cinematic Hero Image with Parallax */}
-            <div className="absolute inset-0 z-0">
-                <div
-                    ref={bgRef}
-                    className="w-full h-full bg-cover bg-center transition-all duration-[8000ms] ease-out"
-                    style={{
-                        backgroundImage: 'url(/hero.png)',
-                        transform: bootStage >= 1 ? 'scale(1.02)' : 'scale(1.1)',
-                        opacity: bootStage >= 1 ? 0.7 : 0
-                    }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-70" />
-                <div className="absolute inset-0 bg-black/30" />
-            </div>
-
-            {/* Animated Particle Grid */}
-            <div className="absolute inset-0 z-5 pointer-events-none opacity-20">
-                <div className="absolute inset-0" style={{
-                    backgroundImage: `radial-gradient(circle, rgba(147,112,219,0.3) 1px, transparent 1px)`,
-                    backgroundSize: '50px 50px',
-                    animation: 'particleFloat 20s linear infinite'
-                }} />
-            </div>
-
-            {/* Holographic Scanner Wipe */}
-            <div className={`absolute inset-0 z-15 pointer-events-none transition-opacity duration-1000 ${bootStage > 0 && bootStage < 5 ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/40 shadow-[0_0_20px_rgba(147,112,219,0.8)] animate-scanner-wipe" />
-                <div className="absolute inset-0 bg-primary/5 animate-scanner-flicker" />
-            </div>
-
-            {/* Visual Overlays */}
-            <div className="absolute inset-0 z-10 pointer-events-none film-grain opacity-20" />
-            <div className="absolute inset-0 z-10 pointer-events-none scanlines opacity-5" />
-
-            {/* Holographic Corner Frames */}
-            <div className="absolute top-0 left-0 w-32 h-32 md:w-64 md:h-64 border-l-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 md:w-64 md:h-64 border-r-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 md:w-64 md:h-64 border-l-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-32 h-32 md:w-64 md:h-64 border-r-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
-
-            {/* Status indicators removed per request */}
-            {/* 
-            <div className="absolute top-20 left-6 right-6 md:top-32 md:left-12 md:right-12 flex flex-col md:flex-row items-start md:items-start justify-between gap-4 z-20 pointer-events-none">
-                <div className={`transition-all duration-1000 ${bootStage >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-                    <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 border border-accent/20 backdrop-blur-sm">
-                        <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
-                        <span className="text-[9px] font-mono tracking-widest text-accent uppercase">ARCHIVE_00.LOCKED</span>
-                    </div>
-                </div>
-
-                <div className={`transition-all duration-1000 ${bootStage >= 3 ? 'opacity-100' : 'opacity-0'}`}>
-                    <div className="relative border border-primary/40 bg-black/60 backdrop-blur-md px-4 py-2">
-                        <div className="flex items-center gap-3">
-                            <span className="text-accent text-sm">◈</span>
-                            <p className="text-[9px] font-mono tracking-widest text-white uppercase">IDENTITY_LEVEL: OMEGA</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            */}
-
-            {/* Main Content */}
-            <div ref={contentRef} className="relative z-20 text-center flex flex-col items-center px-6">
-                {/* <div className={`transition-all duration-1000 mb-6 ${bootStage >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                    <img src="/logo.png" alt="ENDURA" className="h-12 md:h-20 object-contain brightness-200 drop-shadow-[0_0_30px_rgba(147,112,219,0.5)]" />
-                </div> */}
-
-                <div className={`transition-all duration-1000 ${bootStage >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            {/* Clickable Area linking directly to Collections */}
+            <Link 
+                to="/collections" 
+                className="absolute inset-0 z-10 block cursor-pointer"
+                aria-label="Explore Genesis Collection"
+            >
+                {/* Master Clean Cinematic Photoshoot Background (Ultra-Clear 2560x1440 Native Image) */}
+                <div className="absolute inset-0 z-0 overflow-hidden">
                     <img
-                        src="/logo.png"
-                        alt="ENDURA"
-                        className={`mx-auto h-24 md:h-52  w-auto object-contain transition-all duration-500 cursor-pointer mb-8 ${glitchActive ? 'glitch-image' : ''}`}
-                        style={{ filter: 'brightness(0) invert(1)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.5) invert(0)'}
-                        onMouseLeave={(e) => e.currentTarget.style.filter = 'brightness(0) invert(1)'}
+                        ref={bgRef}
+                        src={heroCampaignImg}
+                        alt="ENDURA Genesis Campaign"
+                        className="w-full h-full object-cover object-center pointer-events-none select-none will-change-transform"
+                        loading="eager"
+                        decoding="sync"
+                        style={{
+                            imageRendering: '-webkit-optimize-contrast',
+                        }}
                     />
-                    <div className="flex items-center justify-center gap-4 mb-6">
-                        <div className="h-[2px] w-24 md:w-48 bg-gradient-to-r from-transparent via-accent to-transparent" />
-                        <div className="w-2 h-2 bg-accent rotate-45 animate-pulse shadow-[0_0_15px_rgba(212,175,55,1)]" />
-                        <div className="h-[2px] w-24 md:w-48 bg-gradient-to-l from-transparent via-accent to-transparent" />
+                </div>
+
+                {/* ========================================================= */}
+                {/* LEFT EDITORIAL TYPOGRAPHY: "WE EXIST Twice" */}
+                {/* ========================================================= */}
+                <div 
+                    ref={leftTextRef}
+                    className="absolute top-[24%] sm:top-[28%] md:top-[32%] lg:top-[34%] left-6 sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col will-change-transform"
+                >
+                    {/* Line 1: WE EXIST (All-caps Roman Serif) */}
+                    <div 
+                        ref={weExistRef}
+                        className="font-cinzel text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium text-white uppercase tracking-[0.28em] leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
+                        style={{ textShadow: '0 4px 24px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.8)' }}
+                    >
+                        WE EXIST
+                    </div>
+
+                    {/* Line 2: Twice (Flowing Luxury Script / Cursive) */}
+                    <div 
+                        ref={twiceRef}
+                        className="font-script text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-white/95 lowercase first-letter:uppercase -mt-2 sm:-mt-3 md:-mt-4 ml-8 sm:ml-12 md:ml-16 lg:ml-20 tracking-normal will-change-transform"
+                        style={{
+                            textShadow: '0 4px 30px rgba(255,255,255,0.5), 0 2px 20px rgba(0,0,0,0.95)',
+                            transform: 'rotate(-2deg)'
+                        }}
+                    >
+                        Twice
                     </div>
                 </div>
 
-                <div className={`transition-all duration-1000 delay-200 ${bootStage >= 5 ? 'opacity-100' : 'opacity-0'}`}>
-                    <h2 className="text-lg md:text-3xl font-oswald uppercase tracking-[0.4em] text-white mb-6">
-                        WE EXIST <span className="text-primary system-text-glow">TWICE.</span>
-                    </h2>
-                    <p className="text-[10px] md:text-xs text-gray-400 font-light tracking-[0.6em] uppercase mb-12">
-                        PHYSICAL <span className="text-primary mx-2">X</span> DIGITAL
-                    </p>
+                {/* ========================================================= */}
+                {/* RIGHT EDITORIAL TYPOGRAPHY: "NEW GEN STREETWEAR" */}
+                {/* ========================================================= */}
+                <div 
+                    ref={rightTextRef}
+                    className="absolute top-[48%] sm:top-[44%] md:top-[42%] lg:top-[42%] right-6 sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
+                >
+                    <div 
+                        className="font-cinzel text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-normal text-white uppercase tracking-[0.3em] leading-snug drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
+                        style={{ textShadow: '0 2px 20px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.8)' }}
+                    >
+                        <div className="block">NEW GEN</div>
+                        <div className="block mt-0.5 sm:mt-1 md:mt-1.5">STREETWEAR</div>
+                    </div>
                 </div>
+            </Link>
 
-                <div className={`transition-all duration-1000 delay-400 ${bootStage >= 5 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                    <Link to="/collections" className="group relative inline-block overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95">
-                        {/* Gold Gradient Background */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#fee08b] via-[#d4af37] to-[#b8860b] animate-shimmer opacity-80 group-hover:opacity-100 transition-opacity" />
-                        
-                        {/* Shimmer Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                        
-                        <div className="relative z-10 px-12 py-4 flex items-center gap-3">
-                            <span className="text-[11px] font-black uppercase tracking-[0.6em] text-black drop-shadow-sm font-heading">
-                                COLLECTIONS
-                            </span>
-                        </div>
-                    </Link>
-                </div>
+            {/* Luxury Editorial "Shop now" Button with Illuminated White Underline */}
+            <div 
+                ref={hintRef}
+                className="absolute bottom-7 sm:bottom-9 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center will-change-transform"
+            >
+                <Link
+                    to="/collections"
+                    className="group relative inline-flex flex-col items-center gap-1.5 px-6 py-2 cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95"
+                    aria-label="Shop now - Explore Genesis Collection"
+                >
+                    <span className="font-cinzel text-xs sm:text-sm md:text-base font-medium tracking-[0.3em] uppercase text-white transition-all duration-300 drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] group-hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.95)]">
+                        Shop now
+                    </span>
+                    
+                    {/* Refined Glowing White Underline with Interactive Hover Expansion */}
+                    <div className="relative w-full flex items-center justify-center">
+                        <span className="h-[1.5px] w-12 sm:w-16 bg-white transition-all duration-500 ease-out group-hover:w-full group-hover:h-[2px] shadow-[0_0_10px_rgba(255,255,255,0.85)] group-hover:shadow-[0_0_16px_rgba(255,255,255,1)]" />
+                    </div>
+                </Link>
             </div>
-
-            {/* Bottom Status Bar */}
-            <div className={`absolute bottom-12 left-12 right-12 transition-all duration-1000 z-20 ${bootStage >= 6 ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="flex items-center justify-between backdrop-blur-sm bg-black/40 border border-white/10 px-6 py-3">
-                    <div className="hidden md:flex items-center gap-6">
-                        <span className="font-mono text-[8px] text-white/40 tracking-[0.2em]">SYSTEM_BOOT_v2.5</span>
-                        <div className="w-px h-3 bg-white/20" />
-                        <span className="font-mono text-[8px] text-accent/60 tracking-[0.2em]">ENCRYPTION_ACTIVE</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {/* 
-                        <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="w-1 h-3 bg-accent/30" style={{ animation: `pulse ${i * 0.3}s ease-in-out infinite alternate` }} />
-                            ))}
-                        </div>
-                        <span className="font-mono text-[8px] text-white/40 tracking-[0.2em] ml-2">SIGNAL_ESTABLISHED</span>
-                        */}
-                    </div>
-                </div>
-            </div>
-
-            <style>{`
-                @keyframes particleFloat {
-                    0% { transform: translateY(0) translateX(0); }
-                    100% { transform: translateY(-100px) translateX(50px); }
-                }
-                .glitch-text { animation: glitch 0.3s ease-in-out; }
-                @keyframes glitch {
-                    0%, 100% { transform: translate(0); }
-                    20% { transform: translate(-2px, 2px); }
-                    40% { transform: translate(2px, -2px); }
-                    60% { transform: translate(-2px, -2px); }
-                    80% { transform: translate(2px, 2px); }
-                }
-                @keyframes pulse {
-                    0% { opacity: 0.3; transform: scaleY(0.8); }
-                    100% { opacity: 1; transform: scaleY(1.2); }
-                }
-                @keyframes scanner-wipe {
-                    0% { transform: translateY(0); }
-                    50% { transform: translateY(100vh); }
-                    100% { transform: translateY(0); }
-                }
-                .animate-scanner-wipe { animation: scanner-wipe 4s ease-in-out infinite; }
-                @keyframes scanner-flicker {
-                    0%, 100% { opacity: 0.1; }
-                    50% { opacity: 0.3; }
-                    55% { opacity: 0.05; }
-                }
-                .animate-scanner-flicker { animation: scanner-flicker 0.1s infinite; }
-            `}</style>
         </section>
     );
 };

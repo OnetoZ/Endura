@@ -50,6 +50,8 @@ const Navbar = React.forwardRef((props, ref) => {
         timeZone: 'Asia/Kolkata'
     });
 
+    const isTransparentPage = location.pathname === '/' || location.pathname === '/collections';
+
     return (
         <React.Fragment>
             <nav
@@ -57,13 +59,17 @@ const Navbar = React.forwardRef((props, ref) => {
                 style={props.style}
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'}`}
             >
-                {/* Holographic Top Border - Hidden on mobile */}
-                <div className="hidden md:block absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                {/* Holographic Top Border - Only when scrolled or on interior pages without hero */}
+                <div className={`hidden md:block absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent transition-opacity duration-500 ${isTransparentPage && !scrolled ? 'opacity-0' : 'opacity-100'}`} />
 
                 {/* Main Navbar Container - Dynamic Transparency */}
-                <div className={`relative transition-all duration-500 ${scrolled ? 'bg-black/90 border-b border-white/10 blur-extreme' : 'bg-black/80 border-b border-white/5 backdrop-blur-md'}`}>
-                    {/* Animated Scan Line - Desktop only */}
-                    <div className="hidden md:block absolute top-0 left-0 right-0 h-full overflow-hidden pointer-events-none">
+                <div className={`relative transition-all duration-500 ${
+                    scrolled 
+                        ? 'bg-black/90 border-b border-white/10 backdrop-blur-md shadow-2xl' 
+                        : (isTransparentPage ? 'bg-transparent border-b border-transparent' : 'bg-black/70 border-b border-white/5 backdrop-blur-md')
+                }`}>
+                    {/* Animated Scan Line - Desktop only, when scrolled */}
+                    <div className={`hidden md:block absolute top-0 left-0 right-0 h-full overflow-hidden pointer-events-none transition-opacity duration-500 ${scrolled ? 'opacity-100' : 'opacity-0'}`}>
                         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent animate-[scan_4s_ease-in-out_infinite]" />
                     </div>
 

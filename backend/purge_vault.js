@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 async function purgeJunk() {
   await mongoose.connect(process.env.MONGO_URI);
   
+  require('./src/models/VaultCard');
   const VaultItem = require('./src/models/VaultItem');
   
   // Find items where vaultCard is nulled/missing or name was default
@@ -22,7 +23,7 @@ async function purgeJunk() {
     console.log('Archive is already clean.');
   }
   
-  mongoose.disconnect();
+  await mongoose.disconnect();
 }
 
 purgeJunk().catch(console.error);

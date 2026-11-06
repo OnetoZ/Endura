@@ -52,6 +52,7 @@ function ScrollToTop() {
 }
 
 import PageLoader from './components/PageLoader';
+import WelcomePopup from './components/WelcomePopup';
 
 function AppLayout() {
   const location = useLocation();
@@ -134,6 +135,7 @@ function AppLayout() {
         </Routes>
       </main>
       {showFooter && <Footer />}
+      {!['/onboarding', '/auth'].includes(location.pathname) && <WelcomePopup />}
     </div>
   );
 }

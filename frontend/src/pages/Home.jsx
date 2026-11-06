@@ -2,8 +2,9 @@ import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SystemBootHero from '../components/SystemBootHero';
-import DivideScene from '../components/DivideScene';
 import DoppelPieceScene from '../components/DoppelPieceScene';
+// import GenesisLineupSection from '../components/GenesisLineupSection';
+// import DivideScene from '../components/DivideScene';
 // import CinematicFooter from '../components/CinematicFooter';
 
 // Register GSAP plugins
@@ -38,7 +39,7 @@ const Home = () => {
             {/* SCENE 1: System Boot / Hero Identity */}
             <SystemBootHero />
 
-            {/* SCENE 2: THE DOPPEL PIECE (Product Philosophy) */}
+            {/* SCENE 2: PORTAL SPLIT GATE REVEALING GENESIS EDITION LINEUP */}
             <DoppelPieceScene />
 
             {/* SCENE 3: THE DIVIDE (Reality vs Digital) (Door animation - commented out per request) */}

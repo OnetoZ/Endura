@@ -80,7 +80,7 @@ const CinematicFooter = () => {
                     {/* Socials */}
                     <div className="flex gap-4 pt-4">
                         <a
-                            href="https://www.instagram.com/enduratheorder?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                            href="https://www.instagram.com/wearendura?psln=ZXNzcTJtMTR2cWdj"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-12 h-12 border border-white/10 flex items-center justify-center hover:border-blue-500 hover:text-blue-500 transition-all duration-300 group"

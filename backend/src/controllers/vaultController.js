@@ -3,6 +3,8 @@ const VaultCard = require('../models/VaultCard');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 
+const DEFAULT_CARD_IMAGE = 'https://pub-9f7d36df57904b178606eca4421606d2.r2.dev/vault/1776230674281-Tarot Cards Ethereal Gradient Surreal Art - Front Card 13.png';
+
 /**
  * @route   GET /api/vault
  * @access  Private
@@ -11,17 +13,30 @@ const getUserVault = asyncHandler(async (req, res) => {
     // 1. Get User's Collectibles
     const allItems = await VaultItem.find({ user: req.user._id })
         .populate('vaultCard', 'name frontImage backImage tier codes')
+        .populate('user', 'username avatar')
         .lean();
 
-    // 2. Filter out junk/placeholder entries
+    // 2. Keep all authentic user collectibles
     const items = allItems.filter(item =>
-        item.vaultCard &&
-        item.vaultCard.name &&
-        item.vaultCard.name !== 'Protocol Sync'
+        item.vaultCard || (item.assetName && item.assetImage)
     );
 
+    // Normalize properties with authentic assets
+    const formatted = items.map((item, idx) => ({
+        ...item,
+        userName: item.user?.username || req.user.username || 'Agent',
+        name: item.vaultCard?.name === '1/10' ? 'SHADOW PROTOCOL HOODIE' : (item.vaultCard?.name || item.assetName || 'Synchronized Protocol'),
+        cardName: item.vaultCard?.name === '1/10' ? 'SHADOW PROTOCOL HOODIE' : (item.vaultCard?.name || item.assetName || 'Synchronized Protocol'),
+        cardTier: (item.vaultCard?.tier || item.tier || 'epic').toLowerCase(),
+        tier: (item.vaultCard?.tier || item.tier || 'epic').toLowerCase(),
+        image: item.vaultCard?.backImage || item.assetImage || item.vaultCard?.frontImage || DEFAULT_CARD_IMAGE,
+        frontImage: item.vaultCard?.frontImage || item.assetImage || DEFAULT_CARD_IMAGE,
+        backImage: item.vaultCard?.backImage || item.assetImage || item.vaultCard?.frontImage || DEFAULT_CARD_IMAGE,
+        serialNumber: item.serialNumber || (idx + 1)
+    }));
+
     res.json({
-        protocols: items
+        protocols: formatted
     });
 });
 
@@ -267,20 +282,33 @@ const getGlobalCollections = asyncHandler(async (req, res) => {
         .sort({ createdAt: -1 })
         .lean();
 
-    // Transform to a cleaner format if needed
-    const globalGallery = items.map(item => ({
-        id: item._id,
-        userName: item.user?.username || 'Anonymous Agent',
-        userAvatar: item.user?.avatar,
-        cardName: item.vaultCard?.name || 'Protocol Sync',
-        cardTier: item.vaultCard?.tier || 'rare',
-        frontImage: item.vaultCard?.frontImage,
-        backImage: item.vaultCard?.backImage,
-        serialNumber: item.serialNumber || 1,
-        totalCodes: item.vaultCard?.codes?.length || 1,
-        collectedAt: item.createdAt,
-        vaultCardId: item.vaultCard?._id
-    }));
+    const globalGallery = items.map((item, idx) => {
+        let cardName = item.user?.username || 'AGENT PROTOCOL';
+        if (item.assetName) {
+            cardName = item.assetName.toUpperCase();
+        } else if (item.vaultCard?.name && item.vaultCard.name !== '1/10') {
+            cardName = item.vaultCard.name;
+        }
+
+        const cardTier = (item.vaultCard?.tier || 'rare').toLowerCase();
+        const frontImage = item.vaultCard?.frontImage || item.assetImage || DEFAULT_CARD_IMAGE;
+        const backImage = item.vaultCard?.backImage || item.assetImage || item.vaultCard?.frontImage || DEFAULT_CARD_IMAGE;
+        const serialNumber = item.serialNumber || (idx + 1);
+
+        return {
+            id: item._id,
+            userName: item.user?.username || 'Anonymous Agent',
+            userAvatar: item.user?.avatar,
+            cardName,
+            cardTier,
+            frontImage,
+            backImage,
+            serialNumber,
+            totalCodes: item.vaultCard?.codes?.length || 10,
+            collectedAt: item.createdAt,
+            vaultCardId: item.vaultCard?._id
+        };
+    });
 
     res.json(globalGallery);
 });

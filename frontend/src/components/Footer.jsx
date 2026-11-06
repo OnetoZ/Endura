@@ -59,7 +59,7 @@ const Footer = () => {
                 <div className="flex flex-col items-center md:items-start">
                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-8 text-primary">Connect</h4>
                     <ul className="space-y-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 text-center md:text-left">
-                        <li><a href="https://www.instagram.com/enduratheorder" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Instagram</a></li>
+                        <li><a href="https://www.instagram.com/wearendura?psln=ZXNzcTJtMTR2cWdj" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Instagram</a></li>
                         <li><a href="mailto:help.endura@gmail.com" className="hover:text-primary transition-all normal-case tracking-normal md:text-left">Email</a></li>
                         <li><a href="https://discord.gg/9mqNJxcgK" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-all">Discord</a></li>
                     </ul>

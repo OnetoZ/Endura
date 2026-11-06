@@ -7,9 +7,10 @@ export default defineConfig({
   plugins: [
     react(),
     ViteImageOptimizer({
+      exclude: [/hero-campaign/, /collections-hero/, /\.svg$/],
       png: { quality: 85 },
-      jpeg: { quality: 85 },
-      jpg: { quality: 85 },
+      jpeg: { quality: 90 },
+      jpg: { quality: 90 },
       webp: { lossless: true },
       avif: { lossless: true },
     })
