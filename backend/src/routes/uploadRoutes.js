@@ -44,7 +44,15 @@ router.post('/admin/upload-image', upload.array('images', 10), asyncHandler(asyn
             count: imageUrls.length
         });
     } catch (error) {
-        console.error('R2 Multiple Upload Error - Falling back to local storage:', error);
+        console.error('R2 Multiple Upload Error:', error);
+
+        // In production, do not silently write to ephemeral disk where files get lost on redeployment
+        if (process.env.NODE_ENV === 'production') {
+            return res.status(502).json({
+                message: 'Cloud storage upload failed. Ephemeral disk fallback is disabled in production to prevent data loss.',
+                error: error.message
+            });
+        }
         
         try {
             const imageUrls = [];
@@ -178,6 +186,15 @@ router.post('/', (req, res, next) => {
         });
     } catch (error) {
         console.error('[UPLOAD DEBUG] R2 Service Error:', error.message);
+
+        // In production, do not silently write to ephemeral disk
+        if (process.env.NODE_ENV === 'production') {
+            return res.status(502).json({
+                message: 'Cloud storage upload failed. Ephemeral disk fallback is disabled in production to prevent data loss.',
+                error: error.message
+            });
+        }
+
         console.log('[UPLOAD DEBUG] Falling back to local storage...');
         
         try {

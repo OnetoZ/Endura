@@ -182,7 +182,7 @@ const resendAdminTwoFactor = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password, twoFactorCode } = req.body;
 
-    const user = await User.findOne({ email }).select('+twoFactorCode +twoFactorCodeExpires');
+    const user = await User.findOne({ email }).select('+password +twoFactorCode +twoFactorCodeExpires');
     if (!user) {
         res.status(401);
         throw new Error('Invalid email or password');
@@ -456,7 +456,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) {
         res.status(404);
         throw new Error('User not found');

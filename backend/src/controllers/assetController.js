@@ -7,13 +7,24 @@ const asyncHandler = require('../utils/asyncHandler');
  * @access  Public
  */
 const getAssets = asyncHandler(async (req, res) => {
-    const { type, category } = req.query;
+    const { type, category, limit, skip, page } = req.query;
     let query = {};
     
     if (type) query.type = { $regex: type, $options: 'i' };
     if (category) query.category = { $regex: category, $options: 'i' };
 
-    const assets = await Asset.find(query).sort({ createdAt: -1 }).lean();
+    let assetQuery = Asset.find(query).sort({ createdAt: -1 });
+
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const parsedSkip = parseInt(skip, 10);
+
+    if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        const offset = !isNaN(parsedSkip) ? parsedSkip : (!isNaN(parsedPage) && parsedPage > 0 ? (parsedPage - 1) * parsedLimit : 0);
+        assetQuery = assetQuery.skip(offset).limit(parsedLimit);
+    }
+
+    const assets = await assetQuery.lean();
     res.json(assets);
 });
 

@@ -181,9 +181,9 @@ This section provides a deep technical review of Endura's current backend, datab
 ## 📋 Prioritized Action Checklist
 
 1. [x] **Permanent R2 Storage**: Legendary vault assets hosted directly on Cloudflare R2 with fallback handling.
-2. [ ] **User Model Security**: Add `select: false` to `password` in `backend/src/models/User.js`.
-3. [ ] **Rate Limit Critical APIs**: Add rate limiting to `/api/vault/sync` to prevent code brute-forcing.
-4. [ ] **Database Connection Optimization**: Share `mongoose.connection.getClient()` with `connect-mongo` to prevent doubling connection pools.
-5. [ ] **Install Helmet**: Add `app.use(helmet())` in `backend/src/server.js` for production security headers.
-6. [ ] **Inventory Race Conditions**: Convert order stock decrements into atomic operations (`stock: { $gte: qty }`).
-7. [ ] **Disable Ephemeral Disk Uploads**: Ensure all production image uploads strictly target R2.
+2. [x] **User Model Security**: Added `select: false` to `password` in `backend/src/models/User.js`; updated `authController.js` (`loginUser`, `changePassword`) to explicitly use `+password`; hashed 2FA verification codes with SHA-256 before saving to DB.
+3. [x] **Rate Limit Critical APIs**: Added specific strict rate limiters in `backend/src/server.js` for `/api/vault/sync` (25 req / 15 min), `/api/upload` (40 req / 15 min), and `/api/orders` (30 req / 10 min), alongside general API limiter.
+4. [x] **Database Connection Optimization**: Reused Mongoose connection client with `connect-mongo` (`clientPromise`) to prevent redundant dual pools; configured `maxPoolSize: 50` and `minPoolSize: 5`.
+5. [x] **Install Helmet**: Installed and enabled `helmet` in `backend/src/server.js` with cross-origin asset policy to enforce security headers without blocking storefront media/images.
+6. [x] **Inventory Race Conditions**: Converted order stock decrements into atomic operations (`stock: { $gte: qty }`) with automated rollback to eliminate flash drop overselling.
+7. [x] **Disable Ephemeral Disk Uploads**: Prevented production uploads from silently saving to ephemeral disk on Render/cloud when R2 fails.
