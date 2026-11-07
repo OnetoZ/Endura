@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
+const helmet = require('helmet');
 const session = require('express-session');
 const { MongoStore } = require('connect-mongo');
 const rateLimit = require('express-rate-limit');
@@ -19,6 +20,21 @@ const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction) {
   app.set('trust proxy', 1);
 }
+
+// ── HTTP Security Headers (Helmet) ───────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+// ── Database Connection with Tuned Pooling ────────────────────────────────────
+const mongooseConnectPromise = mongoose.connect(process.env.MONGO_URI, {
+  maxPoolSize: 50,
+  minPoolSize: 5,
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+});
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const envConfiguredOrigins = [
@@ -60,17 +76,17 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ── Logger ────────────────────────────────────────────────────────────────────
 app.use(morgan('dev'));
 
-// ── Session (Assetion Ready with MongoDB Store) ─────────────────────────────
+// ── Session (Reusing Mongoose Connection Pool) ───────────────────────────────
 app.use(session({
   secret: process.env.JWT_SECRET || 'endura_session_secret',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI,
+    clientPromise: mongooseConnectPromise.then(m => m.connection.getClient()),
     ttl: 24 * 60 * 60 // 1 day
   }),
   cookie: {
-    secure: false, // Set to false for local development
+    secure: isProduction,
     sameSite: 'lax', 
     maxAge: 24 * 60 * 60 * 1000
   },
@@ -80,13 +96,56 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ── Rate Limiting (auth routes) ───────────────────────────────────────────────
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
+// 1. General API Limiter (Generous 1000 req / 15 min for normal SPA navigation)
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests from this IP, please try again later.' },
+});
+app.use('/api', apiLimiter);
+
+// 2. Authentication routes limiter (150 req / 15 min)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  message: { message: 'Too many requests, please try again in 15 minutes.' },
+  windowMs: 15 * 60 * 1000,
+  max: 150,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many authentication attempts, please try again in 15 minutes.' },
 });
 app.use('/api/auth', authLimiter);
+
+// 3. Vault decryption code sync limiter (strict: 25 attempts / 15 min to prevent brute force)
+const vaultSyncLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 25,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many decryption attempts. Please try again in 15 minutes.' },
+});
+app.use('/api/vault/sync', vaultSyncLimiter);
+
+// 4. File uploads limiter (40 uploads / 15 min)
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Upload limit reached. Please wait a few minutes before trying again.' },
+});
+app.use('/api/upload', uploadLimiter);
+
+// 5. Checkout order creation limiter (30 orders / 10 min)
+const orderLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many order requests. Please try again shortly.' },
+});
+app.use('/api/orders', orderLimiter);
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -108,7 +167,6 @@ app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/coupons', require('./routes/couponRoutes'));
 
-
 // Serve uploads folder statically
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -122,15 +180,12 @@ app.use((req, res) => {
 // ── Global Error Handler ──────────────────────────────────────────────────────
 app.use(require('./middleware/errorHandler'));
 
-// ── Database + Server Start ───────────────────────────────────────────────────
+// ── Server Start ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5001;
 
-mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 30000, // 30 seconds wait
-    socketTimeoutMS: 45000,         // 45 seconds wait
-  })
+mongooseConnectPromise
   .then(() => {
-    console.log('✅ Successfully connected to MongoDB');
+    console.log('✅ Successfully connected to MongoDB (Connection pool configured: 50 max, 5 min)');
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });

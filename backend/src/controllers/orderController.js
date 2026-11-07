@@ -35,42 +35,47 @@ const addOrderItems = asyncHandler(async (req, res) => {
         throw new Error('No order items provided');
     }
 
-    // Validate stock for each item
-    for (const item of orderItems) {
-        const asset = await Asset.findById(item.asset);
-        if (!asset) {
-            res.status(404);
-            throw new Error(`Asset not found: ${item.asset}`);
-        }
-        if (asset.stock < item.quantity) {
-            res.status(400);
-            throw new Error(`Insufficient stock for: ${asset.name}`);
-        }
-    }
+    // Atomic stock reservation with rollback to prevent race conditions & overselling
+    const decrementedItems = [];
+    try {
+        for (const item of orderItems) {
+            const qty = Number(item.quantity);
+            if (!qty || qty <= 0) continue;
 
-    // Decrement stock and increment sold count, capture edition numbers
-    const stockPromises = orderItems.map(async (item) => {
-        const qty = Number(item.quantity);
-        if (!qty || qty <= 0) return;
+            const filter = {
+                _id: item.asset,
+                stock: { $gte: qty }
+            };
+            const updateObj = { $inc: { stock: -qty, sold: qty } };
 
-        const updateObj = { $inc: { stock: -qty, sold: qty } };
-        if (item.size && ['S', 'M', 'L', 'XL'].includes(item.size)) {
-            updateObj.$inc[`sizes.${item.size}`] = -qty;
-        }
+            if (item.size && ['S', 'M', 'L', 'XL'].includes(item.size)) {
+                filter[`sizes.${item.size}`] = { $gte: qty };
+                updateObj.$inc[`sizes.${item.size}`] = -qty;
+            }
 
-        const asset = await Asset.findByIdAndUpdate(
-            item.asset,
-            updateObj,
-            { new: true, runValidators: true }
-        );
-        
-        if (asset) {
+            const updatedAsset = await Asset.findOneAndUpdate(filter, updateObj, { new: true });
+            if (!updatedAsset) {
+                const currentAsset = await Asset.findById(item.asset);
+                const assetName = currentAsset ? currentAsset.name : 'Selected product';
+                throw new Error(`Insufficient stock for: ${assetName}`);
+            }
+
             // Edition number = total sold (after this purchase)
-            item.editionNumber = asset.sold;
+            item.editionNumber = updatedAsset.sold;
+            decrementedItems.push({ assetId: item.asset, qty, size: item.size });
         }
-    });
-
-    await Promise.all(stockPromises);
+    } catch (stockError) {
+        // Rollback any items that were already reserved during this failed checkout
+        for (const item of decrementedItems) {
+            const rollbackObj = { $inc: { stock: item.qty, sold: -item.qty } };
+            if (item.size && ['S', 'M', 'L', 'XL'].includes(item.size)) {
+                rollbackObj.$inc[`sizes.${item.size}`] = item.qty;
+            }
+            await Asset.findByIdAndUpdate(item.assetId, rollbackObj);
+        }
+        res.status(400);
+        throw new Error(stockError.message);
+    }
 
     const order = await Order.create({
         user: req.user._id,

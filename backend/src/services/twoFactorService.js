@@ -6,12 +6,19 @@ const generateTwoFactorCode = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+// Helper to hash 2FA code before database storage
+const hashTwoFactorCode = (code) => {
+    return crypto.createHash('sha256').update(String(code).trim()).digest('hex');
+};
+
 // Send 2FA code via email
 const sendTwoFactorEmail = async (email, code) => {
     // Check if email credentials are configured
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.log('⚠️  Email credentials not configured. Using console log instead.');
-        console.log(`🔐 2FA Code for ${email}: ${code}`);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('⚠️  Email credentials not configured. Using console log instead.');
+            console.log(`🔐 [DEV ONLY] 2FA Code for ${email}: ${code}`);
+        }
         return;
     }
 
@@ -51,10 +58,11 @@ const sendTwoFactorEmail = async (email, code) => {
         await transporter.sendMail(mailOptions);
         console.log(`✅ 2FA email sent to ${email}`);
     } catch (emailErr) {
-        // Email delivery failed — log the code to console as a fallback so the
-        // admin isn't completely locked out during development if SMTP fails.
+        // Email delivery failed — log only in non-production environments
         console.error('⚠️  Failed to send 2FA email:', emailErr.message);
-        console.log(`🔐 FALLBACK — 2FA Code for ${email}: ${code}`);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`🔐 [DEV FALLBACK] 2FA Code for ${email}: ${code}`);
+        }
     }
 };
 
@@ -72,7 +80,10 @@ const verifyTwoFactorCode = (user, providedCode) => {
         return { valid: false, message: '2FA code expired' };
     }
 
-    if (user.twoFactorCode !== providedCode) {
+    const hashedProvided = hashTwoFactorCode(providedCode);
+    const isCodeMatch = user.twoFactorCode === hashedProvided || user.twoFactorCode === String(providedCode).trim();
+
+    if (!isCodeMatch) {
         return { valid: false, message: 'Invalid 2FA code' };
     }
 
@@ -84,7 +95,8 @@ const generateAndStoreTwoFactorCode = async (user) => {
     const code = generateTwoFactorCode();
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    user.twoFactorCode = code;
+    // Store securely as SHA-256 hash in database
+    user.twoFactorCode = hashTwoFactorCode(code);
     user.twoFactorCodeExpires = expires;
     await user.save();
 
@@ -92,7 +104,7 @@ const generateAndStoreTwoFactorCode = async (user) => {
     const method = user.twoFactorMethod || 'email';
     console.log(`🔐 Generating 2FA for ${user.email} using method: ${method}`);
 
-    // Send code via configured method
+    // Send plaintext code to user via configured method
     if (method === 'email') {
         await sendTwoFactorEmail(user.email, code);
     } else {

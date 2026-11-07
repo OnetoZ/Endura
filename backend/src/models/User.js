@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
             return this.role !== 'admin' && !this.googleId;
         },
         minlength: [6, 'Password must be at least 6 characters'],
+        select: false,
     },
     role: {
         type: String,
