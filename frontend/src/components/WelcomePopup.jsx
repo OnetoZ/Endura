@@ -97,7 +97,7 @@ const WelcomePopup = () => {
     return (
         <aside 
             aria-label="Welcome concierge and assistance"
-            className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 pointer-events-auto select-none"
+            className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px)+16px)] right-4 md:bottom-6 md:right-6 z-40 pointer-events-auto select-none"
         >
             <AnimatePresence mode="wait">
                 {isOpen ? (
