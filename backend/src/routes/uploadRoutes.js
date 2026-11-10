@@ -28,6 +28,38 @@ const upload = multer({
     }
 });
 
+// GET / - Fetch all images from R2 storage
+router.get('/', asyncHandler(async (req, res) => {
+    const folder = req.query.folder || '';
+    try {
+        const files = await r2Service.listFiles(folder);
+        res.json({
+            success: true,
+            count: files.length,
+            files
+        });
+    } catch (error) {
+        console.error('List R2 files error:', error);
+        res.status(500).json({ message: 'Error fetching images from R2', error: error.message });
+    }
+}));
+
+// GET /r2-images - Alias to fetch all images from R2
+router.get('/r2-images', asyncHandler(async (req, res) => {
+    const folder = req.query.folder || '';
+    try {
+        const files = await r2Service.listFiles(folder);
+        res.json({
+            success: true,
+            count: files.length,
+            files
+        });
+    } catch (error) {
+        console.error('List R2 files error:', error);
+        res.status(500).json({ message: 'Error fetching images from R2', error: error.message });
+    }
+}));
+
 // POST /admin/upload-image - Upload single or multiple images
 router.post('/admin/upload-image', upload.array('images', 10), asyncHandler(async (req, res) => {
     if (!req.files || req.files.length === 0) {

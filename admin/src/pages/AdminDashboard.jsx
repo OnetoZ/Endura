@@ -220,6 +220,27 @@ const AdminDashboard = () => {
     const [productUploads, setProductUploads] = useState({ image: false, backImage: false, digitalTwinImage: false });
     const [additionalUploads, setAdditionalUploads] = useState({});
     const [localPreviews, setLocalPreviews] = useState({});
+    const [showR2Gallery, setShowR2Gallery] = useState(false);
+    const [r2Files, setR2Files] = useState([]);
+    const [loadingR2, setLoadingR2] = useState(false);
+
+    const fetchR2Images = async () => {
+        setLoadingR2(true);
+        try {
+            const files = await uploadService.getR2Images();
+            setR2Files(files || []);
+        } catch (err) {
+            console.error('Failed to fetch R2 images:', err);
+            toast.error('Could not fetch images from R2');
+        } finally {
+            setLoadingR2(false);
+        }
+    };
+
+    const openR2Gallery = () => {
+        setShowR2Gallery(true);
+        fetchR2Images();
+    };
 
     const hasActiveUploads = useMemo(() => {
         const productUploading = Object.values(productUploads).some(Boolean);
@@ -872,16 +893,25 @@ const AdminDashboard = () => {
                                     <h3 className="text-2xl font-oswald font-bold uppercase tracking-tight">Product List</h3>
                                     <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">Manage your store products</p>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setIsAdding(!isAdding);
-                                        setEditingProductId(null);
-                                        setNewProduct(INITIAL_PRODUCT_STATE);
-                                    }}
-                                    className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAdding ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white hover:text-black'}`}
-                                >
-                                    {isAdding ? 'Cancel' : '+ Add New Product'}
-                                </button>
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={openR2Gallery}
+                                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all bg-white/5 hover:bg-primary hover:text-black border border-white/20 text-white flex items-center gap-2"
+                                    >
+                                        <span>☁</span> R2 Cloud Media
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsAdding(!isAdding);
+                                            setEditingProductId(null);
+                                            setNewProduct(INITIAL_PRODUCT_STATE);
+                                        }}
+                                        className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${isAdding ? 'bg-red-500 text-white' : 'bg-accent text-black hover:bg-white hover:text-black'}`}
+                                    >
+                                        {isAdding ? 'Cancel' : '+ Add New Product'}
+                                    </button>
+                                </div>
                             </div>
 
                             {isAdding && (
@@ -978,7 +1008,7 @@ const AdminDashboard = () => {
                                                         <div className="relative w-14 h-14 border border-white/20 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
                                                             {(localPreviews.image || newProduct.image) ? (
                                                                 <img
-                                                                    src={localPreviews.image || newProduct.image}
+                                                                    src={localPreviews.image || getImageUrl(newProduct.image)}
                                                                     alt="Front Preview"
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -1025,7 +1055,7 @@ const AdminDashboard = () => {
                                                         <div className="relative w-14 h-14 border border-white/20 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
                                                             {(localPreviews.backImage || newProduct.backImage) ? (
                                                                 <img
-                                                                    src={localPreviews.backImage || newProduct.backImage}
+                                                                    src={localPreviews.backImage || getImageUrl(newProduct.backImage)}
                                                                     alt="Back Preview"
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -1086,7 +1116,7 @@ const AdminDashboard = () => {
                                                                     <div className="relative w-14 h-14 border border-white/20 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
                                                                         {preview ? (
                                                                             <img
-                                                                                src={preview}
+                                                                                src={preview?.startsWith('blob:') ? preview : getImageUrl(preview)}
                                                                                 alt={`Additional ${index + 1}`}
                                                                                 className="w-full h-full object-cover"
                                                                                 onError={(e) => { e.target.style.display = 'none'; }}
@@ -1156,7 +1186,7 @@ const AdminDashboard = () => {
                                                         <div className="relative w-14 h-14 border border-accent/40 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
                                                             {(localPreviews.digitalTwinImage || newProduct.digitalTwinImage) ? (
                                                                 <img
-                                                                    src={localPreviews.digitalTwinImage || newProduct.digitalTwinImage}
+                                                                    src={localPreviews.digitalTwinImage || getImageUrl(newProduct.digitalTwinImage)}
                                                                     alt="Digital Twin Preview"
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -2019,6 +2049,147 @@ const AdminDashboard = () => {
                 )}
             </AnimatePresence>
 
+            {/* R2 Cloud Media Library Modal */}
+            <AnimatePresence>
+                {showR2Gallery && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-[#0c0c0c] border border-white/20 w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl relative"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black/50">
+                                <div>
+                                    <h3 className="text-xl font-oswald font-bold uppercase tracking-tight text-white flex items-center gap-2">
+                                        <span className="text-primary">☁</span> Cloudflare R2 Media Vault
+                                    </h3>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">
+                                        Persistent cloud assets ({r2Files.length} files found)
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={fetchR2Images}
+                                        disabled={loadingR2}
+                                        className="px-4 py-2 text-[9px] font-black uppercase tracking-widest bg-white/5 border border-white/20 text-white hover:bg-white/10 transition-all disabled:opacity-50"
+                                    >
+                                        {loadingR2 ? 'Refreshing...' : '↻ Refresh'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowR2Gallery(false)}
+                                        className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-red-500/80 hover:text-white border border-white/10 text-gray-400 text-lg transition-all"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Content Body */}
+                            <div className="p-6 overflow-y-auto flex-1 max-h-[calc(85vh-140px)]">
+                                {loadingR2 ? (
+                                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+                                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                        <span className="text-xs font-mono text-gray-400 uppercase tracking-widest">
+                                            Fetching assets from Cloudflare R2...
+                                        </span>
+                                    </div>
+                                ) : r2Files.length === 0 ? (
+                                    <div className="text-center py-16 text-gray-500 font-mono text-xs uppercase tracking-widest">
+                                        No files found in R2 bucket
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {r2Files.map((file, idx) => {
+                                            const isImage = /\.(jpe?g|png|webp|gif|svg)$/i.test(file.key);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className="bg-white/[0.03] border border-white/10 p-2.5 flex flex-col justify-between group hover:border-primary/60 transition-all"
+                                                >
+                                                    <div className="aspect-square bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative mb-2">
+                                                        {isImage ? (
+                                                            <img
+                                                                src={file.url}
+                                                                alt={file.key}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                loading="lazy"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-[9px] font-mono text-gray-500">FILE</span>
+                                                        )}
+                                                        {file.size && (
+                                                            <span className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.5 text-[8px] font-mono text-gray-400">
+                                                                {Math.round(file.size / 1024)} KB
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[9px] font-mono text-gray-400 truncate mb-2" title={file.key}>
+                                                        {file.key.split('/').pop()}
+                                                    </p>
+                                                    <div className="flex flex-col gap-1">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(file.url);
+                                                                toast.success('URL copied to clipboard!');
+                                                            }}
+                                                            className="w-full py-1 bg-white/5 hover:bg-white/15 text-[8px] font-black uppercase tracking-wider text-white border border-white/10 transition-colors"
+                                                        >
+                                                            Copy URL
+                                                        </button>
+                                                        {isAdding && (
+                                                            <div className="grid grid-cols-2 gap-1 pt-1 border-t border-white/5">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setNewProduct(prev => ({ ...prev, image: file.url }));
+                                                                        toast.success('Set as Front Image');
+                                                                    }}
+                                                                    className="py-1 bg-primary/20 hover:bg-primary hover:text-black text-[7.5px] font-black uppercase text-primary transition-colors"
+                                                                >
+                                                                    + Front
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setNewProduct(prev => ({ ...prev, backImage: file.url }));
+                                                                        toast.success('Set as Back Image');
+                                                                    }}
+                                                                    className="py-1 bg-primary/20 hover:bg-primary hover:text-black text-[7.5px] font-black uppercase text-primary transition-colors"
+                                                                >
+                                                                    + Back
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setNewProduct(prev => ({
+                                                                            ...prev,
+                                                                            additionalImages: [...(prev.additionalImages || []), file.url]
+                                                                        }));
+                                                                        toast.success('Added to Gallery');
+                                                                    }}
+                                                                    className="col-span-2 py-1 bg-accent/20 hover:bg-accent hover:text-black text-[7.5px] font-black uppercase text-accent transition-colors"
+                                                                >
+                                                                    + Add to Gallery
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Global Admin Styles */}
             <style>{`

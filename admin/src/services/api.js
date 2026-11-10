@@ -315,6 +315,12 @@ export const uploadService = {
             timeout: 120000 // Increased to 120s for Slow 4G support
         });
         return response.data.url;
+    },
+    getR2Images: async (folder = '') => {
+        const response = await api.get('/upload', {
+            params: { folder }
+        });
+        return response.data.files || [];
     }
 };
 
