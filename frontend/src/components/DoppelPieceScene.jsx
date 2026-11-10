@@ -166,7 +166,7 @@ const DoppelPieceScene = () => {
                     <div className="absolute inset-0 z-0 bg-black">
                         <div
                             ref={bgRef}
-                            className="w-full h-full bg-cover bg-center will-change-transform"
+                            className="w-full h-full bg-contain sm:bg-cover bg-center bg-no-repeat will-change-transform"
                             style={{
                                 backgroundImage: `url(${genesisLineupImg})`,
                                 filter: 'contrast(1.06) brightness(1.04) saturate(1.05)',
@@ -193,12 +193,12 @@ const DoppelPieceScene = () => {
                     {/* TOP CENTER: GENESIS EDITION / One Worn and One Eternal */}
                     <div
                         ref={topCenterRef}
-                        className="absolute top-4 sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
+                        className="absolute top-3 sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
                     >
-                        <h2 className="font-cinzel text-xl sm:text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.22em] md:tracking-[0.32em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
+                        <h2 className="font-cinzel text-lg sm:text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.22em] md:tracking-[0.32em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
                             GENESIS EDITION
                         </h2>
-                        <p className="font-serif italic font-light tracking-widest text-[11px] sm:text-xs md:text-sm lg:text-base text-stone-200 mt-0.5 sm:mt-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+                        <p className="font-serif italic font-light tracking-widest text-[10px] sm:text-xs md:text-sm lg:text-base text-stone-200 mt-0.5 sm:mt-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                             One Worn and One Eternal
                         </p>
                     </div>
@@ -206,46 +206,46 @@ const DoppelPieceScene = () => {
                     {/* TOP LEFT: PHYSICAL REALITY / Crafted to wear */}
                     <div
                         ref={topLeftRef}
-                        className="absolute top-12 sm:top-16 md:top-20 lg:top-24 left-4 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
+                        className="absolute top-16 sm:top-16 md:top-20 lg:top-24 left-3 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
                     >
-                        <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.18em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                        <span className="block font-cinzel text-[11px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.18em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             PHYSICAL REALITY
                         </span>
-                        <span className="block font-serif italic text-[10px] sm:text-xs md:text-sm text-stone-300 mt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        <span className="block font-serif italic text-[9.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                             Crafted to wear
                         </span>
                         <div
                             ref={lineLeftRef}
-                            className="h-[1px] w-10 sm:w-16 md:w-20 bg-gradient-to-r from-stone-300/90 via-stone-400/40 to-transparent mt-1.5 scale-x-0 origin-left"
+                            className="h-[1px] w-8 sm:w-16 md:w-20 bg-gradient-to-r from-stone-300/90 via-stone-400/40 to-transparent mt-1.5 scale-x-0 origin-left"
                         />
                     </div>
 
                     {/* TOP RIGHT: DIGITAL ETERNITY / Crafted to last */}
                     <div
                         ref={topRightRef}
-                        className="absolute top-12 sm:top-16 md:top-20 lg:top-24 right-4 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
+                        className="absolute top-16 sm:top-16 md:top-20 lg:top-24 right-3 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
                     >
-                        <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.18em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                        <span className="block font-cinzel text-[11px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.18em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             DIGITAL ETERNITY
                         </span>
-                        <span className="block font-serif italic text-[10px] sm:text-xs md:text-sm text-stone-300 mt-0.5 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        <span className="block font-serif italic text-[9.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                             Crafted to last
                         </span>
                         <div
                             ref={lineRightRef}
-                            className="h-[1px] w-10 sm:w-16 md:w-20 bg-gradient-to-l from-stone-300/90 via-stone-400/40 to-transparent mt-1.5 ml-auto scale-x-0 origin-right"
+                            className="h-[1px] w-8 sm:w-16 md:w-20 bg-gradient-to-l from-stone-300/90 via-stone-400/40 to-transparent mt-1.5 ml-auto scale-x-0 origin-right"
                         />
                     </div>
 
                     {/* BOTTOM LEFT: More than a clothing , / A higher existence */}
                     <div
                         ref={bottomLeftRef}
-                        className="absolute bottom-6 sm:bottom-8 md:bottom-10 lg:bottom-12 left-4 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
+                        className="absolute bottom-4 sm:bottom-8 md:bottom-10 lg:bottom-12 left-3 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
                     >
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[11px] sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             More than a clothing ,
                         </p>
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[11px] sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             A higher existence
                         </p>
                     </div>
@@ -253,12 +253,12 @@ const DoppelPieceScene = () => {
                     {/* BOTTOM RIGHT: Physical meets Digital / A new generation of ownership */}
                     <div
                         ref={bottomRightRef}
-                        className="absolute bottom-6 sm:bottom-8 md:bottom-10 lg:bottom-12 right-4 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
+                        className="absolute bottom-4 sm:bottom-8 md:bottom-10 lg:bottom-12 right-3 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
                     >
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[11px] sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             Physical meets Digital
                         </p>
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[11px] sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             A new generation of ownership
                         </p>
                     </div>
