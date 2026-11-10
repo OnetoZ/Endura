@@ -217,6 +217,15 @@ const AdminDashboard = () => {
     const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
     const [editingProductId, setEditingProductId] = useState(null);
     const [expandedBatchId, setExpandedBatchId] = useState(null);
+    const [productUploads, setProductUploads] = useState({ image: false, backImage: false, digitalTwinImage: false });
+    const [additionalUploads, setAdditionalUploads] = useState({});
+    const [localPreviews, setLocalPreviews] = useState({});
+
+    const hasActiveUploads = useMemo(() => {
+        const productUploading = Object.values(productUploads).some(Boolean);
+        const additionalUploading = Object.values(additionalUploads).some(Boolean);
+        return productUploading || additionalUploading;
+    }, [productUploads, additionalUploads]);
 
     // ── Recent Activity Logic ──────────────────────────────────────────────
     const recentActivities = useMemo(() => {
@@ -306,18 +315,31 @@ const AdminDashboard = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const uploadPromise = uploadService.uploadImage(file);
+        // Instant local object preview for immediate visual feedback
+        const previewUrl = URL.createObjectURL(file);
+        setLocalPreviews(prev => ({ ...prev, [fieldName]: previewUrl }));
+        setProductUploads(prev => ({ ...prev, [fieldName]: true }));
+
+        const uploadPromise = uploadService.uploadImage(file, 'products');
         toast.promise(uploadPromise, {
-            loading: 'Uploading image...',
-            success: 'Image uploaded!',
+            loading: `Uploading ${fieldName} to cloud...`,
+            success: 'Image uploaded & ready!',
             error: 'Failed to upload image'
         });
 
         try {
             const url = await uploadPromise;
             setNewProduct(prev => ({ ...prev, [fieldName]: url }));
+            setLocalPreviews(prev => ({ ...prev, [fieldName]: url }));
         } catch (error) {
             console.error('Upload error:', error);
+            setLocalPreviews(prev => {
+                const next = { ...prev };
+                delete next[fieldName];
+                return next;
+            });
+        } finally {
+            setProductUploads(prev => ({ ...prev, [fieldName]: false }));
         }
     };
 
@@ -325,22 +347,35 @@ const AdminDashboard = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const uploadPromise = uploadService.uploadImage(file);
+        // Instant local object preview for immediate visual feedback
+        const previewUrl = URL.createObjectURL(file);
+        setLocalPreviews(prev => ({ ...prev, [`additional_${index}`]: previewUrl }));
+        setAdditionalUploads(prev => ({ ...prev, [index]: true }));
+
+        const uploadPromise = uploadService.uploadImage(file, 'products');
         toast.promise(uploadPromise, {
-            loading: 'Uploading additional image...',
-            success: 'Image uploaded!',
-            error: 'Failed to upload image'
+            loading: `Uploading additional image #${index + 1}...`,
+            success: 'Additional image uploaded & ready!',
+            error: 'Failed to upload additional image'
         });
 
         try {
             const url = await uploadPromise;
             setNewProduct(prev => {
-                const updated = [...prev.additionalImages];
+                const updated = [...(prev.additionalImages || [])];
                 updated[index] = url;
                 return { ...prev, additionalImages: updated };
             });
+            setLocalPreviews(prev => ({ ...prev, [`additional_${index}`]: url }));
         } catch (error) {
             console.error('Upload error:', error);
+            setLocalPreviews(prev => {
+                const next = { ...prev };
+                delete next[`additional_${index}`];
+                return next;
+            });
+        } finally {
+            setAdditionalUploads(prev => ({ ...prev, [index]: false }));
         }
     };
 
@@ -940,50 +975,100 @@ const AdminDashboard = () => {
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image</label>
                                                     <div className="flex gap-3 items-center">
-                                                        {newProduct.image && (
-                                                            <img
-                                                                src={newProduct.image}
-                                                                alt="Front Preview"
-                                                                className="w-12 h-12 object-cover border border-white/20 flex-shrink-0 bg-neutral-900"
-                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                        <div className="relative w-14 h-14 border border-white/20 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
+                                                            {(localPreviews.image || newProduct.image) ? (
+                                                                <img
+                                                                    src={localPreviews.image || newProduct.image}
+                                                                    alt="Front Preview"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[8px] text-gray-500 font-mono text-center">NO FILE</span>
+                                                            )}
+                                                            {productUploads.image && (
+                                                                <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-1 z-10">
+                                                                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="w-full bg-white/5 border border-white/10 p-3 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                                onChange={e => handleImageUpload(e, 'image')}
                                                             />
-                                                        )}
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                            onChange={e => handleImageUpload(e, 'image')}
-                                                        />
+                                                            {productUploads.image ? (
+                                                                <div className="flex items-center gap-2 mt-1.5">
+                                                                    <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                                                                    <span className="text-[9px] text-primary font-mono animate-pulse uppercase tracking-wider">
+                                                                        ⏳ Uploading to Cloud... Please wait
+                                                                    </span>
+                                                                </div>
+                                                            ) : (newProduct.image && !newProduct.image.includes('unsplash')) ? (
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-500/20 text-green-400 border border-green-500/40 rounded uppercase tracking-wider">
+                                                                        ✓ READY
+                                                                    </span>
+                                                                    <p className="text-[8px] text-accent truncate font-mono flex-1">
+                                                                        Uploaded: {newProduct.image}
+                                                                    </p>
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                    {newProduct.image && !newProduct.image.includes('unsplash') && (
-                                                        <p className="mt-1 text-[8px] text-accent truncate font-mono">Uploaded: {newProduct.image}</p>
-                                                    )}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image</label>
                                                     <div className="flex gap-3 items-center">
-                                                        {newProduct.backImage && (
-                                                            <img
-                                                                src={newProduct.backImage}
-                                                                alt="Back Preview"
-                                                                className="w-12 h-12 object-cover border border-white/20 flex-shrink-0 bg-neutral-900"
-                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                        <div className="relative w-14 h-14 border border-white/20 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
+                                                            {(localPreviews.backImage || newProduct.backImage) ? (
+                                                                <img
+                                                                    src={localPreviews.backImage || newProduct.backImage}
+                                                                    alt="Back Preview"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[8px] text-gray-500 font-mono text-center">NO FILE</span>
+                                                            )}
+                                                            {productUploads.backImage && (
+                                                                <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-1 z-10">
+                                                                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="w-full bg-white/5 border border-white/10 p-3 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                                onChange={e => handleImageUpload(e, 'backImage')}
                                                             />
-                                                        )}
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                            onChange={e => handleImageUpload(e, 'backImage')}
-                                                        />
+                                                            {productUploads.backImage ? (
+                                                                <div className="flex items-center gap-2 mt-1.5">
+                                                                    <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                                                                    <span className="text-[9px] text-primary font-mono animate-pulse uppercase tracking-wider">
+                                                                        ⏳ Uploading to Cloud... Please wait
+                                                                    </span>
+                                                                </div>
+                                                            ) : (newProduct.backImage && !newProduct.backImage.includes('unsplash')) ? (
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-500/20 text-green-400 border border-green-500/40 rounded uppercase tracking-wider">
+                                                                        ✓ READY
+                                                                    </span>
+                                                                    <p className="text-[8px] text-accent truncate font-mono flex-1">
+                                                                        Uploaded: {newProduct.backImage}
+                                                                    </p>
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                    {newProduct.backImage && !newProduct.backImage.includes('unsplash') && (
-                                                        <p className="mt-1 text-[8px] text-accent truncate font-mono">Uploaded: {newProduct.backImage}</p>
-                                                    )}
                                                 </div>
                                                 <div className="space-y-3">
                                                     <div className="flex justify-between items-center">
-                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Additional Images (URLs)</label>
+                                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Additional Images (Gallery)</label>
                                                         <button
                                                             type="button"
                                                             onClick={() => setNewProduct({ ...newProduct, additionalImages: [...(newProduct.additionalImages || []), ''] })}
@@ -992,44 +1077,67 @@ const AdminDashboard = () => {
                                                             + Add Image
                                                         </button>
                                                     </div>
-                                                    {newProduct.additionalImages?.map((imgUrl, index) => (
-                                                        <div key={index} className="p-3 bg-white/[0.02] border border-white/10 space-y-2">
-                                                            <div className="flex gap-3 items-center">
-                                                                {imgUrl ? (
-                                                                    <img
-                                                                        src={imgUrl}
-                                                                        alt={`Additional ${index + 1}`}
-                                                                        className="w-12 h-12 object-cover border border-white/20 flex-shrink-0 bg-neutral-900"
-                                                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                                                    />
-                                                                ) : (
-                                                                    <div className="w-12 h-12 border border-dashed border-white/20 flex items-center justify-center flex-shrink-0 text-[9px] text-gray-500 font-mono">
-                                                                        NEW
+                                                    {newProduct.additionalImages?.map((imgUrl, index) => {
+                                                        const preview = localPreviews[`additional_${index}`] || imgUrl;
+                                                        const isUploading = !!additionalUploads[index];
+                                                        return (
+                                                            <div key={index} className="p-3 bg-white/[0.02] border border-white/10 space-y-2">
+                                                                <div className="flex gap-3 items-center">
+                                                                    <div className="relative w-14 h-14 border border-white/20 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
+                                                                        {preview ? (
+                                                                            <img
+                                                                                src={preview}
+                                                                                alt={`Additional ${index + 1}`}
+                                                                                className="w-full h-full object-cover"
+                                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-[9px] text-gray-500 font-mono">NEW</span>
+                                                                        )}
+                                                                        {isUploading && (
+                                                                            <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-1 z-10">
+                                                                                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                                            </div>
+                                                                        )}
                                                                     </div>
-                                                                )}
-                                                                <input
-                                                                    type="file"
-                                                                    accept="image/*"
-                                                                    className="w-full bg-white/5 border border-white/10 p-3 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-3 file:py-1.5 file:text-[10px] file:font-black file:uppercase file:mr-3 cursor-pointer"
-                                                                    onChange={e => handleAdditionalImageUpload(e, index)}
-                                                                />
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const updatedImages = newProduct.additionalImages.filter((_, i) => i !== index);
-                                                                        setNewProduct({ ...newProduct, additionalImages: updatedImages });
-                                                                    }}
-                                                                    className="w-9 h-9 flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xl font-black flex-shrink-0"
-                                                                    title="Remove Image"
-                                                                >
-                                                                    ×
-                                                                </button>
+                                                                    <div className="flex-1 flex gap-2 items-center">
+                                                                        <input
+                                                                            type="file"
+                                                                            accept="image/*"
+                                                                            className="w-full bg-white/5 border border-white/10 p-2.5 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-3 file:py-1.5 file:text-[10px] file:font-black file:uppercase file:mr-3 cursor-pointer"
+                                                                            onChange={e => handleAdditionalImageUpload(e, index)}
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const updatedImages = newProduct.additionalImages.filter((_, i) => i !== index);
+                                                                                setNewProduct({ ...newProduct, additionalImages: updatedImages });
+                                                                            }}
+                                                                            className="w-9 h-9 flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xl font-black flex-shrink-0"
+                                                                            title="Remove Image"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                {isUploading ? (
+                                                                    <div className="flex items-center gap-2 pl-1">
+                                                                        <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                                                                        <span className="text-[9px] text-primary font-mono animate-pulse uppercase tracking-wider">
+                                                                            ⏳ Uploading Image #{index + 1} to Cloud... Please wait
+                                                                        </span>
+                                                                    </div>
+                                                                ) : imgUrl ? (
+                                                                    <div className="flex items-center gap-2 pl-1">
+                                                                        <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-500/20 text-green-400 border border-green-500/40 rounded uppercase tracking-wider">
+                                                                            ✓ READY
+                                                                        </span>
+                                                                        <p className="text-[8px] text-accent truncate font-mono flex-1">Uploaded: {imgUrl}</p>
+                                                                    </div>
+                                                                ) : null}
                                                             </div>
-                                                            {imgUrl && (
-                                                                <p className="text-[8px] text-accent truncate font-mono">Uploaded: {imgUrl}</p>
-                                                            )}
-                                                        </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         </div>
@@ -1042,27 +1150,52 @@ const AdminDashboard = () => {
                                             <div className="lg:col-span-2 space-y-6">
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                                                        Digital Image {newProduct.digitalTwinImage ? '(Uploaded - Choose to replace)' : '*Required'}
+                                                        Digital Image {newProduct.digitalTwinImage ? '(Uploaded - Choose to replace)' : (editingProductId ? '(Optional)' : '*Required')}
                                                     </label>
                                                     <div className="flex gap-3 items-center">
-                                                        {newProduct.digitalTwinImage && (
-                                                            <img
-                                                                src={newProduct.digitalTwinImage}
-                                                                alt="Digital Twin Preview"
-                                                                className="w-12 h-12 object-cover border border-accent/40 flex-shrink-0 bg-neutral-900"
-                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                        <div className="relative w-14 h-14 border border-accent/40 flex-shrink-0 bg-neutral-900 overflow-hidden flex items-center justify-center">
+                                                            {(localPreviews.digitalTwinImage || newProduct.digitalTwinImage) ? (
+                                                                <img
+                                                                    src={localPreviews.digitalTwinImage || newProduct.digitalTwinImage}
+                                                                    alt="Digital Twin Preview"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[8px] text-accent/60 font-mono text-center">NO FILE</span>
+                                                            )}
+                                                            {productUploads.digitalTwinImage && (
+                                                                <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-1 z-10">
+                                                                    <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="w-full bg-white/5 border border-accent/20 p-3 text-[10px] text-gray-500 outline-none focus:border-accent transition-all file:border-0 file:bg-accent file:text-black file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                                onChange={e => handleImageUpload(e, 'digitalTwinImage')}
                                                             />
-                                                        )}
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="w-full bg-white/5 border border-accent/20 p-4 text-[10px] text-gray-500 outline-none focus:border-accent transition-all file:border-0 file:bg-accent file:text-black file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                            onChange={e => handleImageUpload(e, 'digitalTwinImage')}
-                                                        />
+                                                            {productUploads.digitalTwinImage ? (
+                                                                <div className="flex items-center gap-2 mt-1.5">
+                                                                    <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
+                                                                    <span className="text-[9px] text-accent font-mono animate-pulse uppercase tracking-wider">
+                                                                        ⏳ Uploading Digital Twin to Cloud... Please wait
+                                                                    </span>
+                                                                </div>
+                                                            ) : (newProduct.digitalTwinImage && !newProduct.digitalTwinImage.includes('unsplash')) ? (
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="px-1.5 py-0.5 text-[8px] font-bold bg-green-500/20 text-green-400 border border-green-500/40 rounded uppercase tracking-wider">
+                                                                        ✓ READY
+                                                                    </span>
+                                                                    <p className="text-[8px] text-accent truncate font-mono flex-1">
+                                                                        Uploaded: {newProduct.digitalTwinImage}
+                                                                    </p>
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                    {newProduct.digitalTwinImage && !newProduct.digitalTwinImage.includes('unsplash') && (
-                                                        <p className="mt-1 text-[8px] text-accent truncate font-mono">Uploaded: {newProduct.digitalTwinImage}</p>
-                                                    )}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Short Tagline</label>
@@ -1091,8 +1224,8 @@ const AdminDashboard = () => {
                                             </div>
                                         </div>
 
-                                        <button disabled={isSavingProduct} type="submit" className="w-full py-6 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed">
-                                            {isSavingProduct ? (editingProductId ? 'Saving...' : 'Publishing...') : (editingProductId ? 'Save Changes' : 'Add Product')}
+                                        <button disabled={isSavingProduct || hasActiveUploads} type="submit" className="w-full py-6 bg-accent text-black font-black uppercase tracking-[0.5em] text-xs hover:bg-white transition-all shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed">
+                                            {hasActiveUploads ? '⏳ Uploading Image(s)... Please Wait' : isSavingProduct ? (editingProductId ? 'Saving Changes...' : 'Publishing Product...') : (editingProductId ? 'Save Changes' : 'Add Product')}
                                         </button>
                                     </form>
                                 </div>
