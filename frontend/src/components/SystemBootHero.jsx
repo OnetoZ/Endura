@@ -157,7 +157,7 @@ const SystemBootHero = () => {
                     <img
                         src={heroCampaignMobileImg}
                         alt="ENDURA Genesis Campaign Mobile"
-                        className="block md:hidden w-full h-full object-cover object-[center_15%] pointer-events-none select-none will-change-transform"
+                        className="block md:hidden w-full h-full object-cover object-[40%_15%] pointer-events-none select-none will-change-transform"
                         loading="eager"
                         decoding="sync"
                         style={{
@@ -171,7 +171,7 @@ const SystemBootHero = () => {
                 {/* ========================================================= */}
                 <div 
                     ref={leftTextRef}
-                    className="absolute top-[24%] sm:top-[28%] md:top-[32%] lg:top-[34%] left-6 sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col will-change-transform"
+                    className="absolute top-[64%] sm:top-[28%] md:top-[32%] lg:top-[34%] left-6 sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col will-change-transform"
                 >
                     {/* Line 1: WE EXIST (All-caps Roman Serif) */}
                     <div 
@@ -200,7 +200,7 @@ const SystemBootHero = () => {
                 {/* ========================================================= */}
                 <div 
                     ref={rightTextRef}
-                    className="absolute top-[48%] sm:top-[44%] md:top-[42%] lg:top-[42%] right-6 sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
+                    className="absolute top-[28%] sm:top-[44%] md:top-[42%] lg:top-[42%] right-6 sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
                 >
                     <div 
                         className="font-cinzel text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-normal text-white uppercase tracking-[0.3em] leading-snug drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"

@@ -43,7 +43,7 @@ const CollectionsHeroBanner = () => {
                 <img
                     src={collectionsHeroMobileImg}
                     alt="ENDURA Genesis Edition — An Experience beyond Clothing Mobile"
-                    className="block md:hidden w-full h-full object-cover object-[60%_15%] pointer-events-none select-none"
+                    className="block md:hidden w-full h-full object-cover object-[65%_15%] pointer-events-none select-none"
                     loading="eager"
                     decoding="sync"
                     style={{
@@ -69,7 +69,7 @@ const CollectionsHeroBanner = () => {
             >
                 {/* Line 1: GENESIS EDITION */}
                 <h1 
-                    className="font-cinzel text-xs sm:text-[15px] md:text-[17px] lg:text-[19px] xl:text-[21px] font-normal text-white uppercase tracking-[0.28em] sm:tracking-[0.36em] leading-tight"
+                    className="font-cinzel text-[14px] sm:text-[15px] md:text-[17px] lg:text-[19px] xl:text-[21px] font-normal text-white uppercase tracking-[0.28em] sm:tracking-[0.36em] leading-tight"
                     style={{ textShadow: '0 2px 14px rgba(0,0,0,0.85), 0 0 8px rgba(0,0,0,0.6)' }}
                 >
                     GENESIS EDITION
@@ -77,7 +77,7 @@ const CollectionsHeroBanner = () => {
 
                 {/* Line 2: An Experience beyond Clothing (Refined Editorial Italic Subtitle) */}
                 <p 
-                    className="font-editorial italic text-[11px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] font-light text-white/95 tracking-[0.1em] sm:tracking-[0.15em] mt-1 sm:mt-1.5"
+                    className="font-editorial italic text-[12.5px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] font-light text-white/95 tracking-[0.1em] sm:tracking-[0.15em] mt-1.5 sm:mt-1.5"
                     style={{ textShadow: '0 2px 12px rgba(0,0,0,0.85)' }}
                 >
                     An Experience beyond Clothing
