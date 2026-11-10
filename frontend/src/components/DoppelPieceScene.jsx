@@ -193,7 +193,7 @@ const DoppelPieceScene = () => {
                     {/* TOP CENTER: GENESIS EDITION / One Worn and One Eternal */}
                     <div
                         ref={topCenterRef}
-                        className="absolute top-[15%] sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
+                        className="absolute top-[13%] sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
                     >
                         <h2 className="font-cinzel text-sm sm:text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.24em] sm:tracking-[0.32em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
                             GENESIS EDITION
@@ -206,12 +206,12 @@ const DoppelPieceScene = () => {
                     {/* TOP LEFT: PHYSICAL REALITY / Crafted to wear */}
                     <div
                         ref={topLeftRef}
-                        className="absolute top-[21%] sm:top-16 md:top-20 lg:top-24 left-3.5 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
+                        className="absolute top-[23%] sm:top-16 md:top-20 lg:top-24 left-2.5 sm:left-6 md:left-10 lg:left-12 max-w-[110px] sm:max-w-none pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
                     >
-                        <span className="block font-cinzel text-[9.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                        <span className="block font-cinzel text-[8.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             PHYSICAL REALITY
                         </span>
-                        <span className="block font-serif italic text-[8.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        <span className="block font-serif italic text-[7.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                             Crafted to wear
                         </span>
                         <div
@@ -223,12 +223,12 @@ const DoppelPieceScene = () => {
                     {/* TOP RIGHT: DIGITAL ETERNITY / Crafted to last */}
                     <div
                         ref={topRightRef}
-                        className="absolute top-[21%] sm:top-16 md:top-20 lg:top-24 right-3.5 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
+                        className="absolute top-[23%] sm:top-16 md:top-20 lg:top-24 right-2.5 sm:right-6 md:right-10 lg:right-12 text-right max-w-[110px] sm:max-w-none pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
                     >
-                        <span className="block font-cinzel text-[9.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                        <span className="block font-cinzel text-[8.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             DIGITAL ETERNITY
                         </span>
-                        <span className="block font-serif italic text-[8.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        <span className="block font-serif italic text-[7.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                             Crafted to last
                         </span>
                         <div
@@ -320,7 +320,7 @@ const DoppelPieceScene = () => {
             {/* ========================================================= */}
             <div
                 ref={portalHeadingRef}
-                className="absolute top-[13%] sm:top-[7.5%] md:top-[9%] left-1/2 -translate-x-1/2 text-center pointer-events-none z-30 w-full px-4"
+                className="absolute top-[18%] sm:top-[7.5%] md:top-[9%] left-1/2 -translate-x-1/2 text-center pointer-events-none z-30 w-full px-4"
             >
                 <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-light tracking-[0.28em] md:tracking-[0.38em] uppercase text-stone-200/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     ONE EXISTENCE
