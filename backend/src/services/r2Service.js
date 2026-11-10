@@ -3,8 +3,8 @@ const s3Client = require('../utils/r2Client');
 
 class R2Service {
     constructor() {
-        this.bucketName = process.env.R2_BUCKET_NAME;
-        this.publicUrl = process.env.R2_PUBLIC_URL;
+        this.bucketName = process.env.R2_BUCKET_NAME || 'endura-images';
+        this.publicUrl = process.env.R2_PUBLIC_URL || 'https://pub-9f7d36df57904b178606eca4421606d2.r2.dev';
     }
 
     /**
@@ -104,6 +104,33 @@ class R2Service {
         } catch (error) {
             console.error('R2 replace error:', error);
             throw new Error(`Failed to replace file: ${error.message}`);
+        }
+    }
+
+    /**
+     * List all files from R2
+     * @param {string} folder - Optional folder prefix
+     * @returns {Array} List of files with url, key, size, lastModified
+     */
+    async listFiles(folder = '') {
+        const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
+        const params = {
+            Bucket: this.bucketName,
+            Prefix: folder,
+        };
+
+        try {
+            const response = await s3Client.send(new ListObjectsV2Command(params));
+            const items = (response.Contents || []).map(item => ({
+                key: item.Key,
+                url: `${this.publicUrl}/${item.Key}`,
+                size: item.Size,
+                lastModified: item.LastModified,
+            }));
+            return items.reverse(); // Newest first
+        } catch (error) {
+            console.error('R2 list error:', error);
+            throw new Error(`Failed to list files: ${error.message}`);
         }
     }
 }
