@@ -3,8 +3,8 @@ const s3Client = require('../utils/r2Client');
 
 class R2Service {
     constructor() {
-        this.bucketName = process.env.R2_BUCKET_NAME;
-        this.publicUrl = process.env.R2_PUBLIC_URL;
+        this.bucketName = process.env.R2_BUCKET_NAME || 'endura-images';
+        this.publicUrl = process.env.R2_PUBLIC_URL || 'https://pub-9f7d36df57904b178606eca4421606d2.r2.dev';
     }
 
     /**

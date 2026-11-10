@@ -154,7 +154,7 @@ router.post('/', (req, res, next) => {
         next();
     });
 }, asyncHandler(async (req, res) => {
-    console.log('[UPLOAD DEBUG] Request received. Folder:', req.body.type || 'products');
+    console.log('[UPLOAD DEBUG] Request received. Folder:', (req.body && req.body.type) || 'products');
     console.log('[UPLOAD DEBUG] File object present:', !!req.file);
 
     if (!req.file) {
@@ -168,7 +168,7 @@ router.post('/', (req, res, next) => {
         mimetype: req.file.mimetype
     });
 
-    const folder = req.body.type || 'products';
+    const folder = (req.body && req.body.type) || 'products';
 
     try {
         console.log('[UPLOAD DEBUG] Attempting R2 upload...');
