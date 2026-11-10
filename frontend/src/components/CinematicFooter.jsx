@@ -48,7 +48,7 @@ const CinematicFooter = () => {
     }, { scope: containerRef });
 
     return (
-        <footer ref={containerRef} className="bg-black text-white pt-32 pb-12 px-8 border-t border-white/5 relative overflow-hidden">
+        <footer ref={containerRef} className="bg-black text-white pt-32 pb-24 md:pb-12 px-6 sm:px-8 border-t border-white/5 relative overflow-hidden">
             {/* Background Ambient Glow */}
             <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
 
