@@ -92,10 +92,11 @@ const ProductDetail = () => {
         </div>
     );
 
-    // Images 0 = Front, 1 = Back, 2 = Digital Twin. We omit index 2 from the main slider.
-    const allImages = product?.images?.length
+    // Images 0 = Front, 1 = Back, 2 = Digital Twin. We omit index 2 from the main slider, and filter out any empty/placeholder strings.
+    const allImages = (product?.images?.length
         ? product.images.filter((_, idx) => idx !== 2)
-        : [product?.image, product?.backImage, ...(product?.additionalImages || [])].filter(Boolean);
+        : [product?.image, product?.backImage, ...(product?.additionalImages || [])]
+    ).filter(img => typeof img === 'string' && img.trim().length > 0 && !img.includes('tarot-card'));
     const hasMultipleImages = allImages.length > 1;
 
     const nextImage = () => setCurrentImageIndex(prev => (prev + 1) % allImages.length);

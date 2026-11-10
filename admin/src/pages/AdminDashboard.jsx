@@ -386,9 +386,21 @@ const AdminDashboard = () => {
             const totalStock = Object.values(newProduct.sizes || { S: 0, M: 0, L: 0, XL: 0 })
                 .reduce((acc, val) => acc + (Number(val) || 0), 0);
 
+            // Filter out empty or whitespace-only additional images
+            const cleanAdditionalImages = (newProduct.additionalImages || [])
+                .filter(img => typeof img === 'string' && img.trim().length > 0);
+
+            const allImagesArray = [
+                newProduct.image,
+                newProduct.backImage,
+                newProduct.digitalTwinImage,
+                ...cleanAdditionalImages
+            ].filter(img => typeof img === 'string' && img.trim().length > 0);
+
             const productData = {
                 ...newProduct,
-                images: [newProduct.image, newProduct.backImage, newProduct.digitalTwinImage, ...newProduct.additionalImages],
+                images: allImagesArray,
+                additionalImages: cleanAdditionalImages,
                 price: Number(newProduct.price),
                 originalPrice: Number(newProduct.originalPrice),
                 stock: totalStock > 0 ? totalStock : Number(newProduct.stock)
@@ -424,6 +436,11 @@ const AdminDashboard = () => {
 
     const handleEditClick = (product) => {
         setEditingProductId(product._id || product.id);
+        const rawAdditional = product.additionalImages?.length
+            ? product.additionalImages
+            : (product.images?.slice(3) || []);
+        const cleanAdditional = rawAdditional.filter(img => typeof img === 'string' && img.trim().length > 0);
+
         setNewProduct({
             name: product.name || '',
             description: product.description || '',
@@ -433,7 +450,7 @@ const AdminDashboard = () => {
             image: product.image || product.images?.[0] || '',
             backImage: product.backImage || product.images?.[1] || '',
             digitalTwinImage: product.digitalTwinImage || product.images?.[2] || '',
-            additionalImages: product.additionalImages || product.images?.slice(3) || [],
+            additionalImages: cleanAdditional,
             type: product.type || 'Common',
             shortAtmosphericLine: product.shortAtmosphericLine || '',
             sizes: product.sizes || { S: 0, M: 0, L: 0, XL: 0 }
@@ -922,57 +939,95 @@ const AdminDashboard = () => {
                                             <div className="space-y-6">
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Front Image</label>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                        onChange={e => handleImageUpload(e, 'image')}
-                                                    />
+                                                    <div className="flex gap-3 items-center">
+                                                        {newProduct.image && (
+                                                            <img
+                                                                src={newProduct.image}
+                                                                alt="Front Preview"
+                                                                className="w-12 h-12 object-cover border border-white/20 flex-shrink-0 bg-neutral-900"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                            onChange={e => handleImageUpload(e, 'image')}
+                                                        />
+                                                    </div>
                                                     {newProduct.image && !newProduct.image.includes('unsplash') && (
-                                                        <p className="mt-1 text-[8px] text-accent truncate">Uploaded: {newProduct.image}</p>
+                                                        <p className="mt-1 text-[8px] text-accent truncate font-mono">Uploaded: {newProduct.image}</p>
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Back Image</label>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                        onChange={e => handleImageUpload(e, 'backImage')}
-                                                    />
+                                                    <div className="flex gap-3 items-center">
+                                                        {newProduct.backImage && (
+                                                            <img
+                                                                src={newProduct.backImage}
+                                                                alt="Back Preview"
+                                                                className="w-12 h-12 object-cover border border-white/20 flex-shrink-0 bg-neutral-900"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                            onChange={e => handleImageUpload(e, 'backImage')}
+                                                        />
+                                                    </div>
                                                     {newProduct.backImage && !newProduct.backImage.includes('unsplash') && (
-                                                        <p className="mt-1 text-[8px] text-accent truncate">Uploaded: {newProduct.backImage}</p>
+                                                        <p className="mt-1 text-[8px] text-accent truncate font-mono">Uploaded: {newProduct.backImage}</p>
                                                     )}
                                                 </div>
-                                                <div className="space-y-2">
+                                                <div className="space-y-3">
                                                     <div className="flex justify-between items-center">
                                                         <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Additional Images (URLs)</label>
                                                         <button
                                                             type="button"
-                                                            onClick={() => setNewProduct({ ...newProduct, additionalImages: [...newProduct.additionalImages, ''] })}
+                                                            onClick={() => setNewProduct({ ...newProduct, additionalImages: [...(newProduct.additionalImages || []), ''] })}
                                                             className="text-[9px] font-black text-primary hover:text-accent uppercase transition-colors"
                                                         >
                                                             + Add Image
                                                         </button>
                                                     </div>
-                                                    {newProduct.additionalImages.map((imgUrl, index) => (
-                                                        <div key={index} className="flex gap-2 mt-2">
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                className="w-full bg-white/5 border border-white/10 p-4 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                                onChange={e => handleAdditionalImageUpload(e, index)}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const updatedImages = newProduct.additionalImages.filter((_, i) => i !== index);
-                                                                    setNewProduct({ ...newProduct, additionalImages: updatedImages });
-                                                                }}
-                                                                className="px-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xl font-black"
-                                                            >
-                                                                ×
-                                                            </button>
+                                                    {newProduct.additionalImages?.map((imgUrl, index) => (
+                                                        <div key={index} className="p-3 bg-white/[0.02] border border-white/10 space-y-2">
+                                                            <div className="flex gap-3 items-center">
+                                                                {imgUrl ? (
+                                                                    <img
+                                                                        src={imgUrl}
+                                                                        alt={`Additional ${index + 1}`}
+                                                                        className="w-12 h-12 object-cover border border-white/20 flex-shrink-0 bg-neutral-900"
+                                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-12 h-12 border border-dashed border-white/20 flex items-center justify-center flex-shrink-0 text-[9px] text-gray-500 font-mono">
+                                                                        NEW
+                                                                    </div>
+                                                                )}
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/*"
+                                                                    className="w-full bg-white/5 border border-white/10 p-3 text-[10px] text-gray-500 outline-none focus:border-primary transition-all file:border-0 file:bg-primary file:text-white file:px-3 file:py-1.5 file:text-[10px] file:font-black file:uppercase file:mr-3 cursor-pointer"
+                                                                    onChange={e => handleAdditionalImageUpload(e, index)}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const updatedImages = newProduct.additionalImages.filter((_, i) => i !== index);
+                                                                        setNewProduct({ ...newProduct, additionalImages: updatedImages });
+                                                                    }}
+                                                                    className="w-9 h-9 flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xl font-black flex-shrink-0"
+                                                                    title="Remove Image"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </div>
+                                                            {imgUrl && (
+                                                                <p className="text-[8px] text-accent truncate font-mono">Uploaded: {imgUrl}</p>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
@@ -986,16 +1041,27 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="lg:col-span-2 space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Digital Image *Required</label>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="w-full bg-white/5 border border-accent/20 p-4 text-[10px] text-gray-500 outline-none focus:border-accent transition-all file:border-0 file:bg-accent file:text-black file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
-                                                        onChange={e => handleImageUpload(e, 'digitalTwinImage')}
-                                                        required
-                                                    />
+                                                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">
+                                                        Digital Image {newProduct.digitalTwinImage ? '(Uploaded - Choose to replace)' : '*Required'}
+                                                    </label>
+                                                    <div className="flex gap-3 items-center">
+                                                        {newProduct.digitalTwinImage && (
+                                                            <img
+                                                                src={newProduct.digitalTwinImage}
+                                                                alt="Digital Twin Preview"
+                                                                className="w-12 h-12 object-cover border border-accent/40 flex-shrink-0 bg-neutral-900"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="w-full bg-white/5 border border-accent/20 p-4 text-[10px] text-gray-500 outline-none focus:border-accent transition-all file:border-0 file:bg-accent file:text-black file:px-4 file:py-2 file:text-[10px] file:font-black file:uppercase file:mr-4 cursor-pointer"
+                                                            onChange={e => handleImageUpload(e, 'digitalTwinImage')}
+                                                        />
+                                                    </div>
                                                     {newProduct.digitalTwinImage && !newProduct.digitalTwinImage.includes('unsplash') && (
-                                                        <p className="mt-1 text-[8px] text-accent truncate">Uploaded: {newProduct.digitalTwinImage}</p>
+                                                        <p className="mt-1 text-[8px] text-accent truncate font-mono">Uploaded: {newProduct.digitalTwinImage}</p>
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
