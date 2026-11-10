@@ -176,7 +176,7 @@ const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
             onClick={() => onInspect(item)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`group relative rounded-2xl bg-[#08080c] overflow-hidden transition-all duration-500 border flex flex-col justify-between w-full max-w-[260px] sm:max-w-[275px] md:max-w-[285px] mx-auto sm:mx-0 flex-shrink-0 cursor-pointer ${
+            className={`group relative rounded-2xl bg-[#08080c] overflow-hidden transition-all duration-500 border flex flex-col justify-between w-full max-w-[310px] sm:max-w-[275px] md:max-w-[285px] mx-auto sm:mx-0 flex-shrink-0 cursor-pointer ${
                 isLegendary
                     ? 'border-[#D4AF37]/40 hover:border-[#D4AF37]/80 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_45px_rgba(212,175,55,0.2)]'
                     : isEpic
@@ -190,7 +190,7 @@ const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
             <div className="p-3.5 sm:p-4 flex items-center justify-between z-10">
                 {/* Rarity Pill Badge */}
                 <span
-                    className={`text-[7px] sm:text-[8px] font-mono font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded-sm ${
+                    className={`text-[8px] sm:text-[9px] font-mono font-bold tracking-[0.2em] uppercase px-2.5 py-0.5 rounded-sm ${
                         isLegendary
                             ? 'border border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/10'
                             : isEpic
@@ -211,12 +211,13 @@ const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
                             e.stopPropagation();
                             setIsFlipped(prev => !prev);
                         }}
-                        className="flex sm:hidden items-center gap-1 text-[8px] font-mono tracking-widest text-white/50 hover:text-white uppercase px-2 py-0.5 rounded bg-white/5 border border-white/10 active:scale-95 transition-all"
+                        className="flex sm:hidden items-center gap-1.5 text-[9px] font-mono tracking-widest text-[#D4AF37] uppercase px-2.5 py-1 rounded-md bg-[#D4AF37]/10 border border-[#D4AF37]/30 active:scale-95 active:bg-[#D4AF37] active:text-black transition-all shadow-[0_0_10px_rgba(212,175,55,0.2)]"
+                        aria-label="Flip card"
                     >
-                        <RefreshCw className="w-2.5 h-2.5 text-[#D4AF37]" />
+                        <RefreshCw className="w-2.5 h-2.5" />
                         <span>FLIP</span>
                     </button>
-                    <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-white/40 font-semibold">
+                    <span className="text-[10px] sm:text-[11px] font-mono tracking-widest text-white/50 font-semibold">
                         {assetId}
                     </span>
                 </div>
@@ -272,7 +273,7 @@ const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
                                 }
                                 e.currentTarget.src = '/tarot-card-13.png';
                             }}
-                            className="w-full h-full object-cover scale-[1.06] rounded-xl drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]"
+                            className="w-full h-full object-cover scale-[1.08] rounded-xl drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]"
                         />
                         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#08080c] to-transparent pointer-events-none" />
                     </div>
@@ -300,7 +301,7 @@ const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
                                 }
                                 e.currentTarget.src = '/tarot-card-13.png';
                             }}
-                            className="w-full h-full object-contain scale-[1.06] rounded-xl drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]"
+                            className="w-full h-full object-contain scale-[1.08] rounded-xl drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)] p-2"
                         />
                         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#08080c] to-transparent pointer-events-none" />
                     </div>
@@ -314,15 +315,17 @@ const VaultCollectibleCard = ({ item, index, onInspect, currentUser }) => {
                         <h3 className="text-xs sm:text-[13px] font-heading font-black text-white uppercase tracking-wider mb-0.5 line-clamp-1 group-hover:text-[#D4AF37] transition-colors">
                             {item.userName || currentUser?.username || item.name || 'AGENT'}
                         </h3>
-                        <div className="text-[7px] sm:text-[8px] font-mono tracking-[0.18em] text-white/40 uppercase space-y-0.5">
+                        <div className="text-[7.5px] sm:text-[8px] font-mono tracking-[0.18em] text-white/40 uppercase space-y-0.5">
                             <p>PHYSICAL ASSET</p>
                             <p>DIGITAL ECHO</p>
                         </div>
                     </div>
+                    {/* Subtle mobile tap hint */}
+                    <span className="sm:hidden text-[7.5px] font-mono tracking-wider text-white/40 uppercase border border-white/10 px-2 py-0.5 rounded bg-white/5 flex-shrink-0">
+                        TAP TO VIEW
+                    </span>
                 </div>
             </div>
-
-
         </motion.div>
     );
 };
@@ -570,7 +573,7 @@ const Vault = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1 }}
-                            className="text-[#D4AF37] font-cinzel text-xs md:text-sm font-semibold tracking-[0.55em] uppercase mb-1 drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+                            className="text-[#D4AF37] font-cinzel text-xs md:text-sm font-semibold tracking-[0.45em] sm:tracking-[0.55em] uppercase mb-1 drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]"
                         >
                             THE
                         </motion.div>
@@ -581,7 +584,7 @@ const Vault = () => {
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-cinzel font-normal tracking-[0.12em] uppercase leading-none select-none bg-gradient-to-b from-white via-[#f5f3ff] to-[#c084fc] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(168,85,247,0.35)]"
+                            className="text-5xl xs:text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-cinzel font-normal tracking-[0.12em] uppercase leading-none select-none bg-gradient-to-b from-white via-[#f5f3ff] to-[#c084fc] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(168,85,247,0.35)]"
                         >
                             VAULT
                         </motion.h1>
@@ -591,13 +594,13 @@ const Vault = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.8, delay: 0.35 }}
-                            className="flex items-center justify-center gap-3 md:gap-4 mt-3 mb-6"
+                            className="flex items-center justify-center gap-2 sm:gap-4 mt-3 mb-5 sm:mb-6 px-2"
                         >
-                            <div className="w-8 md:w-16 h-px bg-gradient-to-r from-transparent to-[#D4AF37]/70" />
-                            <span className="text-[#D4AF37] text-[10px] sm:text-xs md:text-sm font-mono font-medium tracking-[0.4em] uppercase">
+                            <div className="w-6 sm:w-16 h-px bg-gradient-to-r from-transparent to-[#D4AF37]/70" />
+                            <span className="text-[#D4AF37] text-[9px] xs:text-[10px] sm:text-xs md:text-sm font-mono font-medium tracking-[0.25em] xs:tracking-[0.32em] sm:tracking-[0.4em] uppercase">
                                 PRIVATE ARCHIVE ACCESS
                             </span>
-                            <div className="w-8 md:w-16 h-px bg-gradient-to-l from-transparent to-[#D4AF37]/70" />
+                            <div className="w-6 sm:w-16 h-px bg-gradient-to-l from-transparent to-[#D4AF37]/70" />
                         </motion.div>
 
                         {/* 5. Supporting Mission Text */}
@@ -605,7 +608,7 @@ const Vault = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.45 }}
-                            className="space-y-1 text-center max-w-lg mb-10"
+                            className="space-y-1 text-center max-w-lg mb-8 sm:mb-10 px-4"
                         >
                             <p className="text-white/60 text-xs sm:text-sm font-body tracking-[0.08em]">
                                 Your access. Your legacy.
@@ -623,12 +626,12 @@ const Vault = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.55 }}
-                            className="relative w-full max-w-[460px] mx-auto"
+                            className="relative w-full max-w-[460px] mx-auto px-1 sm:px-0"
                         >
                             {/* Purple puddle reflection on the floor underneath panel */}
                             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-4/5 h-16 bg-[#a855f7]/25 blur-2xl rounded-full pointer-events-none" />
 
-                            <div className="relative bg-[#09090d]/95 backdrop-blur-2xl border border-white/10 hover:border-white/20 rounded-2xl p-6 sm:p-8 text-center shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(168,85,247,0.12)] transition-all duration-300">
+                            <div className="relative bg-[#09090d]/95 backdrop-blur-2xl border border-white/10 hover:border-white/20 rounded-2xl p-5 sm:p-8 text-center shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(168,85,247,0.12)] transition-all duration-300">
                                 {/* Top Badge: AUTHORIZATION REQUIRED */}
                                 <div className="flex items-center justify-center gap-2 mb-3">
                                     <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
@@ -638,7 +641,7 @@ const Vault = () => {
                                 </div>
 
                                 {/* Heading: ENTER REDEMPTION CODE */}
-                                <h3 className="text-white text-xs sm:text-sm font-heading font-black tracking-[0.25em] uppercase mb-6">
+                                <h3 className="text-white text-xs sm:text-sm font-heading font-black tracking-[0.22em] sm:tracking-[0.25em] uppercase mb-5 sm:mb-6">
                                     ENTER REDEMPTION CODE
                                 </h3>
 
@@ -654,7 +657,7 @@ const Vault = () => {
                                             }}
                                             placeholder="ENTER CODE"
                                             disabled={isSyncing}
-                                            className="w-full bg-[#050507] border border-white/10 rounded-lg py-3.5 px-4 font-mono text-center text-xs sm:text-sm text-[#D4AF37] tracking-[0.35em] placeholder:text-white/20 placeholder:tracking-[0.25em] focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all uppercase disabled:opacity-50"
+                                            className="w-full bg-[#050507] border border-white/10 rounded-lg py-3 px-3 sm:py-3.5 sm:px-4 font-mono text-center text-base sm:text-sm text-[#D4AF37] tracking-[0.25em] sm:tracking-[0.35em] placeholder:text-white/20 placeholder:tracking-[0.2em] sm:placeholder:tracking-[0.25em] focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all uppercase disabled:opacity-50"
                                         />
 
                                         {syncError && (
@@ -673,7 +676,7 @@ const Vault = () => {
                                     <button
                                         type="submit"
                                         disabled={isSyncing || !syncCode.trim()}
-                                        className="w-full py-3.5 px-6 rounded-lg bg-gradient-to-r from-[#D4AF37] via-[#e5c158] to-[#c59d2a] hover:from-white hover:to-white text-black font-heading font-black text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_8px_25px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed group active:scale-[0.99]"
+                                        className="w-full py-3.5 px-6 rounded-lg bg-gradient-to-r from-[#D4AF37] via-[#e5c158] to-[#c59d2a] hover:from-white hover:to-white text-black font-heading font-black text-xs uppercase tracking-[0.22em] sm:tracking-[0.25em] flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_8px_25px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed group active:scale-[0.98]"
                                     >
                                         {isSyncing ? (
                                             <div className="flex items-center justify-center gap-2">
@@ -690,7 +693,7 @@ const Vault = () => {
                                 </form>
 
                                 {/* Bottom Security Footer */}
-                                <div className="flex items-center justify-center gap-2 mt-5 text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/30 uppercase">
+                                <div className="flex items-center justify-center gap-2 mt-4 sm:mt-5 text-[8px] sm:text-[9px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-white/30 uppercase">
                                     <Shield className="w-3.5 h-3.5 text-white/30" />
                                     <span>AUTHORIZED HOLDERS ONLY</span>
                                 </div>
@@ -700,12 +703,12 @@ const Vault = () => {
                 </header>
 
                 {/* ─── MAIN ASSET GRID & BOTTOM ARCHIVE SUMMARY ─── */}
-                <main className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
+                <main className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32">
                     {/* Section Header: OWNED ASSETS */}
-                    <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-8">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3 sm:pb-4 mb-6 sm:mb-8">
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_10px_#a855f7] animate-pulse" />
-                            <h2 className="text-xs sm:text-sm md:text-base font-mono font-bold tracking-[0.25em] text-white uppercase">
+                            <h2 className="text-xs sm:text-sm md:text-base font-mono font-bold tracking-[0.2em] sm:tracking-[0.25em] text-white uppercase">
                                 OWNED ASSETS
                             </h2>
                             <span className="text-[10px] font-mono text-white/40">
@@ -716,7 +719,7 @@ const Vault = () => {
 
                     {/* Asset Cards Grid */}
                     {displayAssets.length > 0 ? (
-                        <div className="flex flex-wrap items-start justify-center sm:justify-start gap-5 sm:gap-6 md:gap-8 mb-12 sm:mb-16">
+                        <div className="flex flex-wrap items-start justify-center sm:justify-start gap-6 sm:gap-6 md:gap-8 mb-12 sm:mb-16">
                             {displayAssets.map((item, index) => (
                                 <VaultCollectibleCard
                                     key={item.id || item._id || index}
@@ -755,7 +758,7 @@ const Vault = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="rounded-2xl bg-[#08080c] border border-white/10 p-5 sm:p-6 lg:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+                        className="rounded-2xl bg-[#08080c] border border-white/10 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row items-center justify-between gap-5 sm:gap-6 md:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
                     >
                         {/* 1. Circular Progress Donut */}
                         <div className="flex items-center gap-4 sm:gap-5 w-full lg:w-auto justify-center lg:justify-start">
@@ -785,7 +788,7 @@ const Vault = () => {
                             </div>
 
                             <div>
-                                <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/40 uppercase mb-0.5">
+                                <div className="text-[8px] sm:text-[9px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-white/40 uppercase mb-0.5">
                                     COLLECTION PROGRESS
                                 </div>
                                 <div className="text-xl sm:text-2xl font-heading font-black text-white tracking-wider flex items-baseline gap-1.5">
@@ -795,7 +798,7 @@ const Vault = () => {
                                         {String(totalPossible).padStart(2, '0')}
                                     </span>
                                 </div>
-                                <div className="text-[8px] font-mono tracking-[0.25em] text-white/40 uppercase">
+                                <div className="text-[8px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-white/40 uppercase">
                                     ASSETS OWNED
                                 </div>
                             </div>
@@ -805,14 +808,14 @@ const Vault = () => {
                         <div className="hidden lg:block w-px h-12 bg-white/10" />
 
                         {/* 2. All 4 Tiers Counter (Mobile: 4-column compact grid, Desktop: flex row) */}
-                        <div className="grid grid-cols-4 gap-2 sm:gap-4 w-full lg:w-auto lg:flex lg:items-center lg:gap-8 py-3 lg:py-0 border-y lg:border-y-0 border-white/5">
+                        <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full lg:w-auto lg:flex lg:items-center lg:gap-8 py-3.5 lg:py-0 border-y lg:border-y-0 border-white/5">
                             {/* Legendary */}
                             <div className="flex flex-col items-center text-center">
                                 <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] mb-1 drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
                                 <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
                                     {legendaryCount}
                                 </div>
-                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-[#D4AF37] font-bold uppercase truncate max-w-full">
+                                <div className="text-[7.5px] xs:text-[8.5px] sm:text-[9px] font-mono tracking-wider sm:tracking-[0.2em] text-[#D4AF37] font-bold uppercase truncate max-w-full">
                                     LEGENDARY
                                 </div>
                             </div>
@@ -825,7 +828,7 @@ const Vault = () => {
                                 <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
                                     {epicCount}
                                 </div>
-                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-[#c084fc] font-bold uppercase truncate max-w-full">
+                                <div className="text-[7.5px] xs:text-[8.5px] sm:text-[9px] font-mono tracking-wider sm:tracking-[0.2em] text-[#c084fc] font-bold uppercase truncate max-w-full">
                                     EPIC
                                 </div>
                             </div>
@@ -838,7 +841,7 @@ const Vault = () => {
                                 <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
                                     {rareCount}
                                 </div>
-                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-[#38bdf8] font-bold uppercase truncate max-w-full">
+                                <div className="text-[7.5px] xs:text-[8.5px] sm:text-[9px] font-mono tracking-wider sm:tracking-[0.2em] text-[#38bdf8] font-bold uppercase truncate max-w-full">
                                     RARE
                                 </div>
                             </div>
@@ -851,7 +854,7 @@ const Vault = () => {
                                 <div className="text-lg sm:text-2xl font-heading font-black text-white tracking-wide">
                                     {commonCount}
                                 </div>
-                                <div className="text-[7px] sm:text-[9px] font-mono tracking-[0.2em] text-white/40 font-bold uppercase truncate max-w-full">
+                                <div className="text-[7.5px] xs:text-[8.5px] sm:text-[9px] font-mono tracking-wider sm:tracking-[0.2em] text-white/40 font-bold uppercase truncate max-w-full">
                                     COMMON
                                 </div>
                             </div>
@@ -861,7 +864,7 @@ const Vault = () => {
                         <div className="hidden lg:block w-px h-12 bg-white/10" />
 
                         {/* 3. Lock Icon & Mission Slogan */}
-                        <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto justify-center lg:justify-start">
+                        <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto justify-center lg:justify-start pt-1 lg:pt-0">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 flex items-center justify-center text-[#c084fc] shadow-[0_0_15px_rgba(168,85,247,0.2)] flex-shrink-0">
                                 <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                             </div>
@@ -881,38 +884,39 @@ const Vault = () => {
                     </motion.div>
                 </main>
 
-                {/* ─── CARD INSPECTION & DETAILS MODAL (Preserved Feature) ─── */}
+                {/* ─── CARD INSPECTION & DETAILS MODAL (Mobile Responsive & Scrollable) ─── */}
                 <AnimatePresence>
                     {previewItem && (
                         <div
-                            className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 sm:p-8"
+                            className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-3 sm:p-6 md:p-8"
                             onClick={() => setPreviewItem(null)}
                         >
                             <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                                initial={{ scale: 0.92, opacity: 0, y: 20 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 30 }}
-                                className="relative w-full max-w-4xl bg-[#09090d] border border-white/20 shadow-[0_0_80px_rgba(168,85,247,0.3)] rounded-3xl overflow-hidden p-6 md:p-12 flex flex-col items-center justify-center min-h-[40vh]"
+                                exit={{ scale: 0.92, opacity: 0, y: 20 }}
+                                className="relative w-full max-w-4xl max-h-[88vh] overflow-y-auto overflow-x-hidden bg-[#09090d] border border-white/20 shadow-[0_0_80px_rgba(168,85,247,0.3)] rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 flex flex-col justify-start my-auto custom-scrollbar"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                {/* Close Button */}
+                                {/* Sticky / Floating Close Button */}
                                 <button
                                     onClick={() => setPreviewItem(null)}
-                                    className="absolute top-6 right-6 z-[2010] text-white/40 hover:text-white transition-colors p-2"
+                                    className="absolute top-3.5 right-3.5 sm:top-6 sm:right-6 z-[2010] p-2 sm:p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all active:scale-90 border border-white/10"
+                                    aria-label="Close modal"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full px-2 md:px-4 mt-6 md:mt-0">
-                                    <div className="relative h-[300px] md:h-[460px] flex items-center justify-center">
-                                        <div className="absolute inset-0 bg-[#a855f7]/15 blur-[120px] rounded-full pointer-events-none" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-16 items-center w-full px-1 sm:px-2 md:px-4 mt-6 md:mt-0">
+                                    <div className="relative h-[240px] xs:h-[280px] sm:h-[340px] md:h-[460px] flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-[#a855f7]/15 blur-[100px] rounded-full pointer-events-none" />
                                         <DressItem item={previewItem} vaultReady={true} />
                                     </div>
 
-                                    <div className="space-y-6 text-center md:text-left">
-                                        <div className="space-y-3">
+                                    <div className="space-y-4 sm:space-y-6 text-center md:text-left">
+                                        <div className="space-y-2 sm:space-y-3">
                                             <span
-                                                className="font-mono text-[10px] font-bold tracking-[0.25em] uppercase px-3 py-1 rounded-sm border inline-block"
+                                                className="font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.25em] uppercase px-3 py-1 rounded-sm border inline-block"
                                                 style={{
                                                     color: tierAccent(previewItem.tier),
                                                     borderColor: `${tierAccent(previewItem.tier)}55`,
@@ -921,47 +925,47 @@ const Vault = () => {
                                             >
                                                 ARCHIVE TIER: // {previewItem.tier}
                                             </span>
-                                            <h2 className="text-2xl md:text-4xl font-heading font-black tracking-tight uppercase leading-tight text-white">
+                                            <h2 className="text-xl sm:text-2xl md:text-4xl font-heading font-black tracking-tight uppercase leading-tight text-white">
                                                 {previewItem.userName ? previewItem.userName.toUpperCase() : (previewItem.name || 'AUTHENTICATED ASSET')}
                                             </h2>
                                             <div className="flex items-center justify-center md:justify-start gap-3">
                                                 <div className="h-px w-8 bg-[#D4AF37]/50" />
-                                                <span className="text-[10px] font-mono text-white/50 tracking-widest uppercase">
+                                                <span className="text-[9px] sm:text-[10px] font-mono text-white/50 tracking-widest uppercase">
                                                     PROTOCOL VERIFIED
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-3 sm:space-y-4">
                                             {previewItem.userName && (
-                                                <div className="space-y-1">
-                                                    <p className="text-[9px] font-mono text-white/40 uppercase tracking-[0.2em]">
+                                                <div className="space-y-0.5 sm:space-y-1">
+                                                    <p className="text-[8px] sm:text-[9px] font-mono text-white/40 uppercase tracking-[0.2em]">
                                                         Synchronized By
                                                     </p>
-                                                    <p className="text-lg md:text-xl font-heading font-black text-[#D4AF37]">
+                                                    <p className="text-base sm:text-lg md:text-xl font-heading font-black text-[#D4AF37]">
                                                         AGENT {previewItem.userName.toUpperCase()}
                                                     </p>
                                                 </div>
                                             )}
 
-                                            <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-xs md:text-sm max-w-sm mx-auto md:mx-0">
+                                            <p className="text-gray-400 font-light tracking-wide leading-relaxed uppercase text-[11px] sm:text-xs md:text-sm max-w-sm mx-auto md:mx-0">
                                                 {previewItem.description && !previewItem.description.includes('8394726150')
                                                     ? previewItem.description
                                                     : "Experimental digital artifact bound to physical luxury. Official piece of the Endura Vault protocol."}
                                             </p>
 
-                                            <div className="flex flex-wrap gap-4 justify-center md:justify-start font-mono text-[9px] tracking-tight text-[#D4AF37]/80">
+                                            <div className="flex flex-wrap gap-3 sm:gap-4 justify-center md:justify-start font-mono text-[8px] sm:text-[9px] tracking-tight text-[#D4AF37]/80">
                                                 <span>PHASE: 01_DECRYPTION</span>
                                                 <span className="text-white/20">|</span>
                                                 <span>REWARDS: SYNC_READY</span>
                                             </div>
                                         </div>
 
-                                        <div className="pt-6 border-t border-white/10 flex flex-wrap gap-3 justify-center md:justify-start">
-                                            <div className="px-4 py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-[#D4AF37]">
+                                        <div className="pt-4 sm:pt-6 border-t border-white/10 flex flex-wrap gap-2.5 sm:gap-3 justify-center md:justify-start">
+                                            <div className="px-3.5 py-1.5 sm:px-4 sm:py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 rounded-full text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-[#D4AF37]">
                                                 LEGACY STATUS: ACTIVE
                                             </div>
-                                            <div className="px-4 py-2 border border-white/10 bg-white/5 rounded-full text-[9px] font-mono uppercase tracking-widest text-white/40">
+                                            <div className="px-3.5 py-1.5 sm:px-4 sm:py-2 border border-white/10 bg-white/5 rounded-full text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-white/40">
                                                 DATA_SECURED
                                             </div>
                                         </div>

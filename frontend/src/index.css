@@ -97,6 +97,15 @@ html.lenis body {
   font-family: var(--font-mono);
 }
 
+/* Safe Area Insets for iOS & Mobile */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
+}
+
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 0.5rem);
+}
+
 /* Typography Styles */
 h1,
 h2,

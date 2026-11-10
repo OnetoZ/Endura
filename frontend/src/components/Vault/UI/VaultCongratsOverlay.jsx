@@ -28,7 +28,7 @@ const VaultCongratsOverlay = ({ children, accent, onEnterDashboard, onClose, ser
             }}
         >
             {/* HUD WRAPPER - Stable Rectangle with Natural Scaling */}
-            <div className="relative w-full max-w-[420px] min-h-[480px] md:min-h-[500px] bg-[#000000] p-6 md:p-[36px] box-border flex flex-col items-center justify-center gap-6 md:gap-8 overflow-hidden shadow-[0_0_60px_rgba(168,85,247,0.3)] border border-white/70 mx-4">
+            <div className="relative w-full max-w-[420px] max-h-[92vh] overflow-y-auto min-h-[460px] md:min-h-[500px] bg-[#000000] p-6 md:p-[36px] box-border flex flex-col items-center justify-center gap-6 md:gap-8 shadow-[0_0_60px_rgba(168,85,247,0.3)] border border-white/70 mx-4 custom-scrollbar">
                 {/* HUD CORNERS LAYER */}
                 <div className="absolute inset-0 pointer-events-none z-50">
                     {/* Top Left Corners */}
@@ -52,11 +52,11 @@ const VaultCongratsOverlay = ({ children, accent, onEnterDashboard, onClose, ser
                 {/* Repositioned Close Button */}
                 <div
                     onClick={handleClose}
-                    className="absolute top-4 right-4 p-1.5 opacity-40 hover:opacity-100 transition-all hover:rotate-90 z-[100] cursor-pointer group"
+                    className="absolute top-4 right-4 p-2 opacity-60 hover:opacity-100 transition-all hover:rotate-90 z-[100] cursor-pointer group active:scale-90"
                     style={{ color: hudColor }}
                     aria-label="Return to Vault"
                 >
-                    <X size={20} md:size={22} strokeWidth={1.5} className="group-hover:scale-110 transition-transform" />
+                    <X size={20} strokeWidth={1.5} className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
                 </div>
 
                 <motion.div
@@ -64,24 +64,30 @@ const VaultCongratsOverlay = ({ children, accent, onEnterDashboard, onClose, ser
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full flex flex-col items-center text-center space-y-6 md:space-y-8"
+                    className="w-full flex flex-col items-center text-center space-y-5 md:space-y-8"
                 >
                     {/* Interactive Artifact Display Region */}
                     {children && (
-                        <div
-                            className="w-[180px] md:w-[200px] h-[240px] md:h-[280px] [perspective:1000px] group/item cursor-help"
-                            onMouseEnter={() => setIsFlipped(true)}
-                            onMouseLeave={() => setIsFlipped(false)}
-                        >
-                            <motion.div
-                                className="relative w-full h-full duration-1000 [transform-style:preserve-3d]"
-                                animate={{
-                                    rotateY: isFlipped ? 180 : 0,
-                                }}
-                                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                        <div className="flex flex-col items-center">
+                            <div
+                                className="w-[180px] md:w-[200px] h-[240px] md:h-[280px] [perspective:1000px] group/item cursor-pointer"
+                                onMouseEnter={() => setIsFlipped(true)}
+                                onMouseLeave={() => setIsFlipped(false)}
+                                onClick={() => setIsFlipped(prev => !prev)}
                             >
-                                {children}
-                            </motion.div>
+                                <motion.div
+                                    className="relative w-full h-full duration-1000 [transform-style:preserve-3d]"
+                                    animate={{
+                                        rotateY: isFlipped ? 180 : 0,
+                                    }}
+                                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                                >
+                                    {children}
+                                </motion.div>
+                            </div>
+                            <span className="md:hidden text-[8px] font-mono tracking-widest text-white/40 uppercase mt-2">
+                                TAP TO FLIP
+                            </span>
                         </div>
                     )}
 

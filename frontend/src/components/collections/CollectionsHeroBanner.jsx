@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import collectionsHeroImg from '../../assets/collections-hero.jpg';
+import collectionsHeroMobileImg from '../../assets/collections-hero-mobile.jpg';
 
 /**
  * CollectionsHeroBanner Component
@@ -8,7 +9,7 @@ import collectionsHeroImg from '../../assets/collections-hero.jpg';
  * Full-bleed Cinematic Editorial Campaign Hero:
  * - Completely fits screen (edge-to-edge, full viewport height)
  * - Seamless transparent navbar overlay at top
- * - High-resolution 2560x1440 photoshoot of models on velvet sofa
+ * - High-resolution photoshoot (Desktop & Mobile Responsive)
  * - Upper Center:
  *     "GENESIS EDITION" (Cinzel Roman serif tracking)
  *     "An Experience beyond Clothing" (Elegant italic serif subtitle)
@@ -25,12 +26,24 @@ const CollectionsHeroBanner = () => {
 
     return (
         <section className="relative w-full h-screen min-h-[640px] max-h-[1080px] bg-black select-none overflow-hidden">
-            {/* Master Native Hardware-Accelerated 2560x1440 Image - Completely Fits Full Viewport */}
+            {/* Master Native Hardware-Accelerated Image - Responsive Desktop & Mobile */}
             <div className="absolute inset-0 z-0">
+                {/* Desktop Collection Hero Image */}
                 <img
                     src={collectionsHeroImg}
                     alt="ENDURA Genesis Edition — An Experience beyond Clothing"
-                    className="w-full h-full object-cover object-[center_35%] pointer-events-none select-none"
+                    className="hidden md:block w-full h-full object-cover object-[center_35%] pointer-events-none select-none"
+                    loading="eager"
+                    decoding="sync"
+                    style={{
+                        imageRendering: '-webkit-optimize-contrast',
+                    }}
+                />
+                {/* Mobile Collection Hero Image (Only on Mobile Viewports) */}
+                <img
+                    src={collectionsHeroMobileImg}
+                    alt="ENDURA Genesis Edition — An Experience beyond Clothing Mobile"
+                    className="block md:hidden w-full h-full object-cover object-[65%_15%] pointer-events-none select-none"
                     loading="eager"
                     decoding="sync"
                     style={{
@@ -46,17 +59,17 @@ const CollectionsHeroBanner = () => {
             <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-[#050505] to-transparent pointer-events-none z-10" />
 
             {/* ========================================================= */}
-            {/* UPPER CENTER EDITORIAL TYPOGRAPHY - EXACT REFERENCE SCALE */}
+            {/* UPPER CENTER EDITORIAL TYPOGRAPHY - BALANCED ON MOBILE & DESKTOP */}
             {/* ========================================================= */}
             <motion.div 
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute top-[20%] sm:top-[20.5%] md:top-[21%] inset-x-0 flex flex-col items-center text-center px-4 z-20 pointer-events-none"
+                className="absolute top-[12%] sm:top-[16%] md:top-[21%] inset-x-0 flex flex-col items-center text-center px-4 z-20 pointer-events-none"
             >
-                {/* Line 1: GENESIS EDITION (Matching exact reference scale ~21% span) */}
+                {/* Line 1: GENESIS EDITION */}
                 <h1 
-                    className="font-cinzel text-[13px] sm:text-[15px] md:text-[17px] lg:text-[19px] xl:text-[21px] font-normal text-white uppercase tracking-[0.32em] sm:tracking-[0.36em] leading-tight"
+                    className="font-cinzel text-[14px] sm:text-[15px] md:text-[17px] lg:text-[19px] xl:text-[21px] font-normal text-white uppercase tracking-[0.28em] sm:tracking-[0.36em] leading-tight"
                     style={{ textShadow: '0 2px 14px rgba(0,0,0,0.85), 0 0 8px rgba(0,0,0,0.6)' }}
                 >
                     GENESIS EDITION
@@ -64,7 +77,7 @@ const CollectionsHeroBanner = () => {
 
                 {/* Line 2: An Experience beyond Clothing (Refined Editorial Italic Subtitle) */}
                 <p 
-                    className="font-editorial italic text-[11px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] font-light text-white/95 tracking-[0.12em] sm:tracking-[0.15em] mt-1 sm:mt-1.5"
+                    className="font-editorial italic text-[12.5px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] font-light text-white/95 tracking-[0.1em] sm:tracking-[0.15em] mt-1.5 sm:mt-1.5"
                     style={{ textShadow: '0 2px 12px rgba(0,0,0,0.85)' }}
                 >
                     An Experience beyond Clothing
@@ -78,7 +91,7 @@ const CollectionsHeroBanner = () => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-6 sm:bottom-8 md:bottom-10 lg:bottom-12 inset-x-0 flex flex-col items-center justify-center z-20 pointer-events-auto"
+                className="absolute bottom-24 sm:bottom-8 md:bottom-10 lg:bottom-12 inset-x-0 flex flex-col items-center justify-center z-20 pointer-events-auto"
             >
                 <button
                     type="button"

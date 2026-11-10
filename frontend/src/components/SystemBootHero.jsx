@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import heroCampaignImg from '../assets/hero-campaign.jpg';
+import heroCampaignMobileImg from '../assets/hero-campaign-mobile.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -139,13 +140,24 @@ const SystemBootHero = () => {
                 className="absolute inset-0 z-10 block cursor-pointer"
                 aria-label="Explore Genesis Collection"
             >
-                {/* Master Clean Cinematic Photoshoot Background (Ultra-Clear 2560x1440 Native Image) */}
-                <div className="absolute inset-0 z-0 overflow-hidden">
+                {/* Master Clean Cinematic Photoshoot Background (Desktop & Mobile Responsive) */}
+                <div ref={bgRef} className="absolute inset-0 z-0 overflow-hidden">
+                    {/* Desktop Hero Image */}
                     <img
-                        ref={bgRef}
                         src={heroCampaignImg}
                         alt="ENDURA Genesis Campaign"
-                        className="w-full h-full object-cover object-center pointer-events-none select-none will-change-transform"
+                        className="hidden md:block w-full h-full object-cover object-center pointer-events-none select-none will-change-transform"
+                        loading="eager"
+                        decoding="sync"
+                        style={{
+                            imageRendering: '-webkit-optimize-contrast',
+                        }}
+                    />
+                    {/* Mobile Hero Image (Only for Mobile Viewports) */}
+                    <img
+                        src={heroCampaignMobileImg}
+                        alt="ENDURA Genesis Campaign Mobile"
+                        className="block md:hidden w-full h-full object-cover object-[40%_15%] pointer-events-none select-none will-change-transform"
                         loading="eager"
                         decoding="sync"
                         style={{
@@ -159,7 +171,7 @@ const SystemBootHero = () => {
                 {/* ========================================================= */}
                 <div 
                     ref={leftTextRef}
-                    className="absolute top-[24%] sm:top-[28%] md:top-[32%] lg:top-[34%] left-6 sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col will-change-transform"
+                    className="absolute top-[64%] sm:top-[28%] md:top-[32%] lg:top-[34%] left-6 sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col will-change-transform"
                 >
                     {/* Line 1: WE EXIST (All-caps Roman Serif) */}
                     <div 
@@ -188,7 +200,7 @@ const SystemBootHero = () => {
                 {/* ========================================================= */}
                 <div 
                     ref={rightTextRef}
-                    className="absolute top-[48%] sm:top-[44%] md:top-[42%] lg:top-[42%] right-6 sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
+                    className="absolute top-[28%] sm:top-[44%] md:top-[42%] lg:top-[42%] right-6 sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
                 >
                     <div 
                         className="font-cinzel text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-normal text-white uppercase tracking-[0.3em] leading-snug drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
@@ -203,7 +215,7 @@ const SystemBootHero = () => {
             {/* Luxury Editorial "Shop now" Button with Illuminated White Underline */}
             <div 
                 ref={hintRef}
-                className="absolute bottom-7 sm:bottom-9 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center will-change-transform"
+                className="absolute bottom-24 sm:bottom-9 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center will-change-transform"
             >
                 <Link
                     to="/collections"

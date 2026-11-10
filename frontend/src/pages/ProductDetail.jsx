@@ -162,23 +162,24 @@ const ProductDetail = () => {
                                     </button>
                                 </div>
                             )}
-                        </div>
-                        <div className="hidden md:block absolute top-6 right-6 md:top-auto md:bottom-8 md:right-8 z-30 pointer-events-none">
-                            <div className="glass p-3 md:p-4 border-white/10 relative min-w-max">
-                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1 whitespace-nowrap">Status</p>
-                                <div className="flex items-center gap-2 md:gap-3 whitespace-nowrap">
-                                    {product.stock > 0 ? (
-                                        <>
-                                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
-                                            <span className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest">In Stock ({product.stock})</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
-                                            <span className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest">Out of Stock</span>
-                                        </>
-                                    )}
-                                </div>
+
+                            {/* Minimal In-Stock Badge - Anchored Inside Image Frame */}
+                            <div className="hidden md:flex absolute bottom-6 right-6 z-20 pointer-events-none items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-2.5 border border-white/10 shadow-lg">
+                                {product.stock > 0 ? (
+                                    <>
+                                        <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)] flex-shrink-0" />
+                                        <span className="text-[9px] font-mono font-bold text-white uppercase tracking-widest whitespace-nowrap">
+                                            In Stock ({product.stock})
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)] flex-shrink-0" />
+                                        <span className="text-[9px] font-mono font-bold text-red-400 uppercase tracking-widest whitespace-nowrap">
+                                            Out of Stock
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

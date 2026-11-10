@@ -12,6 +12,7 @@ const Navbar = React.forwardRef((props, ref) => {
     const [visible, setVisible] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [time, setTime] = useState(new Date());
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
 
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -28,6 +29,7 @@ const Navbar = React.forwardRef((props, ref) => {
 
     useEffect(() => {
         setVisible(true);
+        setUserMenuOpen(false);
     }, [location.pathname]);
 
     useEffect(() => {
@@ -170,16 +172,20 @@ const Navbar = React.forwardRef((props, ref) => {
 
                             {/* User Section */}
                             {currentUser ? (
-                                <div className="flex items-center gap-4 border-l border-white/10 pl-6">
-                                    <div className="relative group">
-                                        <button className="flex items-center gap-3 group">
+                                <div className="flex items-center gap-4 border-l border-white/10 pl-4 md:pl-6">
+                                    <div className="relative">
+                                        <button 
+                                            onClick={() => setUserMenuOpen(prev => !prev)}
+                                            className="flex items-center gap-3 group focus:outline-none"
+                                            aria-label="Toggle user menu"
+                                        >
                                             <div className="text-right hidden sm:block">
                                                 <p className="text-[8px] text-gray-500 uppercase font-black tracking-[0.2em]">Agent</p>
                                                 <p className="text-[10px] font-bold text-primary group-hover:text-accent transition-all">
                                                     {(currentUser.username || currentUser.name || 'Operator').toUpperCase()}
                                                 </p>
                                             </div>
-                                            <div className="relative w-9 h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
+                                            <div className="relative w-8 h-8 md:w-9 md:h-9 rounded-sm border border-primary/40 bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center overflow-hidden group-hover:border-accent transition-all duration-300">
                                                 {currentUser.avatar ? (
                                                     <img src={currentUser.avatar} alt="Profile" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" referrerPolicy="no-referrer" />
                                                 ) : (
@@ -190,16 +196,17 @@ const Navbar = React.forwardRef((props, ref) => {
                                             </div>
                                         </button>
 
-                                        {/* Dropdown Menu */}
-                                        <div className="absolute top-full right-0 mt-2 w-48 glass border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                        {/* Dropdown Menu (supports touch toggle on mobile & hover on desktop) */}
+                                        <div className={`absolute top-full right-0 mt-2 w-48 glass border border-white/10 ${userMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'} md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300 z-50 shadow-2xl`}>
                                             <Link
                                                 to="/dashboard"
+                                                onClick={() => setUserMenuOpen(false)}
                                                 className="block px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-primary/20 hover:text-primary transition-all"
                                             >
                                                 User Dashboard
                                             </Link>
                                             <button
-                                                onClick={() => { logout(); navigate('/auth'); }}
+                                                onClick={() => { setUserMenuOpen(false); logout(); navigate('/auth'); }}
                                                 className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all"
                                             >
                                                 Logout
@@ -208,7 +215,7 @@ const Navbar = React.forwardRef((props, ref) => {
                                     </div>
                                 </div>
                             ) : (
-                                <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.8] origin-right transition-all duration-500 hover:scale-105 active:scale-95">
+                                <Link to="/auth" className="relative group overflow-hidden md:scale-100 scale-[0.85] origin-right transition-all duration-500 hover:scale-105 active:scale-95">
                                     {/* Gold Gradient Background */}
                                     <div className="absolute inset-0 bg-gradient-to-r from-[#fee08b] via-[#d4af37] to-[#b8860b] animate-shimmer" />
 
@@ -216,8 +223,8 @@ const Navbar = React.forwardRef((props, ref) => {
                                     <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
 
                                     {/* Content */}
-                                    <div className="relative z-10 px-6 md:px-10 py-2 md:py-3 flex items-center gap-1 md:gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black">
+                                    <div className="relative z-10 px-5 md:px-10 py-2 md:py-3 flex items-center gap-1 md:gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.35em] md:tracking-[0.4em] text-black">
                                             Login
                                         </span>
                                         <svg className="w-3.5 h-3.5 text-black group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,7 +242,6 @@ const Navbar = React.forwardRef((props, ref) => {
                 </div>
 
                 {/* Add custom animations to global CSS */}
-                {/* Add custom animations to global CSS */}
                 <style>{`
                 @keyframes scan {
                     0%, 100% { transform: translateX(-100%); }
@@ -248,30 +254,75 @@ const Navbar = React.forwardRef((props, ref) => {
             `}</style>
             </nav>
 
-            {/* MOBILE BOTTOM NAVIGATION */}
-            <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 glass bg-black/80 border-t border-white/10 transition-all duration-500 pb-safe ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'}`}>
+            {/* MOBILE BOTTOM NAVIGATION - HIGH-PRECISION LUXURY HUD */}
+            <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060608]/95 backdrop-blur-xl border-t border-white/10 transition-all duration-500 pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.85)] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'}`}>
                 <div className="flex justify-around items-center h-16 px-1">
                     {[
-                        { to: '/', label: 'HOME', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-                        { to: '/cult', label: 'FACTIONS', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-                        { to: '/vault', label: 'VAULT', accent: true, icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-                        ...(currentUser ? [
-                            { to: '/dashboard', label: 'PROFILE', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' }
-                        ] : [])
+                        { 
+                            to: '/', 
+                            label: 'HOME', 
+                            icon: (active) => (
+                                <svg className={`w-5 h-5 transition-all duration-300 ${active ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : 'text-white/40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "2" : "1.5"} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                            )
+                        },
+                        { 
+                            to: '/collections', 
+                            label: 'ARCHIVE', 
+                            icon: (active) => (
+                                <svg className={`w-5 h-5 transition-all duration-300 ${active ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : 'text-white/40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "2" : "1.5"} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                            )
+                        },
+                        { 
+                            to: '/vault', 
+                            label: 'VAULT', 
+                            accent: true, 
+                            icon: (active) => (
+                                <div className="relative">
+                                    <svg className={`w-5 h-5 transition-all duration-300 ${active ? 'text-[#D4AF37] drop-shadow-[0_0_10px_rgba(212,175,55,0.9)]' : 'text-[#D4AF37]/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "2" : "1.5"} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#a855f7] shadow-[0_0_6px_#a855f7]" />
+                                </div>
+                            )
+                        },
+                        { 
+                            to: '/cult', 
+                            label: 'FACTIONS', 
+                            locked: true,
+                            icon: (active) => (
+                                <svg className={`w-5 h-5 transition-all duration-300 ${active ? 'text-blue-400' : 'text-white/30'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2z" />
+                                </svg>
+                            )
+                        },
+                        {
+                            to: currentUser ? '/dashboard' : '/auth',
+                            label: currentUser ? 'PROFILE' : 'LOGIN',
+                            icon: (active) => (
+                                <svg className={`w-5 h-5 transition-all duration-300 ${active ? 'text-primary drop-shadow-[0_0_8px_rgba(212,175,55,0.7)]' : 'text-white/40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? "2" : "1.5"} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            )
+                        }
                     ].map((link, idx) => {
                         const isActive = location.pathname === link.to;
                         return (
-
                             <Link
                                 key={idx}
                                 to={link.to}
                                 onClick={link.locked ? (e) => e.preventDefault() : (link.to === '/' ? handleLogoClick : undefined)}
-                                className={`flex flex-col items-center justify-center w-full h-full gap-1 group ${link.locked ? 'opacity-20 grayscale' : ''}`}
+                                className={`flex flex-col items-center justify-center w-full h-full gap-1 group active:scale-95 transition-transform ${link.locked ? 'opacity-35' : ''}`}
                             >
-                                <svg className={`w-5 h-5 transition-all duration-300 ${isActive ? (link.accent ? 'text-accent' : 'text-primary') : 'text-white/40 group-hover:text-white/80'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive ? "2" : "1.5"} d={link.icon} />
-                                </svg>
-                                <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? (link.accent ? 'text-accent' : 'text-primary') : 'text-white/40 group-hover:text-white/80'}`}>
+                                {link.icon(isActive)}
+                                <span className={`text-[8px] font-mono tracking-widest uppercase transition-colors duration-300 ${
+                                    isActive 
+                                        ? (link.accent ? 'text-[#D4AF37] font-bold drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : 'text-white font-bold') 
+                                        : 'text-white/40 group-hover:text-white/70'
+                                }`}>
                                     {link.label}
                                 </span>
                             </Link>

@@ -156,7 +156,7 @@ const DoppelPieceScene = () => {
             {/* ========================================================= */}
             <div
                 ref={genesisContainerRef}
-                className="relative z-10 w-[94vw] h-[86vh] sm:w-[90vw] sm:h-[84vh] md:w-[86vw] md:h-[82vh] lg:w-[82vw] lg:h-[80vh] max-w-6xl flex items-center justify-center rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.95)] bg-black/90 opacity-0"
+                className="relative z-10 w-[94vw] h-[78vh] sm:w-[90vw] sm:h-[84vh] md:w-[86vw] md:h-[82vh] lg:w-[82vw] lg:h-[80vh] max-w-6xl flex items-center justify-center rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.95)] bg-black/90 opacity-0"
             >
                 <Link
                     to="/collections"
@@ -166,7 +166,7 @@ const DoppelPieceScene = () => {
                     <div className="absolute inset-0 z-0 bg-black">
                         <div
                             ref={bgRef}
-                            className="w-full h-full bg-cover bg-center will-change-transform"
+                            className="w-full h-full bg-contain sm:bg-cover bg-center bg-no-repeat will-change-transform"
                             style={{
                                 backgroundImage: `url(${genesisLineupImg})`,
                                 filter: 'contrast(1.06) brightness(1.04) saturate(1.05)',
@@ -178,13 +178,13 @@ const DoppelPieceScene = () => {
                     </div>
 
                     {/* Center Holographic Light Accent */}
-                    <div className="center-beam absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-28 sm:h-36 md:h-44 bg-gradient-to-b from-primary/70 via-primary/15 to-transparent z-15 pointer-events-none opacity-80" />
+                    <div className="center-beam absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-20 sm:h-36 md:h-44 bg-gradient-to-b from-primary/70 via-primary/15 to-transparent z-15 pointer-events-none opacity-80" />
 
                     {/* Holographic Corner Frames */}
-                    <div className="corner-frame absolute top-0 left-0 w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 border-l-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
-                    <div className="corner-frame absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 border-r-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
-                    <div className="corner-frame absolute bottom-0 left-0 w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 border-l-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
-                    <div className="corner-frame absolute bottom-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 border-r-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
+                    <div className="corner-frame absolute top-0 left-0 w-12 h-12 sm:w-24 sm:h-24 md:w-36 md:h-36 border-l-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
+                    <div className="corner-frame absolute top-0 right-0 w-12 h-12 sm:w-24 sm:h-24 md:w-36 md:h-36 border-r-2 border-t-2 border-primary/30 z-15 pointer-events-none" />
+                    <div className="corner-frame absolute bottom-0 left-0 w-12 h-12 sm:w-24 sm:h-24 md:w-36 md:h-36 border-l-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
+                    <div className="corner-frame absolute bottom-0 right-0 w-12 h-12 sm:w-24 sm:h-24 md:w-36 md:h-36 border-r-2 border-b-2 border-accent/30 z-15 pointer-events-none" />
 
                     {/* ========================================================= */}
                     {/* TEXT OVERLAYS: Clean, zero-blur, razor-sharp               */}
@@ -193,12 +193,12 @@ const DoppelPieceScene = () => {
                     {/* TOP CENTER: GENESIS EDITION / One Worn and One Eternal */}
                     <div
                         ref={topCenterRef}
-                        className="absolute top-4 sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
+                        className="absolute top-[15%] sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
                     >
-                        <h2 className="font-cinzel text-xl sm:text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.22em] md:tracking-[0.32em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
+                        <h2 className="font-cinzel text-sm sm:text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.24em] sm:tracking-[0.32em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
                             GENESIS EDITION
                         </h2>
-                        <p className="font-serif italic font-light tracking-widest text-[11px] sm:text-xs md:text-sm lg:text-base text-stone-200 mt-0.5 sm:mt-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+                        <p className="font-serif italic font-light tracking-widest text-[9.5px] sm:text-xs md:text-sm lg:text-base text-stone-200 mt-0.5 sm:mt-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                             One Worn and One Eternal
                         </p>
                     </div>
@@ -206,46 +206,46 @@ const DoppelPieceScene = () => {
                     {/* TOP LEFT: PHYSICAL REALITY / Crafted to wear */}
                     <div
                         ref={topLeftRef}
-                        className="absolute top-12 sm:top-16 md:top-20 lg:top-24 left-4 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
+                        className="absolute top-[21%] sm:top-16 md:top-20 lg:top-24 left-3.5 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
                     >
-                        <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.18em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                        <span className="block font-cinzel text-[9.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             PHYSICAL REALITY
                         </span>
-                        <span className="block font-serif italic text-[10px] sm:text-xs md:text-sm text-stone-300 mt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        <span className="block font-serif italic text-[8.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                             Crafted to wear
                         </span>
                         <div
                             ref={lineLeftRef}
-                            className="h-[1px] w-10 sm:w-16 md:w-20 bg-gradient-to-r from-stone-300/90 via-stone-400/40 to-transparent mt-1.5 scale-x-0 origin-left"
+                            className="h-[1px] w-6 sm:w-16 md:w-20 bg-gradient-to-r from-stone-300/90 via-stone-400/40 to-transparent mt-1 scale-x-0 origin-left"
                         />
                     </div>
 
                     {/* TOP RIGHT: DIGITAL ETERNITY / Crafted to last */}
                     <div
                         ref={topRightRef}
-                        className="absolute top-12 sm:top-16 md:top-20 lg:top-24 right-4 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
+                        className="absolute top-[21%] sm:top-16 md:top-20 lg:top-24 right-3.5 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
                     >
-                        <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.18em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
+                        <span className="block font-cinzel text-[9.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             DIGITAL ETERNITY
                         </span>
-                        <span className="block font-serif italic text-[10px] sm:text-xs md:text-sm text-stone-300 mt-0.5 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                        <span className="block font-serif italic text-[8.5px] sm:text-xs md:text-sm text-stone-300 mt-0.5 text-right drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                             Crafted to last
                         </span>
                         <div
                             ref={lineRightRef}
-                            className="h-[1px] w-10 sm:w-16 md:w-20 bg-gradient-to-l from-stone-300/90 via-stone-400/40 to-transparent mt-1.5 ml-auto scale-x-0 origin-right"
+                            className="h-[1px] w-6 sm:w-16 md:w-20 bg-gradient-to-l from-stone-300/90 via-stone-400/40 to-transparent mt-1 ml-auto scale-x-0 origin-right"
                         />
                     </div>
 
                     {/* BOTTOM LEFT: More than a clothing , / A higher existence */}
                     <div
                         ref={bottomLeftRef}
-                        className="absolute bottom-6 sm:bottom-8 md:bottom-10 lg:bottom-12 left-4 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
+                        className="absolute bottom-[11%] sm:bottom-8 md:bottom-10 lg:bottom-12 left-3.5 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
                     >
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[9.5px] sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             More than a clothing ,
                         </p>
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[9.5px] sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             A higher existence
                         </p>
                     </div>
@@ -253,19 +253,19 @@ const DoppelPieceScene = () => {
                     {/* BOTTOM RIGHT: Physical meets Digital / A new generation of ownership */}
                     <div
                         ref={bottomRightRef}
-                        className="absolute bottom-6 sm:bottom-8 md:bottom-10 lg:bottom-12 right-4 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
+                        className="absolute bottom-[11%] sm:bottom-8 md:bottom-10 lg:bottom-12 right-3.5 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
                     >
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[9.5px] sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             Physical meets Digital
                         </p>
-                        <p className="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
+                        <p className="font-serif text-[9.5px] sm:text-sm md:text-base lg:text-lg text-stone-200 font-light leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             A new generation of ownership
                         </p>
                     </div>
 
                     {/* Subtle Hover / Revealed Pill: "EXPLORE ARCHIVE →" */}
-                    <div className="explore-pill absolute bottom-3 sm:bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-500 translate-y-2 z-30 pointer-events-none">
-                        <span className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[9px] sm:text-[11px] tracking-[0.25em] uppercase font-mono bg-stone-950/85 border border-primary/40 text-primary-light shadow-[0_0_20px_rgba(212,175,55,0.35)]">
+                    <div className="explore-pill absolute bottom-[5%] sm:bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-500 translate-y-2 z-30 pointer-events-none">
+                        <span className="px-3 sm:px-5 py-1 sm:py-2 rounded-full text-[8.5px] sm:text-[11px] tracking-[0.2em] sm:tracking-[0.25em] uppercase font-mono bg-stone-950/85 border border-primary/40 text-primary-light shadow-[0_0_20px_rgba(212,175,55,0.35)]">
                             EXPLORE ARCHIVE →
                         </span>
                     </div>
@@ -320,7 +320,7 @@ const DoppelPieceScene = () => {
             {/* ========================================================= */}
             <div
                 ref={portalHeadingRef}
-                className="absolute top-[6%] sm:top-[7.5%] md:top-[9%] left-1/2 -translate-x-1/2 text-center pointer-events-none z-30 w-full px-4"
+                className="absolute top-[13%] sm:top-[7.5%] md:top-[9%] left-1/2 -translate-x-1/2 text-center pointer-events-none z-30 w-full px-4"
             >
                 <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-light tracking-[0.28em] md:tracking-[0.38em] uppercase text-stone-200/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     ONE EXISTENCE
