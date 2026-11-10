@@ -153,11 +153,16 @@ const SystemBootHero = () => {
                             imageRendering: '-webkit-optimize-contrast',
                         }}
                     />
-                    {/* Mobile Hero Image (Only for Mobile Viewports) */}
+                    {/* Ambient atmosphere blur backdrop for mobile so edges blend smoothly into black */}
+                    <div 
+                        className="block md:hidden absolute inset-0 bg-cover bg-center opacity-25 blur-3xl scale-125 pointer-events-none"
+                        style={{ backgroundImage: `url(${heroCampaignMobileImg})` }}
+                    />
+                    {/* Mobile Hero Image (Full Image Visible with Zero Cropping) */}
                     <img
                         src={heroCampaignMobileImg}
                         alt="ENDURA Genesis Campaign Mobile"
-                        className="block md:hidden w-full h-full object-cover object-[center_15%] pointer-events-none select-none will-change-transform"
+                        className="block md:hidden w-full h-full object-contain object-center pointer-events-none select-none will-change-transform py-14 sm:py-0"
                         loading="eager"
                         decoding="sync"
                         style={{

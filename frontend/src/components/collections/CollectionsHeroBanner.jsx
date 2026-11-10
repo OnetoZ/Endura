@@ -39,11 +39,16 @@ const CollectionsHeroBanner = () => {
                         imageRendering: '-webkit-optimize-contrast',
                     }}
                 />
-                {/* Mobile Collection Hero Image (Only on Mobile Viewports) */}
+                {/* Ambient atmosphere blur backdrop for mobile so edges blend smoothly into black */}
+                <div 
+                    className="block md:hidden absolute inset-0 bg-cover bg-center opacity-25 blur-3xl scale-125 pointer-events-none"
+                    style={{ backgroundImage: `url(${collectionsHeroMobileImg})` }}
+                />
+                {/* Mobile Collection Hero Image (Full Image Visible with Zero Cropping) */}
                 <img
                     src={collectionsHeroMobileImg}
                     alt="ENDURA Genesis Edition — An Experience beyond Clothing Mobile"
-                    className="block md:hidden w-full h-full object-cover object-[center_15%] pointer-events-none select-none"
+                    className="block md:hidden w-full h-full object-contain object-center pointer-events-none select-none py-14 sm:py-0"
                     loading="eager"
                     decoding="sync"
                     style={{
