@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import heroCampaignImg from '../assets/hero-campaign.jpg';
+import heroCampaignMobileImg from '../assets/hero-campaign-mobile.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -139,13 +140,24 @@ const SystemBootHero = () => {
                 className="absolute inset-0 z-10 block cursor-pointer"
                 aria-label="Explore Genesis Collection"
             >
-                {/* Master Clean Cinematic Photoshoot Background (Ultra-Clear 2560x1440 Native Image) */}
-                <div className="absolute inset-0 z-0 overflow-hidden">
+                {/* Master Clean Cinematic Photoshoot Background (Desktop & Mobile Responsive) */}
+                <div ref={bgRef} className="absolute inset-0 z-0 overflow-hidden">
+                    {/* Desktop Hero Image */}
                     <img
-                        ref={bgRef}
                         src={heroCampaignImg}
                         alt="ENDURA Genesis Campaign"
-                        className="w-full h-full object-cover object-center pointer-events-none select-none will-change-transform"
+                        className="hidden md:block w-full h-full object-cover object-center pointer-events-none select-none will-change-transform"
+                        loading="eager"
+                        decoding="sync"
+                        style={{
+                            imageRendering: '-webkit-optimize-contrast',
+                        }}
+                    />
+                    {/* Mobile Hero Image (Only for Mobile Viewports) */}
+                    <img
+                        src={heroCampaignMobileImg}
+                        alt="ENDURA Genesis Campaign Mobile"
+                        className="block md:hidden w-full h-full object-cover object-[center_15%] pointer-events-none select-none will-change-transform"
                         loading="eager"
                         decoding="sync"
                         style={{
@@ -203,7 +215,7 @@ const SystemBootHero = () => {
             {/* Luxury Editorial "Shop now" Button with Illuminated White Underline */}
             <div 
                 ref={hintRef}
-                className="absolute bottom-7 sm:bottom-9 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center will-change-transform"
+                className="absolute bottom-24 sm:bottom-9 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center will-change-transform"
             >
                 <Link
                     to="/collections"

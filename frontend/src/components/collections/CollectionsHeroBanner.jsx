@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import collectionsHeroImg from '../../assets/collections-hero.jpg';
+import collectionsHeroMobileImg from '../../assets/collections-hero-mobile.jpg';
 
 /**
  * CollectionsHeroBanner Component
@@ -8,7 +9,7 @@ import collectionsHeroImg from '../../assets/collections-hero.jpg';
  * Full-bleed Cinematic Editorial Campaign Hero:
  * - Completely fits screen (edge-to-edge, full viewport height)
  * - Seamless transparent navbar overlay at top
- * - High-resolution 2560x1440 photoshoot of models on velvet sofa
+ * - High-resolution photoshoot (Desktop & Mobile Responsive)
  * - Upper Center:
  *     "GENESIS EDITION" (Cinzel Roman serif tracking)
  *     "An Experience beyond Clothing" (Elegant italic serif subtitle)
@@ -25,12 +26,24 @@ const CollectionsHeroBanner = () => {
 
     return (
         <section className="relative w-full h-screen min-h-[640px] max-h-[1080px] bg-black select-none overflow-hidden">
-            {/* Master Native Hardware-Accelerated 2560x1440 Image - Completely Fits Full Viewport */}
+            {/* Master Native Hardware-Accelerated Image - Responsive Desktop & Mobile */}
             <div className="absolute inset-0 z-0">
+                {/* Desktop Collection Hero Image */}
                 <img
                     src={collectionsHeroImg}
                     alt="ENDURA Genesis Edition — An Experience beyond Clothing"
-                    className="w-full h-full object-cover object-[60%_35%] sm:object-[center_35%] pointer-events-none select-none"
+                    className="hidden md:block w-full h-full object-cover object-[center_35%] pointer-events-none select-none"
+                    loading="eager"
+                    decoding="sync"
+                    style={{
+                        imageRendering: '-webkit-optimize-contrast',
+                    }}
+                />
+                {/* Mobile Collection Hero Image (Only on Mobile Viewports) */}
+                <img
+                    src={collectionsHeroMobileImg}
+                    alt="ENDURA Genesis Edition — An Experience beyond Clothing Mobile"
+                    className="block md:hidden w-full h-full object-cover object-[center_15%] pointer-events-none select-none"
                     loading="eager"
                     decoding="sync"
                     style={{
