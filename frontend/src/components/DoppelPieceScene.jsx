@@ -193,7 +193,7 @@ const DoppelPieceScene = () => {
                     {/* TOP CENTER: GENESIS EDITION / One Worn and One Eternal */}
                     <div
                         ref={topCenterRef}
-                        className="absolute top-4 sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
+                        className="absolute top-[15%] sm:top-6 md:top-8 lg:top-10 left-1/2 -translate-x-1/2 text-center pointer-events-none z-20 w-full px-4 opacity-0 -translate-y-4 will-change-transform"
                     >
                         <h2 className="font-cinzel text-sm sm:text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.24em] sm:tracking-[0.32em] uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
                             GENESIS EDITION
@@ -206,7 +206,7 @@ const DoppelPieceScene = () => {
                     {/* TOP LEFT: PHYSICAL REALITY / Crafted to wear */}
                     <div
                         ref={topLeftRef}
-                        className="absolute top-14 sm:top-16 md:top-20 lg:top-24 left-3 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
+                        className="absolute top-[21%] sm:top-16 md:top-20 lg:top-24 left-3.5 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 -translate-x-6 will-change-transform"
                     >
                         <span className="block font-cinzel text-[9.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             PHYSICAL REALITY
@@ -223,7 +223,7 @@ const DoppelPieceScene = () => {
                     {/* TOP RIGHT: DIGITAL ETERNITY / Crafted to last */}
                     <div
                         ref={topRightRef}
-                        className="absolute top-14 sm:top-16 md:top-20 lg:top-24 right-3 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
+                        className="absolute top-[21%] sm:top-16 md:top-20 lg:top-24 right-3.5 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-x-6 will-change-transform"
                     >
                         <span className="block font-cinzel text-[9.5px] sm:text-sm md:text-base lg:text-lg font-medium tracking-[0.16em] sm:tracking-[0.22em] text-stone-100 uppercase drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                             DIGITAL ETERNITY
@@ -240,7 +240,7 @@ const DoppelPieceScene = () => {
                     {/* BOTTOM LEFT: More than a clothing , / A higher existence */}
                     <div
                         ref={bottomLeftRef}
-                        className="absolute bottom-3 sm:bottom-8 md:bottom-10 lg:bottom-12 left-3 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
+                        className="absolute bottom-[11%] sm:bottom-8 md:bottom-10 lg:bottom-12 left-3.5 sm:left-6 md:left-10 lg:left-12 pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
                     >
                         <p className="font-serif text-[9.5px] sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             More than a clothing ,
@@ -253,7 +253,7 @@ const DoppelPieceScene = () => {
                     {/* BOTTOM RIGHT: Physical meets Digital / A new generation of ownership */}
                     <div
                         ref={bottomRightRef}
-                        className="absolute bottom-3 sm:bottom-8 md:bottom-10 lg:bottom-12 right-3 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
+                        className="absolute bottom-[11%] sm:bottom-8 md:bottom-10 lg:bottom-12 right-3.5 sm:right-6 md:right-10 lg:right-12 text-right pointer-events-none z-20 opacity-0 translate-y-4 will-change-transform"
                     >
                         <p className="font-serif text-[9.5px] sm:text-sm md:text-base lg:text-lg text-stone-100 font-normal leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.98)]">
                             Physical meets Digital
@@ -264,7 +264,7 @@ const DoppelPieceScene = () => {
                     </div>
 
                     {/* Subtle Hover / Revealed Pill: "EXPLORE ARCHIVE →" */}
-                    <div className="explore-pill absolute bottom-2 sm:bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-500 translate-y-2 z-30 pointer-events-none">
+                    <div className="explore-pill absolute bottom-[5%] sm:bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-500 translate-y-2 z-30 pointer-events-none">
                         <span className="px-3 sm:px-5 py-1 sm:py-2 rounded-full text-[8.5px] sm:text-[11px] tracking-[0.2em] sm:tracking-[0.25em] uppercase font-mono bg-stone-950/85 border border-primary/40 text-primary-light shadow-[0_0_20px_rgba(212,175,55,0.35)]">
                             EXPLORE ARCHIVE →
                         </span>
@@ -320,7 +320,7 @@ const DoppelPieceScene = () => {
             {/* ========================================================= */}
             <div
                 ref={portalHeadingRef}
-                className="absolute top-[6%] sm:top-[7.5%] md:top-[9%] left-1/2 -translate-x-1/2 text-center pointer-events-none z-30 w-full px-4"
+                className="absolute top-[13%] sm:top-[7.5%] md:top-[9%] left-1/2 -translate-x-1/2 text-center pointer-events-none z-30 w-full px-4"
             >
                 <span className="block font-cinzel text-xs sm:text-sm md:text-base lg:text-lg font-light tracking-[0.28em] md:tracking-[0.38em] uppercase text-stone-200/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     ONE EXISTENCE
