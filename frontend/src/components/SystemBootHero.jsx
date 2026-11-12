@@ -168,11 +168,11 @@ const SystemBootHero = () => {
 
                 {/* ========================================================= */}
                 {/* EDITORIAL TYPOGRAPHY: "WE EXIST Twice" */}
-                {/* Mobile: Centered Top | Desktop: Left Side */}
+                {/* Mobile: Centered Top (above horse ears) | Desktop: Left Side */}
                 {/* ========================================================= */}
                 <div 
                     ref={leftTextRef}
-                    className="absolute top-[8.5%] sm:top-[28%] md:top-[32%] lg:top-[34%] inset-x-0 sm:inset-x-auto sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col items-center sm:items-start text-center sm:text-left px-4 sm:px-0 will-change-transform"
+                    className="absolute top-[12.5%] sm:top-[28%] md:top-[32%] lg:top-[34%] inset-x-0 sm:inset-x-auto sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col items-center sm:items-start text-center sm:text-left px-4 sm:px-0 will-change-transform"
                 >
                     {/* Line 1: WE EXIST (All-caps Roman Serif) */}
                     <div 
