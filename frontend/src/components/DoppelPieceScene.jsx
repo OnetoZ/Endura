@@ -4,7 +4,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import portalGateImg from '../assets/portal-split-gate.jpg';
+import portalGateMobileImg from '../assets/portal-split-gate-mobile.jpg';
 import genesisLineupImg from '../assets/genesis-lineup-hd.jpg';
+import genesisLineupMobileImg from '../assets/genesis-lineup-mobile.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -162,13 +164,23 @@ const DoppelPieceScene = () => {
                     to="/collections"
                     className="absolute inset-0 w-full h-full cursor-pointer block"
                 >
-                    {/* Master Clean HD Lineup Artwork */}
+                    {/* Master Clean HD Lineup Artwork (Desktop & Mobile Responsive) */}
                     <div className="absolute inset-0 z-0 bg-black">
+                        {/* Desktop Lineup Artwork */}
                         <div
                             ref={bgRef}
-                            className="w-full h-full bg-contain sm:bg-cover bg-center bg-no-repeat will-change-transform"
+                            className="hidden sm:block w-full h-full bg-cover bg-center will-change-transform"
                             style={{
                                 backgroundImage: `url(${genesisLineupImg})`,
+                                filter: 'contrast(1.06) brightness(1.04) saturate(1.05)',
+                                imageRendering: '-webkit-optimize-contrast',
+                            }}
+                        />
+                        {/* Mobile Lineup Artwork (576x1024 Vertical Framing) */}
+                        <div
+                            className="block sm:hidden w-full h-full bg-cover bg-center will-change-transform"
+                            style={{
+                                backgroundImage: `url(${genesisLineupMobileImg})`,
                                 filter: 'contrast(1.06) brightness(1.04) saturate(1.05)',
                                 imageRendering: '-webkit-optimize-contrast',
                             }}
@@ -287,10 +299,20 @@ const DoppelPieceScene = () => {
                     clipPath: 'polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%)',
                 }}
             >
+                {/* Desktop Left Door */}
                 <div
-                    className="w-full h-full bg-cover bg-center"
+                    className="hidden sm:block w-full h-full bg-cover bg-center"
                     style={{
                         backgroundImage: `url(${portalGateImg})`,
+                        filter: 'contrast(1.08) brightness(1.02) saturate(1.06)',
+                        imageRendering: '-webkit-optimize-contrast',
+                    }}
+                />
+                {/* Mobile Left Door (576x1024 Vertical Framing) */}
+                <div
+                    className="block sm:hidden w-full h-full bg-cover bg-center"
+                    style={{
+                        backgroundImage: `url(${portalGateMobileImg})`,
                         filter: 'contrast(1.08) brightness(1.02) saturate(1.06)',
                         imageRendering: '-webkit-optimize-contrast',
                     }}
@@ -305,10 +327,20 @@ const DoppelPieceScene = () => {
                     clipPath: 'polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%)',
                 }}
             >
+                {/* Desktop Right Door */}
                 <div
-                    className="w-full h-full bg-cover bg-center"
+                    className="hidden sm:block w-full h-full bg-cover bg-center"
                     style={{
                         backgroundImage: `url(${portalGateImg})`,
+                        filter: 'contrast(1.08) brightness(1.02) saturate(1.06)',
+                        imageRendering: '-webkit-optimize-contrast',
+                    }}
+                />
+                {/* Mobile Right Door (576x1024 Vertical Framing) */}
+                <div
+                    className="block sm:hidden w-full h-full bg-cover bg-center"
+                    style={{
+                        backgroundImage: `url(${portalGateMobileImg})`,
                         filter: 'contrast(1.08) brightness(1.02) saturate(1.06)',
                         imageRendering: '-webkit-optimize-contrast',
                     }}

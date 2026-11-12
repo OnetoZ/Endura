@@ -43,7 +43,7 @@ const CollectionsHeroBanner = () => {
                 <img
                     src={collectionsHeroMobileImg}
                     alt="ENDURA Genesis Edition — An Experience beyond Clothing Mobile"
-                    className="block md:hidden w-full h-full object-cover object-[65%_15%] pointer-events-none select-none"
+                    className="block md:hidden w-full h-full object-cover object-[center_20%] pointer-events-none select-none"
                     loading="eager"
                     decoding="sync"
                     style={{

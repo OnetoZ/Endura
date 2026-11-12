@@ -157,7 +157,7 @@ const SystemBootHero = () => {
                     <img
                         src={heroCampaignMobileImg}
                         alt="ENDURA Genesis Campaign Mobile"
-                        className="block md:hidden w-full h-full object-cover object-[40%_15%] pointer-events-none select-none will-change-transform"
+                        className="block md:hidden w-full h-full object-cover object-center pointer-events-none select-none will-change-transform"
                         loading="eager"
                         decoding="sync"
                         style={{
@@ -167,16 +167,17 @@ const SystemBootHero = () => {
                 </div>
 
                 {/* ========================================================= */}
-                {/* LEFT EDITORIAL TYPOGRAPHY: "WE EXIST Twice" */}
+                {/* EDITORIAL TYPOGRAPHY: "WE EXIST Twice" */}
+                {/* Mobile: Centered Top (above horse ears) | Desktop: Left Side */}
                 {/* ========================================================= */}
                 <div 
                     ref={leftTextRef}
-                    className="absolute top-[64%] sm:top-[28%] md:top-[32%] lg:top-[34%] left-6 sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col will-change-transform"
+                    className="absolute top-[12.5%] sm:top-[28%] md:top-[32%] lg:top-[34%] inset-x-0 sm:inset-x-auto sm:left-10 md:left-16 lg:left-24 xl:left-32 z-20 pointer-events-none flex flex-col items-center sm:items-start text-center sm:text-left px-4 sm:px-0 will-change-transform"
                 >
                     {/* Line 1: WE EXIST (All-caps Roman Serif) */}
                     <div 
                         ref={weExistRef}
-                        className="font-cinzel text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium text-white uppercase tracking-[0.28em] leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
+                        className="font-cinzel text-xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium text-white uppercase tracking-[0.24em] sm:tracking-[0.28em] leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
                         style={{ textShadow: '0 4px 24px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.8)' }}
                     >
                         WE EXIST
@@ -185,7 +186,7 @@ const SystemBootHero = () => {
                     {/* Line 2: Twice (Flowing Luxury Script / Cursive) */}
                     <div 
                         ref={twiceRef}
-                        className="font-script text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-white/95 lowercase first-letter:uppercase -mt-2 sm:-mt-3 md:-mt-4 ml-8 sm:ml-12 md:ml-16 lg:ml-20 tracking-normal will-change-transform"
+                        className="font-script text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-white/95 lowercase first-letter:uppercase -mt-1 sm:-mt-3 md:-mt-4 ml-0 sm:ml-12 md:ml-16 lg:ml-20 tracking-normal will-change-transform"
                         style={{
                             textShadow: '0 4px 30px rgba(255,255,255,0.5), 0 2px 20px rgba(0,0,0,0.95)',
                             transform: 'rotate(-2deg)'
@@ -196,14 +197,15 @@ const SystemBootHero = () => {
                 </div>
 
                 {/* ========================================================= */}
-                {/* RIGHT EDITORIAL TYPOGRAPHY: "NEW GEN STREETWEAR" */}
+                {/* EDITORIAL TYPOGRAPHY: "NEW GEN STREETWEAR" */}
+                {/* Mobile: Mid Left (next to horse neck) | Desktop: Right Side */}
                 {/* ========================================================= */}
                 <div 
                     ref={rightTextRef}
-                    className="absolute top-[28%] sm:top-[44%] md:top-[42%] lg:top-[42%] right-6 sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
+                    className="absolute top-[52%] sm:top-[44%] md:top-[42%] lg:top-[42%] left-6 sm:left-auto right-auto sm:right-10 md:right-14 lg:right-20 xl:right-28 z-20 pointer-events-none text-left will-change-transform"
                 >
                     <div 
-                        className="font-cinzel text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-normal text-white uppercase tracking-[0.3em] leading-snug drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
+                        className="font-cinzel text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl font-normal text-white uppercase tracking-[0.26em] sm:tracking-[0.3em] leading-relaxed sm:leading-snug drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]"
                         style={{ textShadow: '0 2px 20px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.8)' }}
                     >
                         <div className="block">NEW GEN</div>
