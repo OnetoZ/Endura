@@ -157,7 +157,7 @@ const SystemBootHero = () => {
                     <img
                         src={heroCampaignMobileImg}
                         alt="ENDURA Genesis Campaign Mobile"
-                        className="block md:hidden w-full h-full object-cover object-[40%_15%] pointer-events-none select-none will-change-transform"
+                        className="block md:hidden w-full h-full object-cover object-[center_15%] pointer-events-none select-none will-change-transform"
                         loading="eager"
                         decoding="sync"
                         style={{
